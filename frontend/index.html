@@ -945,130 +945,24 @@
             </div>
           </div>
 
-          <!-- SUB-HEADER: COMPARISON MODES & TEMPORAL WINDOW -->
-          <div class="hist-controls-bar">
-            <!-- Mode Switcher: BEFORE | AFTER | DIFFERENCE | IMPACT -->
-            <div class="hist-segmented-modes" id="hist-comparison-modes">
-              <button class="hist-mode-btn" data-mode="before" id="hist-btn-mode-before">[ BEFORE ]</button>
-              <button class="hist-mode-btn" data-mode="after" id="hist-btn-mode-after">[ AFTER ]</button>
-              <button class="hist-mode-btn active" data-mode="difference" id="hist-btn-mode-diff">[ DIFFERENCE ]</button>
-              <button class="hist-mode-btn" data-mode="impact" id="hist-btn-mode-impact">[ IMPACT ]</button>
-            </div>
-
-            <!-- Active Temporal Range Pill -->
-            <div class="hist-period-pill" id="hist-active-period-pill">
-              <span class="period-label">OBSERVATION PERIOD:</span>
-              <span class="period-dates" id="hist-period-dates">2024 BASELINE → 2026 CURRENT</span>
-            </div>
-          </div>
-
           <!-- ==============================================================
-               FEATURE 1: MAIN SATELLITE COMPARISON WORKSPACE (65–75% VIEWPORT)
-               ============================================================== -->
-          <div class="hist-canvas-container" id="hist-investigation-canvas">
-            
-            <!-- Draggable Before/After Comparison Viewport -->
-            <div class="hist-swipe-workspace" id="hist-swipe-workspace">
-              
-              <!-- Underneath Layer: Baseline Before Imagery (2024) -->
-              <div class="hist-imagery-pane pane-before" id="hist-pane-before">
-                <img id="hist-img-before" src="/samples/madurai_urban/before.png" alt="Baseline Satellite Image" class="hist-satellite-img">
-                <div class="hist-img-overlay-hud hud-left">
-                  <div class="hud-tag baseline-tag">2024 BASELINE</div>
-                  <div class="hud-subtag">PRE-EVENT OBSERVATION</div>
-                </div>
-              </div>
-
-              <!-- Top Clipped Layer: Current After Imagery (2026) -->
-              <div class="hist-imagery-pane pane-after" id="hist-pane-after" style="clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);">
-                <img id="hist-img-after" src="/samples/madurai_urban/after.png" alt="Current Satellite Image" class="hist-satellite-img">
-                <div class="hist-img-overlay-hud hud-right">
-                  <div class="hud-tag current-tag">2026 CURRENT</div>
-                  <div class="hud-subtag">POST-EVENT OBSERVATION</div>
-                </div>
-              </div>
-
-              <!-- Interactive Draggable Divider Handle -->
-              <div class="hist-swipe-divider" id="hist-swipe-divider" style="left: 50%;">
-                <div class="hist-divider-line"></div>
-                <div class="hist-swipe-grip">
-                  <span class="grip-indicator">2024 BEFORE ◂ ❙ ▸ 2026 AFTER</span>
-                </div>
-                <div class="hist-drag-hint">DRAG TO COMPARE</div>
-              </div>
-            </div>
-
-            <!-- FEATURE 2: DIFFERENCE LAYER OVERLAY (Transparent Polygons & Contours) -->
-            <div class="hist-difference-overlay" id="hist-difference-overlay">
-              <svg class="hist-vector-diff-canvas" id="hist-diff-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
-                <!-- Populated dynamically via JS with transparent change polygons -->
-              </svg>
-            </div>
-
-            <!-- FEATURE 3: IMPACT LAYER OVERLAY (Infrastructure & Communities) -->
-            <div class="hist-impact-overlay" id="hist-impact-overlay" style="display: none;">
-              <div class="hist-impact-pins-container" id="hist-impact-pins">
-                <!-- Populated dynamically with schools, hospitals, roads, settlements -->
-              </div>
-            </div>
-
-            <!-- FLOATING COMPACT MAP CONTROLS -->
-            <div class="hist-floating-controls">
-              <button class="hist-float-btn" id="hist-btn-zoom-in" title="Zoom in">+</button>
-              <button class="hist-float-btn" id="hist-btn-zoom-out" title="Zoom out">-</button>
-              <button class="hist-float-btn" id="hist-btn-zoom-reset" title="Reset View">⟲</button>
-              <button class="hist-float-btn" id="hist-btn-toggle-grid" title="Toggle Grid Overlay">▦</button>
-            </div>
-
-            <!-- FLOATING METADATA TELEMETRY HUD (Compact, Not Giant Cards) -->
-            <div class="hist-floating-meta-hud" id="hist-floating-meta">
-              <div class="meta-row-item">
-                <span class="meta-k">SOURCE</span>
-                <span class="meta-v" id="hud-meta-sensor">Sentinel-2 MSI (10m)</span>
-              </div>
-              <div class="meta-row-item">
-                <span class="meta-k">DATE</span>
-                <span class="meta-v" id="hud-meta-dates">2024-02-15 → 2026-09-18</span>
-              </div>
-              <div class="meta-row-item">
-                <span class="meta-k">CLOUD COVER</span>
-                <span class="meta-v text-green" id="hud-meta-cloud">0.8% (Optimal)</span>
-              </div>
-              <div class="meta-row-item">
-                <span class="meta-k">COORDINATES</span>
-                <span class="meta-v" id="hud-meta-coords">9.9252° N, 78.1198° E</span>
-              </div>
-            </div>
-
-            <!-- SEMANTIC LEGEND BAR -->
-            <div class="hist-semantic-legend" id="hist-semantic-legend">
-              <div class="legend-item"><span class="legend-dot dot-critical"></span><span>Critical / Major</span></div>
-              <div class="legend-item"><span class="legend-dot dot-moderate"></span><span>Moderate Change</span></div>
-              <div class="legend-item"><span class="legend-dot dot-minor"></span><span>Minor Change</span></div>
-              <div class="legend-item"><span class="legend-dot dot-water"></span><span>Water / Flood</span></div>
-              <div class="legend-item"><span class="legend-dot dot-stable"></span><span>Stable Area</span></div>
-              <div class="legend-item"><span class="legend-dot dot-community"></span><span>Community Impact</span></div>
-            </div>
-
-          </div> <!-- /hist-canvas-container -->
-
-          <!-- ==============================================================
-               FEATURE 4: HISTORICAL TIMELINE & PLAYBACK CONTROLLER
+               FEATURE 4 (EXPANDED): MULTI-YEAR / DECADE TIMELINE SCRUBBER
                ============================================================== -->
           <div class="hist-timeline-scrubber-bar">
             <div class="timeline-controls-left">
               <button class="btn-timeline-play" id="btn-timeline-play" title="Play temporal evolution">
                 <span class="play-icon" id="hist-play-icon">▶</span>
-                <span class="play-text" id="hist-play-text">PLAY CHANGE</span>
+                <span class="play-text" id="hist-play-text">PLAY TIMELINE</span>
               </button>
             </div>
 
-            <!-- Draggable Timeline Track -->
+            <!-- Draggable Timeline Track & Epoch Chips -->
             <div class="timeline-track-wrap">
               <div class="timeline-slider-labels">
-                <span class="year-label" id="t-label-2024">2024 BASELINE</span>
-                <span class="year-label" id="t-label-2025">2025 CHANGE</span>
-                <span class="year-label active" id="t-label-2026">2026 CURRENT</span>
+                <button class="hist-epoch-chip" data-year="2024" id="t-label-2024">2024 BASELINE</button>
+                <button class="hist-epoch-chip" data-year="2025" id="t-label-2025">2025 MID-TERM</button>
+                <button class="hist-epoch-chip active" data-year="2026" id="t-label-2026">2026 CURRENT</button>
+                <button class="hist-epoch-chip" data-year="all" id="t-label-all">ALL PERIODS</button>
               </div>
               <input type="range" id="hist-timeline-range" min="2024" max="2026" value="2026" step="1" class="hist-timeline-input">
               <div class="timeline-playback-progress" id="hist-playback-progress" style="width: 100%;"></div>
@@ -1076,8 +970,221 @@
 
             <!-- Active Year & YoY Indicator -->
             <div class="timeline-active-display" id="hist-active-year-display">
-              <span class="active-year-number" id="hist-active-year-num">2026</span>
-              <span class="active-year-sub" id="hist-active-year-sub">SURVEILLANCE EPOCH</span>
+              <div class="active-year-badge">
+                <span class="active-year-number" id="hist-active-year-num">2026</span>
+                <span class="active-year-tag">ACTIVE EPOCH</span>
+              </div>
+              <span class="active-year-sub" id="hist-active-year-sub">104.9 km² · +53.4% YoY Expansion</span>
+            </div>
+          </div>
+
+          <!-- ==============================================================
+               FEATURE 1: MEDIUM-SIZE PIC-TO-PIC TEMPORAL PROGRESSION MATRIX
+               (Not in swap method — 3 medium-size surveillance cards)
+               ============================================================== -->
+          <div class="hist-pic-to-pic-section" id="hist-pic-to-pic-section">
+            
+            <div class="pic-section-header">
+              <div class="pic-section-title-wrap">
+                <span class="pic-section-badge">SURVEILLANCE MATRIX</span>
+                <h3 class="pic-section-h3">Temporal Pic-to-Pic Evolution</h3>
+                <span class="pic-section-sub">Chronological Multi-Sensor Progression: 2024 Baseline ➔ 2025 Intermediate ➔ 2026 Current State</span>
+              </div>
+
+              <div class="pic-section-tools">
+                <div class="hist-segmented-modes" id="hist-comparison-modes">
+                  <button class="hist-mode-btn active" data-mode="gallery" id="hist-btn-mode-gallery">PIC-TO-PIC</button>
+                  <button class="hist-mode-btn" data-mode="difference" id="hist-btn-mode-diff">DIFFERENCE OVERLAY</button>
+                  <button class="hist-mode-btn" data-mode="impact" id="hist-btn-mode-impact">IMPACT RISKS</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 Medium-Size Pic-to-Pic Cards Row -->
+            <div class="hist-pic-to-pic-gallery" id="hist-pic-to-pic-gallery">
+              
+              <!-- CARD 1: 2024 BASELINE (MEDIUM SIZE) -->
+              <div class="pic-card" id="pic-card-2024" data-year="2024">
+                <div class="pic-card-hud">
+                  <div class="pic-epoch-tag tag-baseline">2024 BASELINE</div>
+                  <div class="pic-meta-info">
+                    <span class="pic-sensor-tag">Sentinel-2 MSI</span>
+                    <span class="pic-date-tag" id="pic-date-2024">2024-02-15</span>
+                  </div>
+                </div>
+
+                <div class="pic-viewport" id="viewport-2024">
+                  <img id="hist-img-before" src="/samples/madurai_urban/before.png" alt="2024 Baseline Satellite Imagery" class="hist-satellite-img">
+                  <button class="btn-pic-inspect" data-target="hist-img-before" data-epoch="2024" title="Inspect Full Resolution">
+                    <span>🔍 Enlarge</span>
+                  </button>
+                </div>
+
+                <div class="pic-card-footer">
+                  <div class="pic-metrics-row">
+                    <div class="pic-metric-item">
+                      <span class="pm-lbl">FOOTPRINT</span>
+                      <span class="pm-val text-cyan" id="pic-footprint-2024">10.9 km²</span>
+                    </div>
+                    <div class="pic-metric-item">
+                      <span class="pm-lbl">RADIUS</span>
+                      <span class="pm-val" id="pic-radius-2024">700m</span>
+                    </div>
+                    <span class="pic-growth-pill pill-baseline" id="pic-growth-2024">BASELINE</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CHRONOLOGICAL CONNECTOR 1 -->
+              <div class="pic-flow-connector">
+                <div class="connector-line"></div>
+                <div class="connector-pill" id="connector-delta-1">
+                  <span class="c-arrow">➔</span>
+                  <span class="c-val">+44.9% YoY</span>
+                </div>
+              </div>
+
+              <!-- CARD 2: 2025 MID-TERM EVOLUTION (MEDIUM SIZE) -->
+              <div class="pic-card" id="pic-card-2025" data-year="2025">
+                <div class="pic-card-hud">
+                  <div class="pic-epoch-tag tag-intermediate">2025 MID-TERM</div>
+                  <div class="pic-meta-info">
+                    <span class="pic-sensor-tag">Landsat-9 OLI</span>
+                    <span class="pic-date-tag" id="pic-date-2025">2025-06-12</span>
+                  </div>
+                </div>
+
+                <div class="pic-viewport" id="viewport-2025">
+                  <img id="hist-img-mid" src="/samples/madurai_urban/mid.png" alt="2025 Mid-Term Satellite Imagery" class="hist-satellite-img">
+                  <button class="btn-pic-inspect" data-target="hist-img-mid" data-epoch="2025" title="Inspect Full Resolution">
+                    <span>🔍 Enlarge</span>
+                  </button>
+                </div>
+
+                <div class="pic-card-footer">
+                  <div class="pic-metrics-row">
+                    <div class="pic-metric-item">
+                      <span class="pm-lbl">FOOTPRINT</span>
+                      <span class="pm-val text-yellow" id="pic-footprint-2025">15.8 km²</span>
+                    </div>
+                    <div class="pic-metric-item">
+                      <span class="pm-lbl">RADIUS</span>
+                      <span class="pm-val" id="pic-radius-2025">1,050m</span>
+                    </div>
+                    <span class="pic-growth-pill pill-surge" id="pic-growth-2025">+44.9% SURGE</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CHRONOLOGICAL CONNECTOR 2 -->
+              <div class="pic-flow-connector">
+                <div class="connector-line"></div>
+                <div class="connector-pill" id="connector-delta-2">
+                  <span class="c-arrow">➔</span>
+                  <span class="c-val">+35.4% YoY</span>
+                </div>
+              </div>
+
+              <!-- CARD 3: 2026 CURRENT ACTIVE SURVEILLANCE (MEDIUM SIZE) -->
+              <div class="pic-card active-card" id="pic-card-2026" data-year="2026">
+                <div class="pic-card-hud">
+                  <div class="pic-epoch-tag tag-current">2026 CURRENT</div>
+                  <div class="pic-meta-info">
+                    <span class="pic-sensor-tag">Sentinel-2 MSI</span>
+                    <span class="pic-date-tag" id="pic-date-2026">2026-09-18</span>
+                  </div>
+                </div>
+
+                <div class="pic-viewport" id="viewport-2026">
+                  <img id="hist-img-after" src="/samples/madurai_urban/after.png" alt="2026 Current Satellite Imagery" class="hist-satellite-img">
+                  
+                  <!-- Vector Difference Layer Overlay for 2026 Card -->
+                  <div class="hist-difference-overlay" id="hist-difference-overlay" style="display: none;">
+                    <svg class="hist-vector-diff-canvas" id="hist-diff-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
+                      <!-- Populated dynamically via JS with transparent change polygons -->
+                    </svg>
+                  </div>
+
+                  <!-- Impact Pins Overlay for 2026 Card -->
+                  <div class="hist-impact-overlay" id="hist-impact-overlay" style="display: none;">
+                    <div class="hist-impact-pins-container" id="hist-impact-pins">
+                      <!-- Populated dynamically with schools, hospitals, roads, settlements -->
+                    </div>
+                  </div>
+
+                  <button class="btn-pic-inspect" data-target="hist-img-after" data-epoch="2026" title="Inspect Full Resolution">
+                    <span>🔍 Enlarge</span>
+                  </button>
+                </div>
+
+                <div class="pic-card-footer">
+                  <div class="pic-metrics-row">
+                    <div class="pic-metric-item">
+                      <span class="pm-lbl">FOOTPRINT</span>
+                      <span class="pm-val text-red" id="pic-footprint-2026">21.4 km²</span>
+                    </div>
+                    <div class="pic-metric-item">
+                      <span class="pm-lbl">RADIUS</span>
+                      <span class="pm-val" id="pic-radius-2026">1,400m</span>
+                    </div>
+                    <span class="pic-growth-pill pill-critical" id="pic-growth-2026">+96.3% NET</span>
+                  </div>
+                </div>
+              </div>
+
+            </div> <!-- /hist-pic-to-pic-gallery -->
+
+            <!-- SEMANTIC LEGEND BAR -->
+            <div class="hist-semantic-legend" id="hist-semantic-legend" style="display: none;">
+              <div class="legend-item"><span class="legend-dot dot-critical"></span><span>Critical / Major Threat</span></div>
+              <div class="legend-item"><span class="legend-dot dot-moderate"></span><span>Moderate Alteration</span></div>
+              <div class="legend-item"><span class="legend-dot dot-minor"></span><span>Minor Shift</span></div>
+              <div class="legend-item"><span class="legend-dot dot-water"></span><span>Water / Hydrology</span></div>
+              <div class="legend-item"><span class="legend-dot dot-community"></span><span>Community Infrastructure</span></div>
+            </div>
+
+          </div> <!-- /hist-pic-to-pic-section -->
+
+          <!-- ==============================================================
+               FEATURE 2: INTERACTIVE ANALYTICS & TIME CHARTS
+               (Bar Chart, Category Distribution Donut, Priority Trends Line)
+               ============================================================== -->
+          <div class="hist-charts-section">
+            <div class="charts-row-grid">
+              
+              <!-- Chart 1: Affected Area Over Time (km²) -->
+              <div class="chart-card">
+                <div class="chart-card-top">
+                  <div class="chart-title">Affected Area Over Time (km²)</div>
+                  <span class="chart-badge-tag text-cyan">+146.2% 3-Yr Trend</span>
+                </div>
+                <div class="chart-canvas-box">
+                  <canvas id="chart-area-time"></canvas>
+                </div>
+              </div>
+
+              <!-- Chart 2: Changes by Category Distribution -->
+              <div class="chart-card">
+                <div class="chart-card-top">
+                  <div class="chart-title">Changes by Category Distribution</div>
+                  <span class="chart-badge-tag text-purple">Terrain Shares</span>
+                </div>
+                <div class="chart-canvas-box">
+                  <canvas id="chart-categories"></canvas>
+                </div>
+              </div>
+
+              <!-- Chart 3: Priority Changes Over Time -->
+              <div class="chart-card">
+                <div class="chart-card-top">
+                  <div class="chart-title">Priority Changes Over Time</div>
+                  <span class="chart-badge-tag text-red">Critical vs Moderate</span>
+                </div>
+                <div class="chart-canvas-box">
+                  <canvas id="chart-priority-time"></canvas>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -1287,6 +1394,30 @@
             </div>
 
           </div> <!-- /hist-bottom-grid -->
+
+          <!-- HIGH-RESOLUTION INSPECT MODAL (MEDIUM CARD EXPANSION) -->
+          <div class="hist-inspect-modal" id="hist-inspect-modal" style="display: none;">
+            <div class="hist-inspect-backdrop" id="hist-inspect-backdrop"></div>
+            <div class="hist-inspect-dialog">
+              <div class="hist-inspect-header">
+                <div class="hist-inspect-title-group">
+                  <span class="hist-inspect-tag" id="modal-epoch-badge">2026 CURRENT STATE</span>
+                  <h4 class="hist-inspect-h4" id="modal-title">High-Resolution Satellite Surveillance</h4>
+                </div>
+                <div class="hist-inspect-actions">
+                  <span class="hist-inspect-meta" id="modal-meta-info">Sentinel-2 MSI · 10m Ground Sample</span>
+                  <button class="btn-inspect-close" id="btn-inspect-close" title="Close Inspector">✕</button>
+                </div>
+              </div>
+              <div class="hist-inspect-body">
+                <img id="hist-modal-img" src="" alt="High-Resolution Satellite Inspection" class="inspect-large-img">
+              </div>
+              <div class="hist-inspect-footer">
+                <span class="inspect-caption" id="modal-caption">Direct sensor telemetry observation with calibrated spectral bands.</span>
+                <button class="btn-modal-action" id="btn-modal-save-evidence">💾 Save as Evidence</button>
+              </div>
+            </div>
+          </div>
 
         </div> <!-- /panel-inner-container -->
       </section>

@@ -97,6 +97,15 @@ class EarthLensApp {
     if (targetPanel) {
       targetPanel.style.display = 'block';
 
+      // If switching to Historical Analysis, resize Chart.js instances
+      if (viewName === 'historical-analysis' && window.historicalAnalyticsModule) {
+        setTimeout(() => {
+          if (window.historicalAnalyticsModule.chartArea) window.historicalAnalyticsModule.chartArea.resize();
+          if (window.historicalAnalyticsModule.chartCategories) window.historicalAnalyticsModule.chartCategories.resize();
+          if (window.historicalAnalyticsModule.chartPriority) window.historicalAnalyticsModule.chartPriority.resize();
+        }, 50);
+      }
+
       // If switching to Community Impact, also set map comparison mode to impact
       if (viewName === 'community-impact' && window.earthMap) {
         window.earthMap.setComparisonMode('impact');
