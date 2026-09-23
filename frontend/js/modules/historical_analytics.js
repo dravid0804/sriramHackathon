@@ -1,97 +1,68 @@
 /**
- * EarthLens AI — Visual Earth Change Investigation Workspace
- * Owned by: MEMBER 3 (Intelligence Operations, Analytics & Copilot Lead)
+ * EarthLens AI — Earth Change Investigation Workspace
+ * Owned by: MEMBER 3 (Intelligence Operations, Analytics & Surveillance)
  * Branch: prakash
  *
- * Implements a Map-First / Image-First satellite intelligence workspace:
- * - Draggable vertical curtain swipe comparison (Before | After)
- * - Synchronized dual side-by-side satellite viewport
- * - Dedicated Difference mode (polygons, masks, contours & click interaction)
- * - Impact mode overlay with critical infrastructure & demographic buffer
- * - Visual historical timeline with animated Playback controller
- * - Hotspot Evolution with multi-year footprint growth (+XX%) & anomaly detection
- * - Vertical change event timeline with interactive navigation
- * - Contextual analytics & Chart.js expander
- * - Evidence snapshot capturing for Executive Dossier
+ * Implements ONLY the 6 core features:
+ * 1. Before vs After Satellite Comparison (65-75% viewport, drag divider, synchronized zoom/pan)
+ * 2. Difference / Change Visualization ([BEFORE] [AFTER] [DIFFERENCE] [IMPACT], transparent polygons, legend, click-to-inspect)
+ * 3. Community & Infrastructure Impact (verified facilities overlay, non-speculative labeling)
+ * 4. Historical Timeline + Playback (2024 -> 2025 -> 2026 scrubber + Play button)
+ * 5. Hotspot Investigation (Numbered 01-04 list, footprint evolution 2024->2026, +XX% growth)
+ * 6. Evidence Snapshot + Dossier (Save Evidence, Evidence Shelf, Generate Executive Dossier)
  */
 
 class HistoricalAnalyticsModule {
   constructor() {
     this.historicalData = null;
-    this.activeHotspotId = 'hotspot-alpha';
+    this.activeHotspotId = 'hotspot-charlie'; // Default: Madurai Peri-Urban Corridor
     this.activeYear = '2026';
     this.comparisonMode = 'difference'; // 'before', 'after', 'difference', 'impact'
-    this.layoutMode = 'swipe'; // 'swipe' or 'dual'
     this.isPlaying = false;
-    this.playTimer = null;
+    this.playInterval = null;
     this.savedEvidence = [];
-    
-    // Chart instances
-    this.chartArea = null;
-    this.chartCategory = null;
-    this.chartPriority = null;
 
-    // Draggable swipe state
-    this.isDraggingSwipe = false;
-    this.swipePercent = 50;
+    // Drag-to-compare state
+    this.isDraggingDivider = false;
+    this.dividerPercent = 50;
+
+    // Synchronized Zoom & Pan state
+    this.zoomScale = 1.0;
+    this.panX = 0;
+    this.panY = 0;
+    this.isPanning = false;
+    this.startX = 0;
+    this.startY = 0;
   }
 
   async init() {
     try {
       const res = await fetch('/api/historical');
-      if (!res.ok) throw new Error('Failed to fetch historical analytics');
+      if (!res.ok) throw new Error('Failed to fetch historical analytics data');
       this.historicalData = await res.json();
 
-      // 1. Setup UI Listeners & Interactions
-      this.setupTopControls();
-      this.setupSwipeSlider();
+      // Setup Subsystem Listeners
+      this.setupDividerSwipe();
       this.setupModeSwitcher();
-      this.setupLayoutSwitcher();
+      this.setupZoomPanControls();
       this.setupTimelineController();
-      this.setupDrawerListeners();
+      this.setupHotspotsList();
       this.setupEvidenceActions();
-      this.setupChartsExpander();
-      this.setupEmbeddedCopilot();
-
-      // 2. Load Initial Hotspot State (Hotspot Alpha / Derna)
-      this.loadHotspot(this.activeHotspotId);
-
-      // 3. Restore any previously saved evidence
       this.restoreEvidenceShelf();
 
-      console.log('Visual Earth Change Investigation Workspace initialized on branch prakash.');
+      // Load Initial Hotspot State (Madurai)
+      this.loadHotspot(this.activeHotspotId);
+
+      console.log('Earth Change Investigation Workspace initialized on branch prakash.');
     } catch (err) {
       console.warn('Historical module loading error:', err);
     }
   }
 
   /* =========================================================================
-     1. TOP CONTROLS & REGION SELECTION
+     FEATURE 1: BEFORE vs AFTER SATELLITE COMPARISON (DRAG & ZOOM/PAN)
      ========================================================================= */
-  setupTopControls() {
-    const regionSelect = document.getElementById('hist-region-select');
-    if (regionSelect) {
-      regionSelect.addEventListener('change', (e) => {
-        this.loadHotspot(e.target.value);
-      });
-    }
-
-    const pillTabs = document.querySelectorAll('.hotspot-pill-btn');
-    pillTabs.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const hsId = btn.dataset.hotspot;
-        if (hsId) {
-          this.loadHotspot(hsId);
-          if (regionSelect) regionSelect.value = hsId;
-        }
-      });
-    });
-  }
-
-  /* =========================================================================
-     2. DRAGGABLE CURTAIN SWIPE SLIDER
-     ========================================================================= */
-  setupSwipeSlider() {
+  setupDividerSwipe() {
     const divider = document.getElementById('hist-swipe-divider');
     const container = document.getElementById('hist-swipe-workspace');
     const paneAfter = document.getElementById('hist-pane-after');
@@ -102,46 +73,139 @@ class HistoricalAnalyticsModule {
       const rect = container.getBoundingClientRect();
       let x = clientX - rect.left;
       let pct = (x / rect.width) * 100;
-      pct = Math.max(5, Math.min(95, pct)); // clamp
+      pct = Math.max(3, Math.min(97, pct)); // Clamp within bounds
 
-      this.swipePercent = pct;
+      this.dividerPercent = pct;
       divider.style.left = `${pct}%`;
       paneAfter.style.clipPath = `polygon(${pct}% 0, 100% 0, 100% 100%, ${pct}% 100%)`;
     };
 
     divider.addEventListener('mousedown', (e) => {
-      this.isDraggingSwipe = true;
+      this.isDraggingDivider = true;
       e.preventDefault();
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (this.isDraggingSwipe) {
+      if (this.isDraggingDivider) {
         onMove(e.clientX);
       }
     });
 
     window.addEventListener('mouseup', () => {
-      this.isDraggingSwipe = false;
+      this.isDraggingDivider = false;
     });
 
-    // Touch support for mobile / tablet
+    // Touch support for tablets & mobile
     divider.addEventListener('touchstart', (e) => {
-      this.isDraggingSwipe = true;
+      this.isDraggingDivider = true;
     }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
-      if (this.isDraggingSwipe && e.touches[0]) {
+      if (this.isDraggingDivider && e.touches[0]) {
         onMove(e.touches[0].clientX);
       }
     }, { passive: true });
 
     window.addEventListener('touchend', () => {
-      this.isDraggingSwipe = false;
+      this.isDraggingDivider = false;
     });
   }
 
+  setupZoomPanControls() {
+    const btnZoomIn = document.getElementById('hist-btn-zoom-in');
+    const btnZoomOut = document.getElementById('hist-btn-zoom-out');
+    const btnReset = document.getElementById('hist-btn-zoom-reset');
+    const btnToggleGrid = document.getElementById('hist-btn-toggle-grid');
+    const container = document.getElementById('hist-swipe-workspace');
+
+    if (btnZoomIn) {
+      btnZoomIn.addEventListener('click', () => {
+        this.zoomScale = Math.min(2.5, this.zoomScale + 0.25);
+        this.applySynchronizedTransform();
+      });
+    }
+
+    if (btnZoomOut) {
+      btnZoomOut.addEventListener('click', () => {
+        this.zoomScale = Math.max(1.0, this.zoomScale - 0.25);
+        if (this.zoomScale === 1.0) {
+          this.panX = 0;
+          this.panY = 0;
+        }
+        this.applySynchronizedTransform();
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        this.zoomScale = 1.0;
+        this.panX = 0;
+        this.panY = 0;
+        this.applySynchronizedTransform();
+      });
+    }
+
+    if (btnToggleGrid) {
+      let gridActive = false;
+      btnToggleGrid.addEventListener('click', () => {
+        gridActive = !gridActive;
+        btnToggleGrid.style.background = gridActive ? '#06b6d4' : '';
+        btnToggleGrid.style.color = gridActive ? '#070a12' : '';
+        const canvas = document.getElementById('hist-investigation-canvas');
+        if (canvas) {
+          canvas.style.backgroundImage = gridActive
+            ? 'linear-gradient(rgba(6, 182, 212, 0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.12) 1px, transparent 1px)'
+            : 'none';
+          canvas.style.backgroundSize = '40px 40px';
+        }
+      });
+    }
+
+    // Pan via mouse drag when zoomed in
+    if (container) {
+      container.addEventListener('mousedown', (e) => {
+        if (this.zoomScale > 1.0 && e.target.id !== 'hist-swipe-divider' && !e.target.closest('#hist-swipe-divider')) {
+          this.isPanning = true;
+          this.startX = e.clientX - this.panX;
+          this.startY = e.clientY - this.panY;
+          container.style.cursor = 'grabbing';
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (this.isPanning) {
+          this.panX = e.clientX - this.startX;
+          this.panY = e.clientY - this.startY;
+          this.applySynchronizedTransform();
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (this.isPanning) {
+          this.isPanning = false;
+          container.style.cursor = 'default';
+        }
+      });
+    }
+  }
+
+  applySynchronizedTransform() {
+    const transformStr = `scale(${this.zoomScale}) translate(${this.panX / this.zoomScale}px, ${this.panY / this.zoomScale}px)`;
+    
+    // Apply synchronously to both Before and After image frames
+    const imgBefore = document.getElementById('hist-img-before');
+    const imgAfter = document.getElementById('hist-img-after');
+    const diffSvg = document.getElementById('hist-diff-svg');
+    const impactPins = document.getElementById('hist-impact-pins');
+
+    if (imgBefore) imgBefore.style.transform = transformStr;
+    if (imgAfter) imgAfter.style.transform = transformStr;
+    if (diffSvg) diffSvg.style.transform = transformStr;
+    if (impactPins) impactPins.style.transform = transformStr;
+  }
+
   /* =========================================================================
-     3. COMPARISON MODE SWITCHER: BEFORE | AFTER | DIFFERENCE | IMPACT
+     FEATURE 2: DIFFERENCE / CHANGE VISUALIZATION & MODES
      ========================================================================= */
   setupModeSwitcher() {
     const modeBtns = document.querySelectorAll('.hist-mode-btn');
@@ -152,6 +216,14 @@ class HistoricalAnalyticsModule {
         this.setComparisonMode(btn.dataset.mode);
       });
     });
+
+    const btnInspectImpact = document.getElementById('btn-inspect-view-impact');
+    if (btnInspectImpact) {
+      btnInspectImpact.addEventListener('click', () => {
+        const impactBtn = document.getElementById('hist-btn-mode-impact');
+        if (impactBtn) impactBtn.click();
+      });
+    }
   }
 
   setComparisonMode(mode) {
@@ -164,12 +236,8 @@ class HistoricalAnalyticsModule {
     const impactOverlay = document.getElementById('hist-impact-overlay');
     const legend = document.getElementById('hist-semantic-legend');
 
-    // Reset default view visibility
-    if (paneBefore) paneBefore.style.display = 'block';
-    if (paneAfter) paneAfter.style.display = 'block';
-    if (divider) divider.style.display = this.layoutMode === 'swipe' ? 'flex' : 'none';
-
     if (mode === 'before') {
+      if (paneBefore) paneBefore.style.display = 'block';
       if (paneAfter) paneAfter.style.display = 'none';
       if (divider) divider.style.display = 'none';
       if (diffOverlay) diffOverlay.style.display = 'none';
@@ -177,6 +245,7 @@ class HistoricalAnalyticsModule {
       if (legend) legend.style.display = 'none';
     } 
     else if (mode === 'after') {
+      if (paneBefore) paneBefore.style.display = 'none';
       if (paneAfter) {
         paneAfter.style.display = 'block';
         paneAfter.style.clipPath = 'none';
@@ -187,18 +256,24 @@ class HistoricalAnalyticsModule {
       if (legend) legend.style.display = 'none';
     } 
     else if (mode === 'difference') {
-      if (paneAfter && this.layoutMode === 'swipe') {
-        paneAfter.style.clipPath = `polygon(${this.swipePercent}% 0, 100% 0, 100% 100%, ${this.swipePercent}% 100%)`;
+      if (paneBefore) paneBefore.style.display = 'block';
+      if (paneAfter) {
+        paneAfter.style.display = 'block';
+        paneAfter.style.clipPath = `polygon(${this.dividerPercent}% 0, 100% 0, 100% 100%, ${this.dividerPercent}% 100%)`;
       }
+      if (divider) divider.style.display = 'flex';
       if (diffOverlay) diffOverlay.style.display = 'block';
       if (impactOverlay) impactOverlay.style.display = 'none';
       if (legend) legend.style.display = 'flex';
       this.renderDifferenceLayer();
     } 
     else if (mode === 'impact') {
-      if (paneAfter && this.layoutMode === 'swipe') {
-        paneAfter.style.clipPath = `polygon(${this.swipePercent}% 0, 100% 0, 100% 100%, ${this.swipePercent}% 100%)`;
+      if (paneBefore) paneBefore.style.display = 'block';
+      if (paneAfter) {
+        paneAfter.style.display = 'block';
+        paneAfter.style.clipPath = `polygon(${this.dividerPercent}% 0, 100% 0, 100% 100%, ${this.dividerPercent}% 100%)`;
       }
+      if (divider) divider.style.display = 'flex';
       if (diffOverlay) diffOverlay.style.display = 'block';
       if (impactOverlay) impactOverlay.style.display = 'block';
       if (legend) legend.style.display = 'flex';
@@ -207,144 +282,6 @@ class HistoricalAnalyticsModule {
     }
   }
 
-  /* =========================================================================
-     4. LAYOUT SWITCHER: CURTAIN SWIPE VS DUAL SYNCHRONIZED
-     ========================================================================= */
-  setupLayoutSwitcher() {
-    const btnSwipe = document.getElementById('btn-layout-swipe');
-    const btnDual = document.getElementById('btn-layout-dual');
-    const swipeWorkspace = document.getElementById('hist-swipe-workspace');
-    const dualWorkspace = document.getElementById('hist-dual-workspace');
-
-    if (btnSwipe && btnDual) {
-      btnSwipe.addEventListener('click', () => {
-        btnSwipe.classList.add('active');
-        btnDual.classList.remove('active');
-        this.layoutMode = 'swipe';
-        if (swipeWorkspace) swipeWorkspace.style.display = 'block';
-        if (dualWorkspace) dualWorkspace.style.display = 'none';
-        this.setComparisonMode(this.comparisonMode);
-      });
-
-      btnDual.addEventListener('click', () => {
-        btnDual.classList.add('active');
-        btnSwipe.classList.remove('active');
-        this.layoutMode = 'dual';
-        if (swipeWorkspace) swipeWorkspace.style.display = 'none';
-        if (dualWorkspace) dualWorkspace.style.display = 'grid';
-        this.setComparisonMode(this.comparisonMode);
-      });
-    }
-  }
-
-  /* =========================================================================
-     5. LOAD HOTSPOT DATA & SYNCHRONIZE VIEWPORT
-     ========================================================================= */
-  loadHotspot(hotspotId) {
-    if (!this.historicalData || !this.historicalData.hotspots) return;
-    const hs = this.historicalData.hotspots.find(h => h.id === hotspotId);
-    if (!hs) return;
-
-    this.activeHotspotId = hotspotId;
-
-    // 1. Update imagery sources
-    const imgBefore = document.getElementById('hist-img-before');
-    const imgAfter = document.getElementById('hist-img-after');
-    const dualImgBefore = document.getElementById('hist-dual-img-before');
-    const dualImgAfter = document.getElementById('hist-dual-img-after');
-
-    if (imgBefore && hs.sample_before_image) imgBefore.src = hs.sample_before_image;
-    if (imgAfter && hs.sample_after_image) imgAfter.src = hs.sample_after_image;
-    if (dualImgBefore && hs.sample_before_image) dualImgBefore.src = hs.sample_before_image;
-    if (dualImgAfter && hs.sample_after_image) dualImgAfter.src = hs.sample_after_image;
-
-    // 2. Update HUD metadata
-    const sensorBadge = document.getElementById('hist-sensor-badge');
-    const qualityBadge = document.getElementById('hist-quality-badge');
-    const hudBeforeMeta = document.getElementById('hist-hud-before-meta');
-    const hudAfterMeta = document.getElementById('hist-hud-after-meta');
-    const coordsBefore = document.getElementById('hist-hud-coords-before');
-    const coordsAfter = document.getElementById('hist-hud-coords-after');
-    const dualDateBefore = document.getElementById('hist-dual-date-before');
-    const dualDateAfter = document.getElementById('hist-dual-date-after');
-
-    const iq = hs.image_quality || {};
-    if (sensorBadge) sensorBadge.textContent = `${iq.sensor || 'Sentinel-2 MSI'} (10m Res)`;
-    if (qualityBadge) qualityBadge.textContent = `Cloud: ${iq.cloud_cover_pct || 0.9}% · Quality: ${iq.quality_rating || '98%'}`;
-    if (hudBeforeMeta) hudBeforeMeta.textContent = `${iq.sensor || 'Sentinel-2 MSI'} · Baseline 2024`;
-    if (hudAfterMeta) hudAfterMeta.textContent = `${iq.sensor || 'Sentinel-2 MSI'} · Current 2026`;
-    
-    const coordStr = `Lat: ${hs.coordinates.lat.toFixed(4)}°, Lon: ${hs.coordinates.lon.toFixed(4)}°`;
-    if (coordsBefore) coordsBefore.textContent = coordStr;
-    if (coordsAfter) coordsAfter.textContent = coordStr;
-    if (dualDateBefore) dualDateBefore.textContent = '2024-03-12 Baseline';
-    if (dualDateAfter) dualDateAfter.textContent = '2026-09-18 Current';
-
-    // 3. Update Hotspot Evolution Card
-    const hsUrgency = document.getElementById('hs-urgency-badge');
-    const hsExpansion = document.getElementById('hs-expansion-badge');
-    const hsVelocity = document.getElementById('hs-velocity-badge');
-    const hsTitle = document.getElementById('hs-title-name');
-    const hsRegion = document.getElementById('hs-region-meta');
-    const hsAnomalyTitle = document.getElementById('hs-anomaly-title');
-    const hsAnomalyText = document.getElementById('hs-anomaly-text');
-    const hsAnomalyBox = document.getElementById('hs-anomaly-box');
-
-    if (hsUrgency) hsUrgency.textContent = `${hs.urgency} HOTSPOT`;
-    if (hsExpansion) hsExpansion.textContent = `Footprint expansion: +${hs.footprint_expansion_percent || 106}%`;
-    if (hsVelocity) hsVelocity.textContent = `Change Velocity: ${hs.change_velocity || 'Rapid'}`;
-    if (hsTitle) hsTitle.textContent = hs.name;
-    if (hsRegion) hsRegion.textContent = `${hs.region} · Tracked Since ${hs.active_since || '2024'}`;
-
-    const anomaly = hs.historical_anomaly || {};
-    if (anomaly.detected) {
-      if (hsAnomalyBox) hsAnomalyBox.style.display = 'flex';
-      if (hsAnomalyTitle) hsAnomalyTitle.textContent = anomaly.headline || 'HISTORICAL ANOMALY';
-      if (hsAnomalyText) hsAnomalyText.textContent = anomaly.message || 'Elevated change velocity detected.';
-    } else {
-      if (hsAnomalyBox) hsAnomalyBox.style.display = 'none';
-    }
-
-    // Footprint step radii
-    const fe = hs.footprint_evolution || {};
-    const fp2024 = document.getElementById('fp-val-2024');
-    const fp2025 = document.getElementById('fp-val-2025');
-    const fp2026 = document.getElementById('fp-val-2026');
-
-    if (fp2024 && fe['2024']) fp2024.textContent = `${fe['2024'].area_km2} km² (${fe['2024'].boundary_radius_m}m radius)`;
-    if (fp2025 && fe['2025']) fp2025.textContent = `${fe['2025'].area_km2} km² (${fe['2025'].boundary_radius_m}m radius)`;
-    if (fp2026 && fe['2026']) fp2026.textContent = `${fe['2026'].area_km2} km² (${fe['2026'].boundary_radius_m}m radius)`;
-
-    // 4. Update Vertical Event Timeline
-    this.renderVerticalEventTimeline(hs.timeline_events || []);
-
-    // 5. Update Contextual Metric Chips
-    const ctxArea = document.getElementById('ctx-total-area');
-    const ctxVelocity = document.getElementById('ctx-velocity');
-    const ctxConfidence = document.getElementById('ctx-confidence');
-    const ctxExposure = document.getElementById('ctx-facilities-count');
-
-    if (ctxArea) ctxArea.textContent = `${hs.total_area_km2} km²`;
-    if (ctxVelocity) ctxVelocity.textContent = hs.change_velocity || 'Rapid';
-    if (ctxConfidence) ctxConfidence.textContent = '95.4%';
-    
-    const hci = hs.historical_community_impact || {};
-    const c2026 = hci['2026'] || { settlements: 6, schools: 3, hospitals: 1 };
-    const totalAssets = (c2026.settlements || 0) + (c2026.schools || 0) + (c2026.hospitals || 0);
-    if (ctxExposure) ctxExposure.textContent = `${totalAssets} Assets`;
-
-    // 6. Update Active Pill Button State
-    document.querySelectorAll('.hotspot-pill-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.hotspot === hotspotId);
-    });
-
-    // 7. Refresh Difference and Impact layers
-    this.setComparisonMode(this.comparisonMode);
-  }
-
-  /* =========================================================================
-     6. DIFFERENCE LAYER (INTERACTIVE CONTOURS & HIT TESTING)
-     ========================================================================= */
   renderDifferenceLayer() {
     const svg = document.getElementById('hist-diff-svg');
     if (!svg || !this.historicalData) return;
@@ -353,8 +290,7 @@ class HistoricalAnalyticsModule {
     const hs = this.historicalData.hotspots.find(h => h.id === this.activeHotspotId);
     if (!hs) return;
 
-    // Generate procedural contours matching hotspot coordinates & hazard
-    const polygons = this.generateContoursForHotspot(this.activeHotspotId);
+    const polygons = this.getPolygonsForHotspot(this.activeHotspotId);
 
     polygons.forEach((poly, idx) => {
       const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
@@ -364,18 +300,17 @@ class HistoricalAnalyticsModule {
       pathEl.setAttribute('stroke-width', '2');
       pathEl.setAttribute('class', 'diff-contour-polygon');
 
-      // Click to open Change Investigation Drawer
+      // Click on polygon updates Selected Change inspection panel
       pathEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.openChangeDrawer({
-          location: `${hs.region} — Zone ${idx + 1}`,
-          changeType: hs.primary_hazard,
-          area_km2: (hs.total_area_km2 * poly.areaRatio).toFixed(1),
-          velocity: hs.change_velocity || 'Rapid',
+        this.updateSelectedChange({
+          type: poly.zoneTitle || hs.primary_hazard,
+          period: '2024 → 2026',
+          area: (hs.total_area_km2 * poly.areaRatio).toFixed(1),
           severity: poly.severity,
-          confidence: '95.4%',
-          urgencyScore: poly.severity === 'CRITICAL' ? 95 : 78,
-          rationale: hs.critical_infrastructure_risk || 'Proximity buffer intersects vulnerable critical facilities.'
+          confidence: `${poly.confidence || 93}%`,
+          velocity: hs.change_velocity || 'Rapid',
+          description: poly.description || hs.critical_infrastructure_risk
         });
       });
 
@@ -383,48 +318,173 @@ class HistoricalAnalyticsModule {
     });
   }
 
-  generateContoursForHotspot(hotspotId) {
-    // Grounded procedural contour geometries aligned with sample datasets
-    if (hotspotId === 'hotspot-alpha') {
+  getPolygonsForHotspot(hotspotId) {
+    if (hotspotId === 'hotspot-charlie') {
+      // Madurai Peri-Urban Farmland Conversion
       return [
-        { points: '420,120 540,110 590,260 520,380 430,340 380,210', fill: 'rgba(239, 68, 68, 0.45)', stroke: '#ef4444', severity: 'CRITICAL', areaRatio: 0.55 },
-        { points: '490,360 620,340 680,480 560,510 470,440', fill: 'rgba(6, 182, 212, 0.45)', stroke: '#06b6d4', severity: 'MODERATE', areaRatio: 0.30 },
-        { points: '320,240 390,230 420,320 340,360', fill: 'rgba(249, 115, 22, 0.35)', stroke: '#f97316', severity: 'MODERATE', areaRatio: 0.15 }
+        {
+          points: '340,160 590,140 680,360 480,410 320,310',
+          fill: 'rgba(249, 115, 22, 0.42)',
+          stroke: '#f97316',
+          severity: 'MODERATE',
+          areaRatio: 0.62,
+          confidence: 94,
+          zoneTitle: 'Outer Bypass Farmland Conversion',
+          description: 'Topsoil removal and impervious asphalt replacement over 13.2 km² of traditional agricultural wetland.'
+        },
+        {
+          points: '610,310 740,290 810,460 660,490',
+          fill: 'rgba(234, 179, 8, 0.40)',
+          stroke: '#eab308',
+          severity: 'MINOR',
+          areaRatio: 0.38,
+          confidence: 91,
+          zoneTitle: 'Commercial Logistics Corridor',
+          description: 'Grading of agricultural recharge basin along NH-44 interchange.'
+        }
+      ];
+    } else if (hotspotId === 'hotspot-alpha') {
+      // Derna Flash Flooding
+      return [
+        {
+          points: '420,110 560,90 620,270 540,390 420,330 370,190',
+          fill: 'rgba(239, 68, 68, 0.50)',
+          stroke: '#ef4444',
+          severity: 'CRITICAL',
+          areaRatio: 0.65,
+          confidence: 96,
+          zoneTitle: 'Wadi Derna Urban Dam Inundation',
+          description: 'Catastrophic breach of secondary dam inundating central municipal residential grid.'
+        },
+        {
+          points: '490,370 630,350 710,510 570,530 460,450',
+          fill: 'rgba(6, 182, 212, 0.45)',
+          stroke: '#06b6d4',
+          severity: 'CRITICAL',
+          areaRatio: 0.35,
+          confidence: 95,
+          zoneTitle: 'Coastal Discharge Channel',
+          description: 'High-velocity storm surge severed Coastal Road Al-Bahr and swept through coastal settlements.'
+        }
       ];
     } else if (hotspotId === 'hotspot-bravo') {
+      // Amazon Fishbone Logging
       return [
-        { points: '250,180 750,190 730,240 260,230', fill: 'rgba(239, 68, 68, 0.45)', stroke: '#ef4444', severity: 'CRITICAL', areaRatio: 0.45 },
-        { points: '380,230 410,480 370,480 350,230', fill: 'rgba(249, 115, 22, 0.4)', stroke: '#f97316', severity: 'MODERATE', areaRatio: 0.28 },
-        { points: '540,230 570,450 530,450 510,230', fill: 'rgba(239, 68, 68, 0.4)', stroke: '#ef4444', severity: 'CRITICAL', areaRatio: 0.27 }
-      ];
-    } else if (hotspotId === 'hotspot-charlie') {
-      return [
-        { points: '340,180 580,160 640,380 420,410 320,300', fill: 'rgba(168, 85, 247, 0.4)', stroke: '#a855f7', severity: 'MODERATE', areaRatio: 0.60 },
-        { points: '590,320 720,310 760,460 620,470', fill: 'rgba(249, 115, 22, 0.4)', stroke: '#f97316', severity: 'MODERATE', areaRatio: 0.40 }
+        {
+          points: '220,170 780,180 750,240 230,230',
+          fill: 'rgba(239, 68, 68, 0.48)',
+          stroke: '#ef4444',
+          severity: 'CRITICAL',
+          areaRatio: 0.50,
+          confidence: 93,
+          zoneTitle: 'Primary Arterial Clear-Cut Trunk',
+          description: 'Direct penetration into indigenous conservation buffer along 24km illegal trunk road.'
+        },
+        {
+          points: '370,230 410,490 360,490 330,230',
+          fill: 'rgba(249, 115, 22, 0.42)',
+          stroke: '#f97316',
+          severity: 'MODERATE',
+          areaRatio: 0.25,
+          confidence: 91,
+          zoneTitle: 'West Lateral Fishbone Spoke',
+          description: 'Perpendicular feeder logging corridor encroaching on traditional forest trails.'
+        },
+        {
+          points: '540,230 580,470 530,470 500,230',
+          fill: 'rgba(239, 68, 68, 0.45)',
+          stroke: '#ef4444',
+          severity: 'CRITICAL',
+          areaRatio: 0.25,
+          confidence: 92,
+          zoneTitle: 'East Lateral Logging Spoke',
+          description: 'Canopy breach within 1.1km of Nova Esperança indigenous hamlet.'
+        }
       ];
     } else {
+      // Butte County Wildfire
       return [
-        { points: '360,220 540,160 680,280 620,440 450,470 340,360', fill: 'rgba(239, 68, 68, 0.5)', stroke: '#ef4444', severity: 'CRITICAL', areaRatio: 0.70 },
-        { points: '580,140 710,120 760,240 660,250', fill: 'rgba(249, 115, 22, 0.4)', stroke: '#f97316', severity: 'MODERATE', areaRatio: 0.30 }
+        {
+          points: '340,200 560,150 710,270 630,450 440,480 320,350',
+          fill: 'rgba(239, 68, 68, 0.52)',
+          stroke: '#ef4444',
+          severity: 'CRITICAL',
+          areaRatio: 0.72,
+          confidence: 95,
+          zoneTitle: 'Crown Fire Burn Scar Corridor',
+          description: 'High-wind crown fire run through conifer canopy crossing Skyway evacuation ridge.'
+        },
+        {
+          points: '580,130 730,110 780,240 670,260',
+          fill: 'rgba(249, 115, 22, 0.40)',
+          stroke: '#f97316',
+          severity: 'MODERATE',
+          areaRatio: 0.28,
+          confidence: 92,
+          zoneTitle: 'Understory Canyon Fire Scorch',
+          description: 'Thermal radiative intensity detected along north canyon timber interface.'
+        }
       ];
     }
   }
 
+  updateSelectedChange(data) {
+    const elType = document.getElementById('sel-change-type');
+    const elPeriod = document.getElementById('sel-change-period');
+    const elArea = document.getElementById('sel-change-area');
+    const elSev = document.getElementById('sel-change-severity');
+    const elConf = document.getElementById('sel-change-confidence');
+    const elVel = document.getElementById('sel-change-velocity');
+    const elDesc = document.getElementById('sel-change-description');
+
+    if (elType) elType.textContent = data.type;
+    if (elPeriod) elPeriod.textContent = `Observation Period: ${data.period}`;
+    if (elArea) elArea.textContent = `${data.area} km²`;
+    if (elSev) {
+      elSev.textContent = data.severity;
+      elSev.className = `m-val ${data.severity === 'CRITICAL' ? 'text-red' : 'text-orange'}`;
+    }
+    if (elConf) elConf.textContent = data.confidence;
+    if (elVel) elVel.textContent = data.velocity;
+    if (elDesc) elDesc.textContent = data.description;
+  }
+
   /* =========================================================================
-     7. IMPACT LAYER (INFRASTRUCTURE PINS & EXPOSURE HEURISTICS)
+     FEATURE 3: COMMUNITY & INFRASTRUCTURE IMPACT
      ========================================================================= */
   renderImpactLayer() {
     const pinsContainer = document.getElementById('hist-impact-pins');
     if (!pinsContainer) return;
     pinsContainer.innerHTML = '';
 
-    const facilities = [
-      { name: 'Derna Central Hospital', type: '🏥', status: 'COMPROMISED', x: '52%', y: '32%' },
-      { name: 'Al-Fatayeh Primary Academy', type: '🏫', status: 'AT RISK', x: '45%', y: '48%' },
-      { name: 'Coastal Road Al-Bahr', type: '🛣️', status: 'SEVERED', x: '58%', y: '22%' },
-      { name: 'Al-Bilad Settlement Core', type: '🏘️', status: 'EXPOSED', x: '40%', y: '36%' },
-      { name: 'Wadi Bridge Arterial', type: '🌉', status: 'SUBMERGED', x: '48%', y: '42%' }
-    ];
+    const facilitiesMap = {
+      'hotspot-charlie': [
+        { name: 'Vilangudi Bypass Junction', type: '🛣️', status: 'Transit Link', x: '58%', y: '42%' },
+        { name: 'Fatima Higher Secondary Academy', type: '🏫', status: 'Nearby Facility', x: '46%', y: '48%' },
+        { name: 'Samayanallur Rural Clinic', type: '🏥', status: 'Primary Health Center', x: '38%', y: '32%' },
+        { name: 'Paravai Agricultural Settlement', type: '🏘️', status: 'Potentially Affected', x: '51%', y: '28%' }
+      ],
+      'hotspot-alpha': [
+        { name: 'Derna Central Hospital', type: '🏥', status: 'Emergency Access Compromised', x: '52%', y: '33%' },
+        { name: 'Al-Fatayeh Primary School', type: '🏫', status: 'Facility Inundated', x: '45%', y: '49%' },
+        { name: 'Coastal Road Al-Bahr', type: '🛣️', status: 'Transit Corridor Severed', x: '58%', y: '23%' },
+        { name: 'Al-Bilad Settlement Core', type: '🏘️', status: '6 Settlements Exposed', x: '41%', y: '37%' }
+      ],
+      'hotspot-bravo': [
+        { name: 'BR-364 Highway Access', type: '🛣️', status: 'Logging Corridor', x: '62%', y: '20%' },
+        { name: 'Nova Esperança Indigenous Hamlet', type: '🏘️', status: 'Buffer Breached within 1.1km', x: '44%', y: '45%' },
+        { name: 'Reserve Boundary Post School', type: '🏫', status: 'Surveillance Perimeter', x: '35%', y: '30%' },
+        { name: 'Frontier Medical Outpost', type: '🏥', status: 'Remote Clinic', x: '55%', y: '38%' }
+      ],
+      'hotspot-delta': [
+        { name: 'Skyway Ridge Evacuation Route', type: '🛣️', status: 'Smoke Impassable', x: '54%', y: '35%' },
+        { name: 'Ridgeview Community Clinic', type: '🏥', status: 'Emergency Evacuation', x: '42%', y: '40%' },
+        { name: 'Paradise Pines Elementary', type: '🏫', status: 'WUI Perimeter', x: '48%', y: '48%' },
+        { name: 'Upper Canyon Residential Pocket', type: '🏘️', status: 'Potentially Affected', x: '36%', y: '28%' }
+      ]
+    };
+
+    const facilities = facilitiesMap[this.activeHotspotId] || facilitiesMap['hotspot-charlie'];
 
     facilities.forEach(f => {
       const pin = document.createElement('div');
@@ -434,20 +494,19 @@ class HistoricalAnalyticsModule {
 
       pin.innerHTML = `
         <div class="facility-icon-bubble">${f.type}</div>
-        <div class="facility-name-tooltip">${f.name} · <strong style="color: #ef4444;">${f.status}</strong></div>
+        <div class="facility-name-tooltip"><strong>${f.name}</strong><br><span style="color: #cbd5e1;">${f.status}</span></div>
       `;
 
       pin.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.openChangeDrawer({
-          location: f.name,
-          changeType: 'Critical Infrastructure Exposure',
-          area_km2: '2.5 km perimeter',
-          velocity: 'Rapid',
-          severity: 'CRITICAL',
-          confidence: '96%',
-          urgencyScore: 98,
-          rationale: `${f.name} is verified as ${f.status} within the active spatial differencing contour. Immediate ground inspection required.`
+        this.updateSelectedChange({
+          type: `Nearby Infrastructure: ${f.name}`,
+          period: '2024 → 2026',
+          area: '2.5 km perimeter',
+          severity: 'POTENTIALLY AFFECTED',
+          confidence: '95%',
+          velocity: 'Monitored',
+          description: `${f.name} (${f.status}) is located within the active spatial differencing buffer. Tactical field inspection recommended.`
         });
       });
 
@@ -456,325 +515,233 @@ class HistoricalAnalyticsModule {
   }
 
   /* =========================================================================
-     8. CHANGE HIGHLIGHT INVESTIGATION DRAWER
-     ========================================================================= */
-  setupDrawerListeners() {
-    const btnClose = document.getElementById('btn-close-change-drawer');
-    const drawer = document.getElementById('hist-change-drawer');
-
-    if (btnClose && drawer) {
-      btnClose.addEventListener('click', () => {
-        drawer.style.display = 'none';
-      });
-    }
-
-    const btnAskCopilot = document.getElementById('btn-drawer-ask-copilot');
-    if (btnAskCopilot) {
-      btnAskCopilot.addEventListener('click', () => {
-        const loc = document.getElementById('drawer-change-location')?.textContent || 'this anomaly';
-        const query = `Investigate ${loc}: what is the confirmed infrastructure damage and community exposure?`;
-        const copilotInput = document.getElementById('hist-copilot-input');
-        if (copilotInput) copilotInput.value = query;
-        this.queryEmbeddedCopilot(query);
-
-        // Smoothly scroll down to the embedded copilot box
-        const embedBox = document.querySelector('.hist-copilot-embed-box');
-        if (embedBox) {
-          embedBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          embedBox.style.borderColor = '#06b6d4';
-          embedBox.style.boxShadow = '0 0 16px rgba(6, 182, 212, 0.4)';
-          setTimeout(() => {
-            embedBox.style.borderColor = 'rgba(6, 182, 212, 0.25)';
-            embedBox.style.boxShadow = 'none';
-          }, 2500);
-        }
-      });
-    }
-
-    const btnSaveDrawerEv = document.getElementById('btn-drawer-evidence');
-    if (btnSaveDrawerEv) {
-      btnSaveDrawerEv.addEventListener('click', () => {
-        this.saveEvidenceSnapshot();
-      });
-    }
-  }
-
-  /* =========================================================================
-     8B. GROUNDED EMBEDDED COPILOT CONTROLLER
-     ========================================================================= */
-  setupEmbeddedCopilot() {
-    const chips = document.querySelectorAll('.hist-copilot-chip');
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        const q = chip.dataset.q;
-        if (q) {
-          const input = document.getElementById('hist-copilot-input');
-          if (input) input.value = q;
-          this.queryEmbeddedCopilot(q);
-        }
-      });
-    });
-
-    const form = document.getElementById('hist-copilot-form');
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = document.getElementById('hist-copilot-input');
-        const q = input?.value.trim();
-        if (q) this.queryEmbeddedCopilot(q);
-      });
-    }
-
-    const btnClose = document.getElementById('btn-close-hist-copilot');
-    const resArea = document.getElementById('hist-copilot-response');
-    if (btnClose && resArea) {
-      btnClose.addEventListener('click', () => {
-        resArea.style.display = 'none';
-      });
-    }
-  }
-
-  async queryEmbeddedCopilot(queryText) {
-    const resArea = document.getElementById('hist-copilot-response');
-    const bodyEl = document.getElementById('hist-copilot-res-body');
-    const citesEl = document.getElementById('hist-copilot-res-cites');
-    if (!resArea || !bodyEl) return;
-
-    resArea.style.display = 'flex';
-    bodyEl.innerHTML = '<span style="color: #06b6d4; font-style: italic;">Cross-referencing multispectral differencing & cadastral layers...</span>';
-    if (citesEl) citesEl.innerHTML = '';
-
-    const datasetMap = {
-      'hotspot-alpha': 'derna_flooding',
-      'hotspot-bravo': 'amazon_deforestation',
-      'hotspot-charlie': 'madurai_urban',
-      'hotspot-delta': 'california_wildfire'
-    };
-    const datasetId = datasetMap[this.activeHotspotId] || 'derna_flooding';
-
-    try {
-      const res = await fetch('/api/assistant/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: queryText, dataset_id: datasetId })
-      });
-      if (!res.ok) throw new Error('Query error');
-      const data = await res.json();
-
-      let formatted = data.response
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n\n/g, '<br><br>')
-        .replace(/\n•/g, '<br>•')
-        .replace(/\n  -/g, '<br>&nbsp;&nbsp;•')
-        .replace(/\n  1\./g, '<br>&nbsp;&nbsp;1.')
-        .replace(/\n  2\./g, '<br>&nbsp;&nbsp;2.')
-        .replace(/\n  3\./g, '<br>&nbsp;&nbsp;3.');
-
-      bodyEl.innerHTML = formatted;
-
-      if (citesEl && data.citations && data.citations.length) {
-        citesEl.innerHTML = '<span style="font-size: 0.6rem; color: #94a3b8; font-weight: 700;">Verified:</span> ' +
-          data.citations.map(c => `<span style="font-size: 0.6rem; background: rgba(6, 182, 212, 0.15); color: #06b6d4; padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(6, 182, 212, 0.3);">${c}</span>`).join(' ');
-      }
-    } catch (err) {
-      bodyEl.innerHTML = '<span style="color: #ef4444;">Unable to connect to Grounded Copilot. Please check network.</span>';
-    }
-  }
-
-  openChangeDrawer(data) {
-    const drawer = document.getElementById('hist-change-drawer');
-    if (!drawer) return;
-
-    document.getElementById('drawer-change-location').textContent = data.location;
-    document.getElementById('drawer-change-type').textContent = data.changeType;
-    document.getElementById('drawer-change-area').textContent = `${data.area_km2} km²`;
-    document.getElementById('drawer-change-velocity').textContent = data.velocity;
-    document.getElementById('drawer-change-severity').textContent = data.severity;
-    document.getElementById('drawer-change-confidence').textContent = data.confidence;
-    document.getElementById('drawer-change-priority').textContent = `${data.severity} (${data.urgencyScore}/100)`;
-    document.getElementById('drawer-change-rationale').textContent = data.rationale;
-
-    drawer.style.display = 'flex';
-  }
-
-  /* =========================================================================
-     9. VERTICAL CHANGE EVENT TIMELINE
-     ========================================================================= */
-  renderVerticalEventTimeline(events) {
-    const container = document.getElementById('vertical-events-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    events.forEach(evt => {
-      const node = document.createElement('div');
-      node.className = 'event-timeline-node';
-      node.innerHTML = `
-        <div class="event-node-header">
-          <span class="event-node-date">${evt.date} · Epoch ${evt.year}</span>
-          <span style="font-size: 0.65rem; color: #f97316; font-weight: 700;">${evt.severity}</span>
-        </div>
-        <div class="event-node-title">${evt.title}</div>
-        <div class="event-node-desc">${evt.description}</div>
-      `;
-
-      node.addEventListener('click', () => {
-        // Step timeline to this year
-        const slider = document.getElementById('hist-timeline-range');
-        if (slider) {
-          slider.value = evt.year;
-          this.setTimelineYear(evt.year);
-        }
-      });
-
-      container.appendChild(node);
-    });
-  }
-
-  /* =========================================================================
-     10. TIMELINE CONTROLLER & HISTORICAL PLAYBACK (▶ PLAY CHANGE)
+     FEATURE 4: HISTORICAL TIMELINE + PLAYBACK
      ========================================================================= */
   setupTimelineController() {
-    const slider = document.getElementById('hist-timeline-range');
-    const btnPlay = document.getElementById('btn-timeline-play');
-    const btnPrev = document.getElementById('btn-timeline-prev');
-    const btnNext = document.getElementById('btn-timeline-next');
+    const rangeInput = document.getElementById('hist-timeline-range');
+    const playBtn = document.getElementById('btn-timeline-play');
 
-    if (slider) {
-      slider.addEventListener('input', (e) => {
+    if (rangeInput) {
+      rangeInput.addEventListener('input', (e) => {
         this.setTimelineYear(e.target.value);
       });
     }
 
-    if (btnPrev) {
-      btnPrev.addEventListener('click', () => {
-        const cur = parseInt(slider.value);
-        if (cur > 2024) {
-          slider.value = cur - 1;
-          this.setTimelineYear(String(cur - 1));
-        }
-      });
-    }
-
-    if (btnNext) {
-      btnNext.addEventListener('click', () => {
-        const cur = parseInt(slider.value);
-        if (cur < 2026) {
-          slider.value = cur + 1;
-          this.setTimelineYear(String(cur + 1));
-        }
-      });
-    }
-
-    if (btnPlay) {
-      btnPlay.addEventListener('click', () => {
+    if (playBtn) {
+      playBtn.addEventListener('click', () => {
         this.togglePlayback();
       });
     }
   }
 
   setTimelineYear(year) {
-    this.activeYear = year;
+    this.activeYear = String(year);
 
-    // Update labels
-    document.querySelectorAll('.timeline-slider-labels .year-label').forEach(lbl => {
-      lbl.classList.toggle('active', lbl.id === `t-label-${year}`);
-    });
-
-    const activeYearDisplay = document.querySelector('.active-year-number');
+    const rangeInput = document.getElementById('hist-timeline-range');
+    const activeYearNum = document.getElementById('hist-active-year-num');
     const activeYearSub = document.getElementById('hist-active-year-sub');
     const progressBar = document.getElementById('hist-playback-progress');
 
-    if (activeYearDisplay) activeYearDisplay.textContent = `YEAR ${year}`;
-    
-    if (progressBar) {
-      const pct = year === '2024' ? 10 : (year === '2025' ? 55 : 100);
-      progressBar.style.width = `${pct}%`;
+    if (rangeInput) rangeInput.value = year;
+    if (activeYearNum) activeYearNum.textContent = year;
+
+    // Update active label styling
+    ['2024', '2025', '2026'].forEach(y => {
+      const lbl = document.getElementById(`t-label-${y}`);
+      if (lbl) lbl.classList.toggle('active', y === String(year));
+    });
+
+    const progressPct = year === '2024' ? 0 : (year === '2025' ? 50 : 100);
+    if (progressBar) progressBar.style.width = `${progressPct}%`;
+
+    // Dynamic stats update based on year
+    const hs = this.historicalData?.hotspots?.find(h => h.id === this.activeHotspotId);
+    if (hs && hs.footprint_evolution && hs.footprint_evolution[year]) {
+      const fe = hs.footprint_evolution[year];
+      if (activeYearSub) activeYearSub.textContent = `${fe.area_km2} km² · ${fe.label}`;
+
+      // Update Selected Change card with the year's evolution
+      this.updateSelectedChange({
+        type: hs.primary_hazard,
+        period: `2024 → ${year}`,
+        area: fe.area_km2,
+        severity: year === '2024' ? 'BASELINE' : (year === '2025' ? 'MODERATE' : hs.urgency),
+        confidence: '94%',
+        velocity: hs.change_velocity || 'Rapid',
+        description: `Surveyed footprint in ${year}: ${fe.area_km2} km² (${fe.boundary_radius_m}m perimeter). ${fe.label}.`
+      });
     }
 
-    if (activeYearSub) {
-      const text = year === '2024' ? 'Baseline Surveillance' : (year === '2025' ? '+60.6% YoY Surge' : '+53.4% YoY Acceleration');
-      activeYearSub.textContent = text;
-    }
-
-    // Refresh differences with subtle temporal fading
-    const diffOverlay = document.getElementById('hist-difference-overlay');
-    if (diffOverlay) {
-      diffOverlay.style.opacity = year === '2024' ? '0.2' : (year === '2025' ? '0.6' : '1.0');
+    // Refresh overlays
+    if (this.comparisonMode === 'difference' || this.comparisonMode === 'impact') {
+      this.renderDifferenceLayer();
+      if (this.comparisonMode === 'impact') this.renderImpactLayer();
     }
   }
 
   togglePlayback() {
-    const btnPlay = document.getElementById('btn-timeline-play');
-    const playText = btnPlay?.querySelector('.play-text');
-    const playIcon = btnPlay?.querySelector('.play-icon');
+    this.isPlaying = !this.isPlaying;
+    const playIcon = document.getElementById('hist-play-icon');
+    const playText = document.getElementById('hist-play-text');
 
     if (this.isPlaying) {
-      clearInterval(this.playTimer);
-      this.isPlaying = false;
-      if (btnPlay) btnPlay.classList.remove('playing');
-      if (playText) playText.textContent = 'PLAY CHANGE EVOLUTION';
-      if (playIcon) playIcon.textContent = '▶';
+      if (playIcon) playIcon.textContent = '⏸';
+      if (playText) playText.textContent = 'PAUSE';
+
+      const sequence = ['2024', '2025', '2026'];
+      let currentIdx = sequence.indexOf(this.activeYear);
+
+      this.playInterval = setInterval(() => {
+        currentIdx = (currentIdx + 1) % sequence.length;
+        this.setTimelineYear(sequence[currentIdx]);
+      }, 1600);
     } else {
-      this.isPlaying = true;
-      if (btnPlay) btnPlay.classList.add('playing');
-      if (playText) playText.textContent = 'PAUSE PLAYBACK';
-      if (playIcon) playIcon.textContent = '❚❚';
-
-      let years = ['2024', '2025', '2026'];
-      let idx = years.indexOf(this.activeYear);
-
-      this.playTimer = setInterval(() => {
-        idx = (idx + 1) % years.length;
-        const y = years[idx];
-        const slider = document.getElementById('hist-timeline-range');
-        if (slider) slider.value = y;
-        this.setTimelineYear(y);
-      }, 1400);
+      if (playIcon) playIcon.textContent = '▶';
+      if (playText) playText.textContent = 'PLAY CHANGE';
+      clearInterval(this.playInterval);
+      this.playInterval = null;
     }
   }
 
   /* =========================================================================
-     11. EVIDENCE SNAPSHOT & INVESTIGATION DOSSIER ACTIONS
+     FEATURE 5: HOTSPOT INVESTIGATION
      ========================================================================= */
-  setupEvidenceActions() {
-    const btnSave = document.getElementById('btn-hist-save-evidence');
-    const btnOpenDossier = document.getElementById('btn-hist-open-dossier');
-    const btnClear = document.getElementById('btn-clear-evidence');
-
-    if (btnSave) {
-      btnSave.addEventListener('click', () => {
-        this.saveEvidenceSnapshot();
+  setupHotspotsList() {
+    // Dropdown in top header
+    const select = document.getElementById('hist-region-select');
+    if (select) {
+      select.addEventListener('change', (e) => {
+        this.loadHotspot(e.target.value);
       });
     }
 
-    if (btnOpenDossier) {
-      btnOpenDossier.addEventListener('click', () => {
-        // Switch to reports panel
-        const panelHist = document.getElementById('panel-historical-analysis');
-        if (panelHist) panelHist.style.display = 'none';
-
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        const navReports = document.getElementById('nav-reports');
-        if (navReports) navReports.classList.add('active');
-
-        const panelReports = document.getElementById('panel-reports');
-        if (panelReports) panelReports.style.display = 'block';
-
-        const hs = this.historicalData?.hotspots?.find(h => h.id === this.activeHotspotId);
-        if (hs && window.reportsGeneratorModule) {
-          window.reportsGeneratorModule.generateReport(hs.linked_dataset || 'derna_flooding', []);
+    // Clickable hotspot items in Column 1
+    const items = document.querySelectorAll('.hotspot-clean-item');
+    items.forEach(item => {
+      item.addEventListener('click', () => {
+        const hsId = item.dataset.hotspot;
+        if (hsId) {
+          this.loadHotspot(hsId);
+          if (select) select.value = hsId;
         }
       });
+    });
+  }
+
+  loadHotspot(hotspotId) {
+    if (!this.historicalData || !this.historicalData.hotspots) return;
+    const hs = this.historicalData.hotspots.find(h => h.id === hotspotId);
+    if (!hs) return;
+
+    this.activeHotspotId = hotspotId;
+
+    // Reset zoom and pan on hotspot switch
+    this.zoomScale = 1.0;
+    this.panX = 0;
+    this.panY = 0;
+    this.applySynchronizedTransform();
+
+    // 1. Update Title & Header
+    const titleEl = document.getElementById('hist-header-title');
+    const subEl = document.getElementById('hist-header-sub');
+    if (titleEl) titleEl.textContent = hs.name;
+    if (subEl) subEl.textContent = `2024 → 2026 · ${hs.region} · Tracked Since ${hs.active_since || '2024'}`;
+
+    // 2. Update Satellite Images
+    const imgBefore = document.getElementById('hist-img-before');
+    const imgAfter = document.getElementById('hist-img-after');
+    if (imgBefore && hs.sample_before_image) imgBefore.src = hs.sample_before_image;
+    if (imgAfter && hs.sample_after_image) imgAfter.src = hs.sample_after_image;
+
+    // 3. Update Floating Metadata HUD
+    const metaSensor = document.getElementById('hud-meta-sensor');
+    const metaDates = document.getElementById('hud-meta-dates');
+    const metaCloud = document.getElementById('hud-meta-cloud');
+    const metaCoords = document.getElementById('hud-meta-coords');
+
+    const iq = hs.image_quality || {};
+    if (metaSensor) metaSensor.textContent = iq.sensor || 'Sentinel-2 MSI (10m)';
+    if (metaDates) metaDates.textContent = '2024-03-12 → 2026-09-18';
+    if (metaCloud) metaCloud.textContent = `${iq.cloud_cover_pct || 0.8}% (Optimal)`;
+    if (metaCoords && hs.coordinates) {
+      metaCoords.textContent = `${hs.coordinates.lat.toFixed(4)}° N, ${hs.coordinates.lon.toFixed(4)}° E`;
     }
 
-    if (btnClear) {
-      btnClear.addEventListener('click', () => {
-        this.savedEvidence = [];
-        localStorage.removeItem('earthlens_saved_evidence');
-        this.renderEvidenceShelf();
-      });
+    // 4. Update Hotspot List active class
+    document.querySelectorAll('.hotspot-clean-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.hotspot === hotspotId);
+    });
+
+    // 5. Update Footprint Evolution Data
+    const fpGrowth = document.getElementById('hs-footprint-growth');
+    const fp2024 = document.getElementById('fp-val-2024');
+    const fp2025 = document.getElementById('fp-val-2025');
+    const fp2026 = document.getElementById('fp-val-2026');
+    const rad2024 = document.getElementById('fp-rad-2024');
+    const rad2025 = document.getElementById('fp-rad-2025');
+    const rad2026 = document.getElementById('fp-rad-2026');
+
+    const fe = hs.footprint_evolution || {};
+    if (fpGrowth) fpGrowth.textContent = `Footprint change: +${hs.footprint_expansion_percent || 96.3}%`;
+
+    if (fe['2024']) {
+      if (fp2024) fp2024.textContent = `${fe['2024'].area_km2} km²`;
+      if (rad2024) rad2024.textContent = `${fe['2024'].boundary_radius_m}m radius`;
     }
+    if (fe['2025']) {
+      if (fp2025) fp2025.textContent = `${fe['2025'].area_km2} km²`;
+      if (rad2025) rad2025.textContent = `${fe['2025'].boundary_radius_m}m radius`;
+    }
+    if (fe['2026']) {
+      if (fp2026) fp2026.textContent = `${fe['2026'].area_km2} km²`;
+      if (rad2026) rad2026.textContent = `${fe['2026'].boundary_radius_m}m radius`;
+    }
+
+    // 6. Update Selected Change Card
+    this.updateSelectedChange({
+      type: hs.primary_hazard,
+      period: '2024 → 2026',
+      area: hs.total_area_km2,
+      severity: hs.urgency,
+      confidence: '94.2%',
+      velocity: hs.change_velocity || 'Rapid',
+      description: hs.critical_infrastructure_risk || 'Multispectral change detection confirms rapid land-cover transformation.'
+    });
+
+    // 7. Update Potential Impact Card
+    const hci = hs.historical_community_impact || {};
+    const imp2026 = hci['2026'] || { settlements: 4, schools: 2, hospitals: 1, roads: 5 };
+
+    const countSettlements = document.getElementById('imp-count-settlements');
+    const countSchools = document.getElementById('imp-count-schools');
+    const countHospitals = document.getElementById('imp-count-hospitals');
+    const countRoads = document.getElementById('imp-count-roads');
+    const countAgri = document.getElementById('imp-count-agri');
+
+    if (countSettlements) countSettlements.textContent = imp2026.settlements || 4;
+    if (countSchools) countSchools.textContent = imp2026.schools || 2;
+    if (countHospitals) countHospitals.textContent = imp2026.hospitals || 1;
+    if (countRoads) countRoads.textContent = imp2026.roads || 5;
+    if (countAgri) countAgri.textContent = `${(hs.total_area_km2 * 0.22).toFixed(1)} km²`;
+
+    // 8. Refresh Overlays
+    this.setComparisonMode(this.comparisonMode);
+  }
+
+  /* =========================================================================
+     FEATURE 6: EVIDENCE SNAPSHOT + DOSSIER
+     ========================================================================= */
+  setupEvidenceActions() {
+    const btnSaveTop = document.getElementById('btn-hist-save-evidence');
+    const btnSaveAlt = document.getElementById('btn-save-evidence-alt');
+    const btnDossierTop = document.getElementById('btn-hist-open-dossier');
+    const btnDossierCta = document.getElementById('btn-generate-dossier-primary');
+
+    if (btnSaveTop) btnSaveTop.addEventListener('click', () => this.saveEvidenceSnapshot());
+    if (btnSaveAlt) btnSaveAlt.addEventListener('click', () => this.saveEvidenceSnapshot());
+
+    if (btnDossierTop) btnDossierTop.addEventListener('click', () => this.generateExecutiveDossier());
+    if (btnDossierCta) btnDossierCta.addEventListener('click', () => this.generateExecutiveDossier());
   }
 
   saveEvidenceSnapshot() {
@@ -782,173 +749,113 @@ class HistoricalAnalyticsModule {
     if (!hs) return;
 
     const snapshot = {
-      id: 'EV-' + Date.now().toString().slice(-6),
-      hotspotId: hs.id,
-      name: hs.name,
+      id: Math.floor(1000 + Math.random() * 9000),
+      timestamp: new Date().toISOString(),
+      hotspotId: this.activeHotspotId,
+      location: hs.name,
       region: hs.region,
-      year: this.activeYear,
+      period: '2024 → 2026',
       hazard: hs.primary_hazard,
       area_km2: hs.total_area_km2,
-      velocity: hs.change_velocity,
-      timestamp: new Date().toLocaleTimeString()
+      severity: hs.urgency,
+      confidence: '95.4%',
+      beforeImg: hs.sample_before_image,
+      afterImg: hs.sample_after_image,
+      year: this.activeYear,
+      mode: this.comparisonMode
     };
 
     this.savedEvidence.unshift(snapshot);
     localStorage.setItem('earthlens_saved_evidence', JSON.stringify(this.savedEvidence));
     this.renderEvidenceShelf();
 
-    // Show temporary save animation on button
+    // Visual button feedback
     const btn = document.getElementById('btn-hist-save-evidence');
     if (btn) {
-      const orig = btn.innerHTML;
-      btn.innerHTML = '<span>Saved ✓</span>';
-      setTimeout(() => btn.innerHTML = orig, 1800);
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span>✓ Snapshot Saved</span>';
+      btn.style.background = 'rgba(16, 185, 129, 0.4)';
+      setTimeout(() => {
+        btn.innerHTML = origText;
+        btn.style.background = '';
+      }, 1500);
     }
   }
 
   restoreEvidenceShelf() {
     try {
-      const cached = JSON.parse(localStorage.getItem('earthlens_saved_evidence') || '[]');
-      this.savedEvidence = cached;
-      this.renderEvidenceShelf();
-    } catch (e) {}
+      const saved = localStorage.getItem('earthlens_saved_evidence');
+      if (saved) {
+        this.savedEvidence = JSON.parse(saved);
+        this.renderEvidenceShelf();
+      }
+    } catch (e) {
+      this.savedEvidence = [];
+    }
   }
 
   renderEvidenceShelf() {
-    const list = document.getElementById('evidence-items-list');
-    const badge = document.getElementById('evidence-count-badge');
-    if (!list) return;
+    const container = document.getElementById('evidence-shelf-items');
+    const badge = document.getElementById('evidence-shelf-count');
+    if (!container) return;
 
-    if (badge) badge.textContent = `${this.savedEvidence.length} Item(s)`;
+    if (badge) badge.textContent = `${this.savedEvidence.length} Captured`;
 
     if (this.savedEvidence.length === 0) {
-      list.innerHTML = '<div class="shelf-empty-state">No snapshots captured yet. Click "Save Evidence" to attach current satellite findings to the official dossier.</div>';
+      container.innerHTML = '<div class="shelf-empty-hint">No snapshots captured yet.<br>Click "Save Evidence" to record current satellite findings.</div>';
       return;
     }
 
-    list.innerHTML = '';
-    this.savedEvidence.slice(0, 5).forEach(ev => {
-      const item = document.createElement('div');
-      item.className = 'evidence-snapshot-item';
-      item.innerHTML = `
-        <div>
-          <strong>${ev.id}</strong> · ${ev.region} (${ev.year})
-          <div style="font-size: 0.65rem; color: #94a3b8;">${ev.hazard} · ${ev.area_km2} km² · ${ev.timestamp}</div>
+    container.innerHTML = '';
+    this.savedEvidence.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'evidence-item-card';
+      card.innerHTML = `
+        <img src="${item.afterImg || item.beforeImg}" alt="Evidence Thumbnail" class="ev-thumb">
+        <div class="ev-info">
+          <div class="ev-loc">${item.location}</div>
+          <div class="ev-sub">${item.period} · ${item.hazard}</div>
         </div>
-        <span style="font-size: 0.65rem; color: #10b981; font-weight: 700;">ATTACHED ✓</span>
+        <button class="ev-btn-del" title="Remove snapshot">✕</button>
       `;
-      list.appendChild(item);
-    });
-  }
 
-  /* =========================================================================
-     12. EXPANDABLE CHART.JS VISUALIZATIONS
-     ========================================================================= */
-  setupChartsExpander() {
-    const btnToggle = document.getElementById('btn-toggle-charts');
-    const body = document.getElementById('expandable-charts-body');
-
-    if (btnToggle && body) {
-      btnToggle.addEventListener('click', () => {
-        const isHidden = body.style.display === 'none';
-        body.style.display = isHidden ? 'flex' : 'none';
-        btnToggle.querySelector('.toggle-icon').textContent = isHidden ? '▲' : '▼';
-        if (isHidden && !this.chartArea) {
-          this.renderCharts(this.historicalData);
-        }
+      card.querySelector('.ev-btn-del').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.savedEvidence.splice(idx, 1);
+        localStorage.setItem('earthlens_saved_evidence', JSON.stringify(this.savedEvidence));
+        this.renderEvidenceShelf();
       });
-    }
+
+      container.appendChild(card);
+    });
   }
 
-  renderCharts(data) {
-    const areaCanvas = document.getElementById('chart-area-time');
-    const catCanvas = document.getElementById('chart-categories');
-    const prioCanvas = document.getElementById('chart-priority-time');
+  generateExecutiveDossier() {
+    const hs = this.historicalData?.hotspots?.find(h => h.id === this.activeHotspotId);
+    const datasetMap = {
+      'hotspot-alpha': 'derna_flooding',
+      'hotspot-bravo': 'amazon_deforestation',
+      'hotspot-charlie': 'madurai_urban',
+      'hotspot-delta': 'california_wildfire'
+    };
+    const datasetId = datasetMap[this.activeHotspotId] || 'madurai_urban';
 
-    if (!areaCanvas || !window.Chart) return;
+    if (window.reportsGeneratorModule) {
+      window.reportsGeneratorModule.generateReport(datasetId, []);
+    }
 
-    if (this.chartArea) this.chartArea.destroy();
-    if (this.chartCategory) this.chartCategory.destroy();
-    if (this.chartPriority) this.chartPriority.destroy();
-
-    const areaDataList = data.area_over_time || [];
-
-    this.chartArea = new Chart(areaCanvas, {
-      type: 'bar',
-      data: {
-        labels: areaDataList.map(d => d.year),
-        datasets: [{
-          label: 'Transformed Footprint (km²)',
-          data: areaDataList.map(d => d.total_area_km2),
-          backgroundColor: ['rgba(6, 182, 212, 0.45)', 'rgba(6, 182, 212, 0.65)', '#06b6d4'],
-          borderColor: '#06b6d4',
-          borderWidth: 1.5,
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (item) => {
-                const raw = areaDataList[item.dataIndex];
-                const yoy = raw.yoy_growth_percent > 0 ? `+${raw.yoy_growth_percent}% YoY (+${raw.yoy_delta_km2} km²)` : 'Baseline';
-                return `Area: ${raw.total_area_km2} km² (${yoy})`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-        }
-      }
-    });
-
-    const cats = data.category_distribution || [];
-    this.chartCategory = new Chart(catCanvas, {
-      type: 'doughnut',
-      data: {
-        labels: cats.map(c => c.category),
-        datasets: [{
-          data: cats.map(c => c.area_km2),
-          backgroundColor: cats.map(c => c.color),
-          borderColor: '#0e1526'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 10 } } }
-        }
-      }
-    });
-
-    const pTrends = data.priority_trends || [];
-    this.chartPriority = new Chart(prioCanvas, {
-      type: 'line',
-      data: {
-        labels: pTrends.map(p => p.year),
-        datasets: [
-          { label: 'Critical', data: pTrends.map(p => p.critical), borderColor: '#ef4444', tension: 0.3 },
-          { label: 'Moderate', data: pTrends.map(p => p.moderate), borderColor: '#f97316', tension: 0.3 }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#cbd5e1' } } },
-        scales: {
-          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-        }
-      }
-    });
+    // Switch view to Executive Reports Panel
+    const reportNavBtn = document.querySelector('[data-nav="reports"]');
+    if (reportNavBtn) {
+      reportNavBtn.click();
+    } else {
+      const panels = document.querySelectorAll('.workspace-overlay-panel');
+      panels.forEach(p => p.style.display = 'none');
+      const repPanel = document.getElementById('panel-reports');
+      if (repPanel) repPanel.style.display = 'block';
+    }
   }
 }
 
+// Instantiate global module instance
 window.historicalAnalyticsModule = new HistoricalAnalyticsModule();
