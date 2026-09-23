@@ -3,280 +3,666 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EarthGuard AI — Satellite Change Detection & Prioritized Response System</title>
+  <title>EarthGuard AI — Satellite Change Detection &amp; Prioritized Response System</title>
   <meta name="description" content="AI for Space & Earth Intelligence: Automated satellite change detection, severity-ranked incident prioritization, confidence-aware telemetry, and natural-language operational briefs.">
-  
+
   <!-- Leaflet CDN -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  
+
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-  <!-- TOP AEROSPACE COMMAND BAR -->
-  <header class="command-header">
-    <div class="brand-section">
-      <div class="brand-icon-wrapper">
-        <span class="brand-pulse"></span>
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-          <path d="M2 12h20"></path>
-        </svg>
-      </div>
-      <div>
-        <div class="brand-title">
-          EARTHGUARD AI <span class="brand-tag">MISSION V1.0</span>
-        </div>
-        <div class="brand-subtitle">
-          SATELLITE CHANGE DETECTION &amp; PRIORITIZED RESPONSE SYSTEM
-        </div>
-      </div>
-    </div>
+  <div class="app-container">
 
-    <!-- Live Telemetry HUD -->
-    <div class="telemetry-bar">
-      <div class="hud-pill">
-        <span class="label">CONSTELLATION:</span>
-        <span class="value" id="hud-sensor">Sentinel-2 MSI (10m)</span>
-      </div>
-      <div class="hud-pill">
-        <span class="label">REVISIT:</span>
-        <span class="value" style="color: var(--emerald-safe);">GEO-SYNC ACTIVE</span>
-      </div>
-      <div class="triage-counters">
-        <div class="counter-pill critical" id="counter-critical">
-          <span>CRITICAL:</span> <span id="val-critical">0</span>
-        </div>
-        <div class="counter-pill moderate" id="counter-moderate">
-          <span>MODERATE:</span> <span id="val-moderate">0</span>
-        </div>
-        <div class="counter-pill low" id="counter-low">
-          <span>LOW:</span> <span id="val-low">0</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actions & Dataset Selection -->
-    <div class="header-actions">
-      <div class="dataset-select-wrapper">
-        <select id="dataset-select" class="select-aerospace">
-          <option value="amazon_deforestation">🌲 Amazon Rainforest Deforestation</option>
-          <option value="derna_flooding">🌊 Derna Flash Flood Inundation</option>
-          <option value="california_wildfire">🔥 California Wildfire Burn Scar</option>
-        </select>
-        <span class="select-arrow">▼</span>
-      </div>
-
-      <button id="btn-open-upload" class="btn-secondary" title="Upload Custom Imagery">
-        <span>+ Upload Imagery</span>
-      </button>
-
-      <button id="btn-export-docket" class="btn-cyber" title="Export Executive Incident Docket">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        <span>Export Incident Docket</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- MAIN COMMAND INTERFACE -->
-  <main class="main-command-grid">
-    
-    <!-- LEFT: SATELLITE & MAP STAGE -->
-    <section class="visualizer-section">
+    <!-- ==========================================
+         1. LEFT NAVIGATION SIDEBAR
+         ========================================== -->
+    <aside class="app-sidebar">
       
-      <!-- Toolbar -->
-      <div class="visualizer-toolbar">
-        <div class="view-mode-tabs">
-          <button id="tab-curtain" class="tab-btn active">
-            <span>⚡ Interactive Split Curtain</span>
-          </button>
-          <button id="tab-leaflet" class="tab-btn">
-            <span>🌍 Geospatial Satellite Map</span>
-          </button>
+      <!-- Brand Logo -->
+      <div class="sidebar-brand">
+        <div class="brand-icon-box">
+          <span class="brand-pulse-dot"></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+            <path d="M2 12h20"></path>
+          </svg>
         </div>
-
-        <div class="overlay-controls">
-          <label class="control-toggle" id="lbl-toggle-heatmap">
-            <input type="checkbox" id="chk-heatmap" checked>
-            <span>Diff Heatmap</span>
-          </label>
-
-          <div class="opacity-slider-wrapper">
-            <span>Heatmap Opacity:</span>
-            <input type="range" id="rng-heatmap-opacity" min="0" max="100" value="85">
+        <div class="brand-text-block">
+          <div class="brand-text-title">
+            EARTHGUARD <span class="brand-badge">V1.0</span>
           </div>
-
-          <label class="control-toggle" id="lbl-toggle-vectors">
-            <input type="checkbox" id="chk-vectors" checked>
-            <span>Zone Bounding Vectors</span>
-          </label>
+          <div class="brand-text-sub">ORBITAL TRIAGE HUD</div>
         </div>
       </div>
 
-      <!-- Stage Viewport -->
-      <div class="stage-viewport" id="stage-viewport">
-        
-        <!-- Radar Scan Line Animation -->
-        <div class="radar-scan-line" id="radar-scanner"></div>
+      <!-- Navigation Menu -->
+      <nav class="sidebar-menu">
+        <div class="nav-section-label">MISSION CONTROL</div>
 
-        <!-- Curtains Viewport Container -->
-        <div class="curtain-container" id="curtain-view">
-          <div class="curtain-wrapper" id="curtain-wrapper">
-            <!-- Before Image Base -->
-            <img id="img-before" class="curtain-img curtain-before" src="" alt="Before Observation">
+        <button class="nav-item active" data-view="studio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+          </svg>
+          <span>Mission Studio</span>
+        </button>
 
-            <!-- After Image Clipped by Split Divider -->
-            <div id="curtain-after-wrapper" class="curtain-after-wrapper">
-              <img id="img-after" class="curtain-img curtain-after" src="" alt="After Observation">
-            </div>
+        <button class="nav-item" data-view="map">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            <line x1="8" y1="2" x2="8" y2="18"></line>
+            <line x1="16" y1="6" x2="16" y2="22"></line>
+          </svg>
+          <span>Geospatial Map</span>
+        </button>
 
-            <!-- Heatmap Overlay -->
-            <img id="img-heatmap" class="curtain-heatmap" src="" alt="Difference Heatmap">
+        <button class="nav-item" data-view="triage">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span>Priority Triage</span>
+          <span class="nav-badge-pill" id="nav-badge-critical">0</span>
+        </button>
 
-            <!-- Vector Canvas Layer -->
-            <canvas id="vector-canvas" class="vector-canvas"></canvas>
+        <button class="nav-item" data-view="analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Spectral Analytics</span>
+        </button>
 
-            <!-- Draggable Curtain Handle -->
-            <div id="curtain-handle" class="curtain-handle" style="left: 50%;">
-              <div class="curtain-handle-knob">◄►</div>
-            </div>
-          </div>
+        <button class="nav-item" data-view="docket">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Incident Docket</span>
+        </button>
 
-          <!-- Floating Info HUD -->
-          <div class="visualizer-hud">
-            <div class="hud-location" id="hud-location-title">Loading Target Observation...</div>
-            <div class="hud-coords" id="hud-location-coords">LAT: --.---- | LON: --.----</div>
-          </div>
+        <div class="nav-section-label" style="margin-top: 14px;">OBSERVATION AOI</div>
 
-          <!-- Curtain Before/After indicator labels -->
-          <div class="hud-curtain-labels">
-            <div class="curtain-label-tag before" id="tag-before-date">BEFORE BASELINE</div>
-            <div class="curtain-label-tag after" id="tag-after-date">AFTER OBSERVATION</div>
-          </div>
+        <div class="aoi-selector-box">
+          <label class="aoi-label">SELECT TARGET AREA:</label>
+          <select id="aoi-select" class="aoi-select">
+            <option value="amazon_deforestation">🌲 Amazon Deforestation</option>
+            <option value="derna_flooding">🌊 Derna Flash Flood</option>
+            <option value="california_wildfire">🔥 California Wildfire</option>
+          </select>
         </div>
+      </nav>
 
-        <!-- Leaflet Map Container (Hidden by default, toggled with tab) -->
-        <div id="leaflet-map" style="display: none;"></div>
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button id="btn-sidebar-upload" class="btn-sidebar-upload">
+          <span>+ Ingest Custom Imagery</span>
+        </button>
 
-      </div>
-
-      <!-- Bottom Analytics & Telemetry Bar -->
-      <div class="bottom-telemetry-drawer">
-        <div class="drawer-stat-group">
-          <div class="drawer-stat">
-            <span class="stat-name">IMPACTED AREA</span>
-            <span class="stat-val" id="stat-hectares" style="color: var(--cyan-primary);">0.00 ha</span>
-          </div>
-          <div class="drawer-stat">
-            <span class="stat-name">SURFACE DELTA</span>
-            <span class="stat-val" id="stat-change-pct">0.00%</span>
-          </div>
-          <div class="drawer-stat">
-            <span class="stat-name">MEAN CONFIDENCE</span>
-            <span class="stat-val" id="stat-mean-conf" style="color: var(--emerald-safe);">96%</span>
-          </div>
-          <div class="drawer-stat">
-            <span class="stat-name">PIPELINE LATENCY</span>
-            <span class="stat-val" style="color: #a78bfa;">128 ms (CV Accelerated)</span>
-          </div>
-        </div>
-
-        <div class="drawer-stat-group">
-          <div class="drawer-stat" style="text-align: right;">
-            <span class="stat-name">ALGORITHM STACK</span>
-            <span class="stat-val">OpenCV Contours + Multi-Band Spectral + Urgency Ranker</span>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- RIGHT: TACTICAL RESPONSE SIDEBAR (NOVELTY SUITE) -->
-    <aside class="sidebar-triage">
-      <div class="sidebar-header">
-        <div class="sidebar-title-row">
-          <div class="sidebar-title">
-            <span>PRIORITIZED INCIDENT QUEUE</span>
-          </div>
-          <span class="sidebar-badge" id="badge-total-incidents">0 FLAGGED</span>
-        </div>
-
-        <!-- Triage Priority Filter Tabs -->
-        <div class="triage-filter-tabs">
-          <button class="filter-pill active" data-filter="ALL">ALL (<span id="count-all">0</span>)</button>
-          <button class="filter-pill" data-filter="CRITICAL" style="color: var(--crimson-hazard);">CRITICAL (<span id="count-crit">0</span>)</button>
-          <button class="filter-pill" data-filter="MODERATE" style="color: var(--amber-warn);">MODERATE (<span id="count-mod">0</span>)</button>
-          <button class="filter-pill" data-filter="LOW" style="color: var(--emerald-safe);">LOW (<span id="count-low">0</span>)</button>
+        <div class="system-telemetry-chip">
+          <span class="telemetry-indicator-dot"></span>
+          <span>GEO-SYNC ONLINE</span>
         </div>
       </div>
 
-      <!-- Scrollable Incident Card Queue -->
-      <div class="incident-queue-list" id="incident-queue-list">
-        <!-- Rendered dynamically by app.js -->
-      </div>
     </aside>
 
-  </main>
+    <!-- ==========================================
+         2. MAIN CONTENT WRAPPER
+         ========================================== -->
+    <main class="main-content-wrapper">
 
-  <!-- MODAL: CUSTOM IMAGERY UPLOAD -->
-  <div class="modal-overlay" id="modal-upload">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">Upload Custom Satellite Observation Pair</div>
-        <button class="modal-close-btn" id="btn-close-upload">&times;</button>
-      </div>
-
-      <form id="form-upload">
-        <div class="upload-dropzone" id="dropzone-before">
-          <p><strong>1. Select / Drop "BEFORE" Satellite Image</strong></p>
-          <span style="font-size: 0.75rem; color: var(--text-dim);">PNG, JPG, TIFF (Max 20MB)</span>
-          <input type="file" id="file-before" accept="image/*" style="display: none;">
-          <div id="preview-before-name" style="margin-top: 8px; font-family: var(--font-mono); color: var(--cyan-primary);"></div>
+      <!-- Top Header & Breadcrumbs Bar -->
+      <header class="top-header-bar">
+        <div class="breadcrumbs-box">
+          <span class="breadcrumb-root">EARTHGUARD AI</span>
+          <span class="breadcrumb-divider">/</span>
+          <span id="breadcrumb-location" class="breadcrumb-active">Amazon Basin, Brazil</span>
+          <span class="breadcrumb-divider">/</span>
+          <span style="color: var(--cyan-primary);" id="breadcrumb-sensor">Sentinel-2 (10m)</span>
         </div>
 
-        <div class="upload-dropzone" id="dropzone-after">
-          <p><strong>2. Select / Drop "AFTER" Satellite Image</strong></p>
-          <span style="font-size: 0.75rem; color: var(--text-dim);">PNG, JPG, TIFF (Matching bounding extent)</span>
-          <input type="file" id="file-after" accept="image/*" style="display: none;">
-          <div id="preview-after-name" style="margin-top: 8px; font-family: var(--font-mono); color: var(--crimson-hazard);"></div>
+        <div class="top-telemetry-strip">
+          <div class="triage-chip critical">
+            <span>CRITICAL:</span>
+            <span id="top-val-critical">0</span>
+          </div>
+          <div class="triage-chip moderate">
+            <span>MODERATE:</span>
+            <span id="top-val-moderate">0</span>
+          </div>
+          <div class="triage-chip low">
+            <span>LOW:</span>
+            <span id="top-val-low">0</span>
+          </div>
+        </div>
+
+        <div class="top-actions-box">
+          <button id="btn-rescan" class="btn-header-action" title="Re-run Computer Vision Triage">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Re-Scan</span>
+          </button>
+
+          <button id="btn-export-docket-top" class="btn-header-action btn-accent">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export Docket</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Viewports Container (Switched by Left Sidebar) -->
+      <div class="view-viewport-container">
+
+        <!-- ==========================================
+             VIEW 1: MISSION STUDIO (Comparison & Inspector)
+             ========================================== -->
+        <section id="view-studio" class="app-view active">
+          <div class="studio-layout">
+
+            <!-- Visualizer Left Pane -->
+            <div class="studio-visualizer-pane">
+              
+              <!-- Sub-Toolbar (Comparison Mode & Layers) -->
+              <div class="studio-subtoolbar">
+                <div class="comparison-mode-switch">
+                  <button id="btn-mode-dual" class="mode-tab-btn active">
+                    <span>⚡ Side-by-Side</span>
+                  </button>
+                  <button id="btn-mode-curtain" class="mode-tab-btn">
+                    <span>🎚️ Swipe Curtain</span>
+                  </button>
+                  <button id="btn-mode-diff" class="mode-tab-btn">
+                    <span>🔥 Heatmap Diff</span>
+                  </button>
+                </div>
+
+                <div class="visual-layer-toggles">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="chk-layer-heatmap" checked>
+                    <span>Diff Overlay</span>
+                  </label>
+
+                  <div class="slider-group">
+                    <span>Opacity:</span>
+                    <input type="range" id="rng-layer-opacity" min="0" max="100" value="85">
+                  </div>
+
+                  <label class="toggle-label">
+                    <input type="checkbox" id="chk-layer-vectors" checked>
+                    <span>Vector BBoxes</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Stage Workspace -->
+              <div class="studio-stage" id="studio-stage">
+                
+                <!-- Radar Scanner Line -->
+                <div class="scanning-radar-line" id="studio-radar-line"></div>
+
+                <!-- 1. SIDE-BY-SIDE DUAL VIEW -->
+                <div class="side-by-side-view" id="stage-dual-view">
+                  <!-- Left: Before Image -->
+                  <div class="dual-panel">
+                    <div class="dual-panel-header">
+                      <span style="color: #38bdf8;">BEFORE OBSERVATION</span>
+                      <span id="lbl-dual-before-date" style="color: var(--text-dim);">BASELINE</span>
+                    </div>
+                    <div class="dual-img-wrapper">
+                      <img id="img-dual-before" class="dual-img" src="" alt="Before Baseline">
+                    </div>
+                  </div>
+
+                  <!-- Right: After Image with Vector Overlays -->
+                  <div class="dual-panel">
+                    <div class="dual-panel-header">
+                      <span style="color: var(--crimson-hazard);">AFTER OBSERVATION</span>
+                      <span id="lbl-dual-after-date" style="color: var(--text-dim);">POST-EVENT</span>
+                    </div>
+                    <div class="dual-img-wrapper">
+                      <img id="img-dual-after" class="dual-img" src="" alt="After Observation">
+                      <img id="img-dual-heatmap" class="dual-heatmap-overlay" src="" alt="Heatmap">
+                      <canvas id="dual-vector-canvas" class="stage-vector-canvas"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. CURTAIN SWIPE VIEW (Hidden by default, switched via tab) -->
+                <div class="curtain-swipe-view" id="stage-curtain-view" style="display: none;">
+                  <div class="curtain-stage-wrapper" id="curtain-stage-wrapper">
+                    <!-- Before Base -->
+                    <img id="img-curtain-before" class="curtain-img-base" src="" alt="Before Baseline">
+
+                    <!-- After Clipped -->
+                    <div id="curtain-clipped-box" class="curtain-after-clipped">
+                      <img id="img-curtain-after" class="curtain-img-after" src="" alt="After Observation">
+                    </div>
+
+                    <!-- Heatmap Layer -->
+                    <img id="img-curtain-heatmap" class="curtain-heatmap-layer" src="" alt="Heatmap">
+
+                    <!-- Canvas Layer -->
+                    <canvas id="curtain-vector-canvas" class="stage-vector-canvas"></canvas>
+
+                    <!-- Draggable Divider Line -->
+                    <div id="curtain-divider-line" class="curtain-divider-line" style="left: 50%;">
+                      <div class="divider-knob">◄►</div>
+                    </div>
+                  </div>
+
+                  <!-- Floating Labels -->
+                  <div class="stage-labels-bottom">
+                    <div class="curtain-pill-tag before" id="pill-curtain-before">BEFORE BASELINE</div>
+                    <div class="curtain-pill-tag after" id="pill-curtain-after">AFTER OBSERVATION</div>
+                  </div>
+                </div>
+
+                <!-- Floating Coordinates HUD -->
+                <div class="stage-hud-overlay">
+                  <div style="font-weight: 700; color: #fff;" id="stage-aoi-title">Amazon Rainforest</div>
+                  <div style="color: var(--cyan-primary);" id="stage-aoi-coords">LAT: -10.8256 | LON: -62.9512</div>
+                </div>
+
+              </div>
+
+              <!-- Bottom Telemetry Bar -->
+              <div class="studio-bottom-bar">
+                <div class="studio-stat-item">
+                  <span class="stat-title">IMPACTED AREA:</span>
+                  <span class="stat-value" id="stat-ha-val" style="color: var(--cyan-primary);">0.00 ha</span>
+                </div>
+                <div class="studio-stat-item">
+                  <span class="stat-title">SURFACE DELTA:</span>
+                  <span class="stat-value" id="stat-delta-val">0.00%</span>
+                </div>
+                <div class="studio-stat-item">
+                  <span class="stat-title">MEAN CONFIDENCE:</span>
+                  <span class="stat-value" id="stat-conf-val" style="color: var(--emerald-safe);">96%</span>
+                </div>
+                <div class="studio-stat-item">
+                  <span class="stat-title">LATENCY:</span>
+                  <span class="stat-value" style="color: var(--purple-accent);">134ms (CV-Accelerated)</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Inspector Pane (Structured with Tabs) -->
+            <aside class="studio-inspector-pane">
+              
+              <!-- Inspector Header -->
+              <div class="inspector-header">
+                <div class="inspector-title-row">
+                  <div class="inspector-zone-title">
+                    <span id="insp-zone-id">ZONE-01</span>
+                    <span id="insp-tier-pill" class="inspector-tier-pill critical">CRITICAL</span>
+                  </div>
+                  <div id="insp-conf-badge" style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--emerald-safe);">
+                    ● 96% High Conf
+                  </div>
+                </div>
+
+                <!-- Inspector Navigation Tabs -->
+                <div class="inspector-nav-tabs">
+                  <button class="insp-tab-btn active" data-tab="tab-metrics">📊 Metrics</button>
+                  <button class="insp-tab-btn" data-tab="tab-brief">🤖 AI Brief</button>
+                  <button class="insp-tab-btn" data-tab="tab-dispatch">🚁 Protocol</button>
+                  <button class="insp-tab-btn" data-tab="tab-spectral">🔬 Spectral</button>
+                </div>
+              </div>
+
+              <!-- Inspector Body (Tabbed Content) -->
+              <div class="inspector-body-scroll">
+
+                <!-- TAB 1: METRICS & SCORE GAUGE -->
+                <div class="insp-content-tab active" id="tab-metrics">
+                  
+                  <!-- Urgency Gauge Box (Novelty 1) -->
+                  <div class="widget-card">
+                    <div class="widget-title">
+                      <span>COMPOSITE URGENCY SCORE</span>
+                      <span id="insp-tier-label" style="color: var(--crimson-hazard);">Tier 1: Immediate Field Dispatch</span>
+                    </div>
+
+                    <div class="urgency-score-showcase">
+                      <div class="score-number-display" id="insp-score-val" style="color: var(--crimson-hazard);">
+                        65.9
+                      </div>
+                      <div class="score-details-col">
+                        <div class="score-bar-bg">
+                          <div class="score-bar-fill" id="insp-score-bar" style="width: 66%; background: var(--crimson-hazard);"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.65rem; font-family: var(--font-mono); color: var(--text-dim); margin-top: 4px;">
+                          <span>0 (Low)</span>
+                          <span>100 (Max Urgency)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 2x2 Metric Grid -->
+                  <div class="metrics-2x2-grid">
+                    <div class="metric-cell">
+                      <span class="metric-cell-label">EVENT CLASSIFICATION</span>
+                      <span class="metric-cell-val" id="insp-event-type">🌲 Deforestation</span>
+                    </div>
+
+                    <div class="metric-cell">
+                      <span class="metric-cell-label">IMPACTED AREA</span>
+                      <span class="metric-cell-val" id="insp-area-val">8.1 Hectares</span>
+                    </div>
+
+                    <div class="metric-cell">
+                      <span class="metric-cell-label">CHANGE MAGNITUDE</span>
+                      <span class="metric-cell-val" id="insp-mag-val">32% Delta</span>
+                    </div>
+
+                    <div class="metric-cell">
+                      <span class="metric-cell-label">SETTLEMENT BUFFER</span>
+                      <span class="metric-cell-val" id="insp-settle-val">&lt; 1.5 km Proximity</span>
+                    </div>
+                  </div>
+
+                  <!-- Confidence Diagnostic Widget (Novelty 2) -->
+                  <div class="widget-card">
+                    <div class="widget-title">
+                      <span>CONFIDENCE &amp; UNCERTAINTY DIAGNOSTIC</span>
+                      <span id="insp-conf-pct" style="color: var(--emerald-safe);">96% RATING</span>
+                    </div>
+                    <p style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;" id="insp-conf-reason">
+                      Atmospheric clarity optimal; sharp spectral transition verified across all bands with low cloud jitter.
+                    </p>
+                  </div>
+
+                </div>
+
+                <!-- TAB 2: NATURAL-LANGUAGE AI BRIEFING (Novelty 3) -->
+                <div class="insp-content-tab" id="tab-brief">
+                  
+                  <div class="ai-briefing-styled">
+                    <div class="briefing-meta-header">
+                      <span>DECISION-READY OPERATIONAL BRIEF</span>
+                      <span id="insp-brief-window">Immediate (0-48h)</span>
+                    </div>
+
+                    <p class="briefing-paragraph" id="insp-brief-text">
+                      ZONE-01 exhibits a critical 32% spectral change signature classified as Deforestation, covering an estimated 8.1 hectares immediately adjacent to the settlement buffer. Detection confidence is rated at 96% based on radiometric heuristics.
+                    </p>
+
+                    <div class="action-guidance-pill" id="insp-action-pill">
+                      <strong>Directive:</strong> Dispatch environmental ranger enforcement unit within 48 hours to intercept active logging equipment.
+                    </div>
+                  </div>
+
+                  <!-- Audio Read-Aloud Voice Button -->
+                  <button id="btn-audio-brief" class="btn-audio-speak">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <span>Read Aloud (Voice Briefing)</span>
+                  </button>
+
+                  <div class="widget-card">
+                    <div class="widget-title">KEY IMPACT SIGNATURE</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted);" id="insp-signature-text">
+                      Vegetation index declined by 0.18; exposed mineral soil and clearing pattern observed.
+                    </p>
+                  </div>
+
+                </div>
+
+                <!-- TAB 3: FIELD PROTOCOL & DISPATCH -->
+                <div class="insp-content-tab" id="tab-dispatch">
+                  
+                  <div class="widget-card">
+                    <div class="widget-title">FIELD RESPONSE CHECKLIST</div>
+                    
+                    <label class="checklist-item">
+                      <input type="checkbox" id="chk-drone" checked>
+                      <span>Deploy Aerial Drone Survey (Orthomosaic Scan)</span>
+                    </label>
+
+                    <label class="checklist-item">
+                      <input type="checkbox" id="chk-civil">
+                      <span>Notify Local Municipal Defense Buffer</span>
+                    </label>
+
+                    <label class="checklist-item">
+                      <input type="checkbox" id="chk-ground">
+                      <span>Mobilize Ground Verification / Ranger Unit</span>
+                    </label>
+                  </div>
+
+                  <button id="btn-authorize-dispatch" class="btn-dispatch-execute">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Authorize &amp; Dispatch Field Unit</span>
+                  </button>
+
+                </div>
+
+                <!-- TAB 4: SPECTRAL DIAGNOSTICS -->
+                <div class="insp-content-tab" id="tab-spectral">
+                  
+                  <div class="widget-card">
+                    <div class="widget-title">MULTISPECTRAL CHANNEL DELTAS</div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-family: var(--font-mono); margin-bottom: 2px;">
+                          <span>VEGETATION LOSS (ΔNDVI)</span>
+                          <span style="color: var(--crimson-hazard);">-0.24</span>
+                        </div>
+                        <div class="score-bar-bg">
+                          <div style="width: 72%; height: 100%; background: var(--crimson-hazard); border-radius: 4px;"></div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-family: var(--font-mono); margin-bottom: 2px;">
+                          <span>WATER INDEX (ΔNDWI)</span>
+                          <span style="color: var(--cyan-primary);">+0.04</span>
+                        </div>
+                        <div class="score-bar-bg">
+                          <div style="width: 25%; height: 100%; background: var(--cyan-primary); border-radius: 4px;"></div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-family: var(--font-mono); margin-bottom: 2px;">
+                          <span>SURFACE ALBEDO VARIANCE</span>
+                          <span style="color: var(--amber-warn);">+18.2</span>
+                        </div>
+                        <div class="score-bar-bg">
+                          <div style="width: 48%; height: 100%; background: var(--amber-warn); border-radius: 4px;"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- Quick Zone Carousel at Bottom of Inspector -->
+              <div class="inspector-quick-zones" id="inspector-quick-zones">
+                <!-- Zone chips injected dynamically by app.js -->
+              </div>
+
+            </aside>
+
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 2: FULL GEOSPATIAL MAP VIEW
+             ========================================== -->
+        <section id="view-map" class="app-view">
+          <div id="fullscreen-leaflet-map"></div>
+
+          <div class="map-floating-overlay-card">
+            <h3 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 6px;">
+              Geospatial Satellite Explorer
+            </h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
+              Interactive ESRI World Imagery basemap showing georeferenced anomaly contours and settlement proximity rings.
+            </p>
+            <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--cyan-primary);">
+              ● Click any circle to spotlight and open incident details.
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 3: PRIORITY TRIAGE QUEUE (FULL TABLE)
+             ========================================== -->
+        <section id="view-triage" class="app-view">
+          <div class="triage-page-header">
+            <div class="page-title-box">
+              <h2>Prioritized Incident Triage Queue</h2>
+              <p>All detected anomalies ranked strictly by explainable composite Urgency Scores.</p>
+            </div>
+          </div>
+
+          <div class="triage-table-card">
+            <div class="triage-table-toolbar">
+              <div class="triage-filter-group">
+                <button class="filter-btn-chip active" data-table-filter="ALL">ALL INCIDENTS</button>
+                <button class="filter-btn-chip" data-table-filter="CRITICAL" style="color: var(--crimson-hazard);">CRITICAL</button>
+                <button class="filter-btn-chip" data-table-filter="MODERATE" style="color: var(--amber-warn);">MODERATE</button>
+                <button class="filter-btn-chip" data-table-filter="LOW" style="color: var(--emerald-safe);">LOW</button>
+              </div>
+
+              <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim);" id="triage-table-count">
+                Showing 15 Anomaly Records
+              </span>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>RANK</th>
+                  <th>ZONE ID</th>
+                  <th>SEVERITY TIER</th>
+                  <th>URGENCY SCORE</th>
+                  <th>CLASSIFICATION</th>
+                  <th>IMPACT AREA</th>
+                  <th>COMMUNITY BUFFER</th>
+                  <th>CONFIDENCE</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="triage-table-body">
+                <!-- Dynamically populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 4: SPECTRAL ANALYTICS
+             ========================================== -->
+        <section id="view-analytics" class="app-view">
+          <div class="page-title-box">
+            <h2>Mission Spectral &amp; Environmental Analytics</h2>
+            <p>Comprehensive telemetry summary across multispectral channels and risk distributions.</p>
+          </div>
+
+          <div class="analytics-stats-grid">
+            <div class="analytics-card">
+              <span class="stat-title">TOTAL IMPACTED AREA</span>
+              <span class="analytics-big-number" id="an-hectares" style="color: var(--cyan-primary);">769.1 ha</span>
+              <span style="font-size: 0.7rem; color: var(--text-dim);">Estimated physical ground footprint</span>
+            </div>
+
+            <div class="analytics-card">
+              <span class="stat-title">CRITICAL TIER-1 THREATS</span>
+              <span class="analytics-big-number" id="an-critical-count" style="color: var(--crimson-hazard);">2 ZONES</span>
+              <span style="font-size: 0.7rem; color: var(--text-dim);">Immediate dispatch authorized</span>
+            </div>
+
+            <div class="analytics-card">
+              <span class="stat-title">MEAN RADIOMETRIC CONFIDENCE</span>
+              <span class="analytics-big-number" id="an-conf-pct" style="color: var(--emerald-safe);">96%</span>
+              <span style="font-size: 0.7rem; color: var(--text-dim);">Zero false-positive cloud interference</span>
+            </div>
+
+            <div class="analytics-card">
+              <span class="stat-title">CV LATENCY BENCHMARK</span>
+              <span class="analytics-big-number" style="color: var(--purple-accent);">134 ms</span>
+              <span style="font-size: 0.7rem; color: var(--text-dim);">Near-real-time edge extraction</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 5: EXECUTIVE INCIDENT DOCKET
+             ========================================== -->
+        <section id="view-docket" class="app-view">
+          <div class="docket-printable-document" id="docket-printable-box">
+            <!-- Dynamically populated by app.js -->
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MODAL: CUSTOM IMAGERY INGESTION -->
+  <div class="app-modal-backdrop" id="modal-upload-backdrop">
+    <div class="app-modal-window">
+      <div class="modal-header-row">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Ingest Custom Satellite Image Pair</h3>
+        <button class="modal-close-icon" id="btn-close-modal-upload">&times;</button>
+      </div>
+
+      <form id="form-custom-upload">
+        <div class="upload-target-area" id="box-upload-before">
+          <p><strong>1. Select / Drop "BEFORE" Satellite Observation</strong></p>
+          <span style="font-size: 0.72rem; color: var(--text-dim);">PNG, JPG, TIFF (Max 20MB)</span>
+          <input type="file" id="input-file-before" accept="image/*" style="display: none;">
+          <div id="lbl-file-before-name" style="margin-top: 6px; font-family: var(--font-mono); color: var(--cyan-primary);"></div>
+        </div>
+
+        <div class="upload-target-area" id="box-upload-after">
+          <p><strong>2. Select / Drop "AFTER" Satellite Observation</strong></p>
+          <span style="font-size: 0.72rem; color: var(--text-dim);">PNG, JPG, TIFF (Same spatial boundary)</span>
+          <input type="file" id="input-file-after" accept="image/*" style="display: none;">
+          <div id="lbl-file-after-name" style="margin-top: 6px; font-family: var(--font-mono); color: var(--crimson-hazard);"></div>
         </div>
 
         <div style="margin-bottom: 16px;">
-          <label style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); display: block; margin-bottom: 6px;">
-            Target Mission Title / Area:
+          <label style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); display: block; margin-bottom: 4px;">
+            Target Mission Name:
           </label>
-          <input type="text" id="upload-title" value="Custom AOI Incident Sweep" style="width: 100%; background: #050811; border: 1px solid var(--border-subtle); color: #fff; padding: 8px 12px; border-radius: var(--radius-sm); font-family: var(--font-main);">
+          <input type="text" id="input-mission-title" value="Custom AOI Incident Sweep" style="width: 100%; background: #060913; border: 1px solid var(--border-medium); color: #fff; padding: 8px 12px; border-radius: var(--radius-sm); font-family: var(--font-main);">
         </div>
 
-        <button type="submit" class="btn-cyber" style="width: 100%; justify-content: center; padding: 12px;">
+        <button type="submit" class="btn-dispatch-execute" style="width: 100%; background: var(--cyan-primary); color: #000;">
           Run EarthGuard AI Triage Pipeline
         </button>
       </form>
-    </div>
-  </div>
-
-  <!-- MODAL: EXECUTIVE INCIDENT DISPATCH DOCKET -->
-  <div class="modal-overlay" id="modal-docket">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">Executive Incident Dispatch Briefing</div>
-        <button class="modal-close-btn" id="btn-close-docket">&times;</button>
-      </div>
-
-      <div class="printable-report" id="docket-content">
-        <!-- Filled dynamically by app.js -->
-      </div>
-
-      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn-secondary" onclick="window.print()">Print / Save PDF</button>
-        <button class="btn-cyber" id="btn-copy-docket-json">Copy JSON Docket</button>
-      </div>
     </div>
   </div>
 
