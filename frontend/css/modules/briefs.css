@@ -1,0 +1,121 @@
+/* ==========================================================================
+   FEATURE 3: CONFIDENCE TRANSPARENCY & AI INCIDENT RESPONSE BRIEFINGS
+   Owned by: MEMBER 3
+   Styles for AI Briefings, Voice Synthesis Button, Checklist & Executive Docket
+   ========================================================================== */
+
+/* AI Briefing Card */
+.ai-briefing-styled {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(16, 185, 129, 0.04));
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.briefing-meta-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--cyan-primary);
+  font-weight: 700;
+}
+
+.briefing-paragraph {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.action-guidance-pill {
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid var(--cyan-primary);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #fff;
+}
+
+/* Audio Voice Synthesis Button */
+.btn-audio-speak {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid var(--cyan-primary);
+  color: var(--cyan-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-audio-speak:hover {
+  background: var(--cyan-primary);
+  color: #000;
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+
+/* Field Protocol Checklist */
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.checklist-item input[type="checkbox"] {
+  accent-color: var(--cyan-primary);
+  width: 14px;
+  height: 14px;
+}
+
+.btn-dispatch-execute {
+  background: var(--crimson-hazard);
+  border: none;
+  color: #fff;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-dispatch-execute:hover {
+  background: #dc2626;
+  box-shadow: 0 0 15px var(--crimson-glow);
+}
+
+.btn-dispatch-execute.dispatched {
+  background: var(--emerald-safe);
+  cursor: default;
+}
+
+/* Printable Executive Docket Document */
+.docket-printable-document {
+  width: 100%;
+  max-width: 820px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-mono);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

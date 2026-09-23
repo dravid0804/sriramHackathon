@@ -1,173 +1,166 @@
-# 👥 EarthGuard AI — Team Worksplit & Zero-Merge-Conflict Architecture Guide
+# 👥 EarthGuard AI — Functional Team Worksplit & Zero-Merge-Conflict Guide
 
-This guide establishes the modular development breakdown for our **3-person hackathon team** to develop features concurrently with **100% zero merge conflicts**.
+Welcome team! To ensure everyone can code concurrently **without git merge conflicts**, our project is partitioned by **Full-Stack Functional Feature Domains** rather than technical layers. 
+
+Each member is an **End-to-End Feature Owner** (owning the backend algorithm, data structures, and frontend interactive component for their specific feature).
 
 ---
 
-## 🏗️ Strict Architectural Separation & Ownership
+## 🏗️ Functional Feature Directory Isolation
 
-Merge conflicts occur when multiple developers edit the same file simultaneously. To prevent this entirely, our project is divided into **strictly isolated ownership zones**:
+Every feature has its own dedicated files in both the backend and frontend. You will **only** edit files belonging to your feature domain:
 
 ```
 SRIRAM_HACKATHON/
 │
 ├── backend/
-│   ├── cv_engine.py          <-- 🟢 MEMBER 1 (CV & Spectral Differencing)
-│   ├── classifier.py         <-- 🟢 MEMBER 1 (Spectral Event Classification)
-│   ├── prioritization.py     <-- 🔵 MEMBER 2 (Urgency Scoring Formula)
-│   ├── confidence.py         <-- 🔵 MEMBER 2 (Confidence & Uncertainty Modeling)
-│   ├── briefing_engine.py    <-- 🔵 MEMBER 2 (Operational LLM Briefings)
-│   ├── main.py               <-- 🔒 SHARED API CONTRACT (Locked Schema)
-│   └── test_pipeline.py      <-- 🔵 MEMBER 2 & ALL (Integration Testing)
-│
-├── data/
-│   ├── generate_sample_data.py <-- 🟢 MEMBER 1 (Dataset Synthesizer & Georeferencing)
-│   └── samples/              <-- 🟢 MEMBER 1 (Sample Imagery & Metadata)
+│   ├── modules/
+│   │   ├── detection/          <-- 🟢 MEMBER 1 (Feature 1 Backend)
+│   │   │   ├── cv_engine.py
+│   │   │   └── spectral_indices.py
+│   │   │
+│   │   ├── prioritization/     <-- 🔵 MEMBER 2 (Feature 2 Backend)
+│   │   │   ├── urgency_ranker.py
+│   │   │   ├── classifier.py
+│   │   │   └── geospatial_coords.py
+│   │   │
+│   │   └── briefing/           <-- 🟣 MEMBER 3 (Feature 3 Backend)
+│   │       ├── confidence_model.py
+│   │       └── narrative_engine.py
+│   │
+│   ├── main.py                 <-- 🔒 Shared API Router (Fixed contract)
+│   └── test_pipeline.py        <-- 🔒 Integration Test Suite
 │
 ├── frontend/
-│   ├── index.html            <-- 🟣 MEMBER 3 (Layout, Sidebar Nav & Inspector)
-│   ├── css/style.css         <-- 🟣 MEMBER 3 (Aerospace Design System & Animations)
-│   └── js/app.js             <-- 🟣 MEMBER 3 (Canvas, Map & Interactivity)
+│   ├── js/modules/
+│   │   ├── detection_studio.js <-- 🟢 MEMBER 1 (Feature 1 Frontend)
+│   │   ├── triage_map.js       <-- 🔵 MEMBER 2 (Feature 2 Frontend)
+│   │   └── incident_briefs.js  <-- 🟣 MEMBER 3 (Feature 3 Frontend)
+│   │
+│   ├── css/modules/
+│   │   ├── detection.css       <-- 🟢 MEMBER 1 (Feature 1 Styles)
+│   │   ├── triage.css          <-- 🔵 MEMBER 2 (Feature 2 Styles)
+│   │   └── briefs.css          <-- 🟣 MEMBER 3 (Feature 3 Styles)
+│   │
+│   ├── index.html              <-- 🔒 Base Layout Shell
+│   ├── css/style.css           <-- 🔒 Base Design Tokens (Imports feature styles)
+│   └── js/app.js               <-- 🔒 Master Event Hub (Coordinates feature modules)
+│
+├── data/                       <-- 🟢 MEMBER 1 (Datasets & Synthetic Scenarios)
+│   ├── generate_sample_data.py
+│   └── samples/
 │
 └── docs/
-    ├── TEAM_WORKSPLIT.md     <-- 🔒 Shared Reference Guide
-    └── PITCH_SCRIPT.md       <-- 🟣 MEMBER 3 & ALL (2-Minute Demo Script)
+    ├── TEAM_WORKSPLIT.md       <-- 🔒 Team Onboarding Guide (This file)
+    └── PITCH_SCRIPT.md         <-- 🟣 MEMBER 3 & ALL (2-Minute Demo Script)
 ```
 
 ---
 
-## 🔒 The Shared API Contract
+## 🎯 Select Your Role
 
-Members 1 & 2 (Backend) and Member 3 (Frontend) communicate strictly through this defined JSON contract. As long as this schema remains stable, frontend and backend development are completely decoupled.
-
-### Endpoint: `POST /api/analyze`
-```json
-{
-  "status": "success",
-  "dataset_id": "amazon_deforestation",
-  "dataset_metadata": {
-    "title": "Amazon Rainforest — Rondônia Fishbone Clearing",
-    "location": "Rondônia, Brazil",
-    "coordinates": { "lat": -10.8256, "lon": -62.9512, "zoom": 13 },
-    "sensor": "Sentinel-2 MSI",
-    "settlement_center": { "x": 630, "y": 190, "name": "Nova Esperança Community", "radius": 70 }
-  },
-  "before_image_url": "/samples/amazon_deforestation/before.png",
-  "after_image_url": "/samples/amazon_deforestation/after.png",
-  "heatmap_overlay": "data:image/png;base64,...",
-  "telemetry": {
-    "total_zones_detected": 15,
-    "critical_count": 2,
-    "moderate_count": 12,
-    "low_count": 1,
-    "total_hectares_impacted": 769.14,
-    "mean_confidence_pct": 96
-  },
-  "ranked_zones": [
-    {
-      "rank": 1,
-      "zone_id": "ZONE-01",
-      "tier": "CRITICAL",
-      "urgency_score": 65.9,
-      "tier_color": "#ef4444",
-      "hectares": 8.1,
-      "bbox": [510, 240, 160, 150],
-      "polygon": [[510, 240], [670, 240], [670, 390], [510, 390]],
-      "classification": { "type": "Deforestation", "icon": "🌲", "signature": "..." },
-      "confidence": { "percentage": 96, "level": "High Confidence", "reason": "..." },
-      "incident_brief": {
-        "brief_text": "...",
-        "recommended_action": "...",
-        "timeline": "Within 48 Hours"
-      }
-    }
-  ]
-}
-```
+Select one role below. When you work with your AI assistant, begin your prompt with the **AI Persona Prompt** for your role!
 
 ---
 
-## 👥 3-Member Role & Task Matrix
-
-### 🟢 Member 1: Computer Vision & Spectral Processing Lead
-- **Git Branch**: `feature/member1-cv-pipeline`
-- **Exclusive Files**:
-  - `backend/cv_engine.py`
-  - `backend/classifier.py`
+### 🟢 MEMBER 1: Satellite Change Detection & Observation Studio Lead
+- **Domain**: Computer vision differencing algorithms, multispectral math, and the interactive comparison studio.
+- **Git Feature Branch**: `feature/member1-change-detection-studio`
+- **Your Exclusive Files**:
+  - `backend/modules/detection/cv_engine.py`
+  - `backend/modules/detection/spectral_indices.py`
+  - `frontend/js/modules/detection_studio.js`
+  - `frontend/css/modules/detection.css`
   - `data/generate_sample_data.py`
   - `data/samples/`
-- **Core Tasks**:
-  1. **Spectral Indices**: Implement Normalized Burn Ratio (NBR) and Normalized Difference Water Index (NDWI) proxies.
-  2. **Contour Consolidation**: Fine-tune morphological closing filters so large contiguous clear-cuts form single unified priority zones.
-  3. **Noise Suppression**: Filter out sub-pixel shadows and sensor glare (< 250 px).
-  4. **Dataset Generation**: Add 1-2 new disaster scenarios (e.g. Valencia Inundation, Maui Wildfire) in `data/generate_sample_data.py`.
+- **AI Persona Prompt**:
+  > *"I am Member 1, the Feature Owner for Satellite Change Detection & Observation Studio. I own `backend/modules/detection/` and `frontend/js/modules/detection_studio.js`. Let's enhance..."*
+- **Your Core Tasks**:
+  1. **Advanced Spectral Indices**: Enhance Normalized Burn Ratio (NBR) and Normalized Difference Water Index (NDWI) in `spectral_indices.py`.
+  2. **Contour Consolidation**: Tune Otsu thresholding and morphological closing kernels in `cv_engine.py` so contiguous tracts merge cleanly without fragmented noise.
+  3. **Observation Studio Interactivity**: Refine the Side-by-Side Dual View and Curtain Swipe handle dragging mechanics in `detection_studio.js`.
+  4. **New Datasets**: Add 1-2 new disaster scenarios in `data/generate_sample_data.py` with known ground truths.
 
 ---
 
-### 🔵 Member 2: AI Reasoning, Prioritization & Backend Lead
-- **Git Branch**: `feature/member2-ai-prioritization`
-- **Exclusive Files**:
-  - `backend/prioritization.py`
-  - `backend/confidence.py`
-  - `backend/briefing_engine.py`
-  - `backend/test_pipeline.py`
-- **Core Tasks**:
-  1. **Urgency Formula Tuning**: Calibrate weights across Magnitude (35%), Community Proximity (40%), and Size (25%).
-  2. **Confidence Modeling**: Expand atmospheric uncertainty detection (cloud edge detection, specular variance).
-  3. **LLM Integration**: Wire optional API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) via `.env` while preserving deterministic offline fallback.
-  4. **Test Suite**: Maintain `backend/test_pipeline.py` ensuring all datasets pass with valid urgency scores.
+### 🔵 MEMBER 2: Severity-Ranked Prioritization & Geospatial Triage Lead
+- **Domain**: Anomaly triage scoring, settlement proximity decay, and the fullscreen geospatial map/queue.
+- **Git Feature Branch**: `feature/member2-prioritization-triage`
+- **Your Exclusive Files**:
+  - `backend/modules/prioritization/urgency_ranker.py`
+  - `backend/modules/prioritization/classifier.py`
+  - `backend/modules/prioritization/geospatial_coords.py`
+  - `frontend/js/modules/triage_map.js`
+  - `frontend/css/modules/triage.css`
+- **AI Persona Prompt**:
+  > *"I am Member 2, the Feature Owner for Severity-Ranked Prioritization & Geospatial Triage. I own `backend/modules/prioritization/` and `frontend/js/modules/triage_map.js`. Let's enhance..."*
+- **Your Core Tasks**:
+  1. **Urgency Score Formula**: Calibrate weights across Magnitude (35%), Community Proximity (40%), and Contiguous Area (25%) in `urgency_ranker.py`.
+  2. **Event Classifier**: Expand classification heuristics in `classifier.py` to recognize Urban Development and Industrial expansion.
+  3. **Geospatial Leaflet Map**: Enhance the fullscreen Leaflet map in `triage_map.js` with custom satellite markers, popups, and click-to-spotlight interactions.
+  4. **Priority Triage Queue**: Improve sorting, filtering chips, and metrics display in the triage table.
 
 ---
 
-### 🟣 Member 3: Frontend UX, Visualizations & Pitch Lead
-- **Git Branch**: `feature/member3-frontend-ux`
-- **Exclusive Files**:
-  - `frontend/index.html`
-  - `frontend/css/style.css`
-  - `frontend/js/app.js`
+### 🟣 MEMBER 3: Confidence Transparency & AI Incident Response Briefings Lead
+- **Domain**: Atmospheric uncertainty modeling, natural-language operational briefs, audio speech synthesis, and pitch delivery.
+- **Git Feature Branch**: `feature/member3-confidence-ai-briefs`
+- **Your Exclusive Files**:
+  - `backend/modules/briefing/confidence_model.py`
+  - `backend/modules/briefing/narrative_engine.py`
+  - `frontend/js/modules/incident_briefs.js`
+  - `frontend/css/modules/briefs.css`
   - `docs/PITCH_SCRIPT.md`
-- **Core Tasks**:
-  1. **Studio Enhancements**: Refine Side-by-Side Dual View and Curtain Swipe handle dragging mechanics.
-  2. **Inspector Polishing**: Enhance the 4 tabs (*Metrics*, *AI Brief*, *Protocol*, *Spectral*) and test **🔊 Read Aloud** speech synthesis.
-  3. **Geospatial Map**: Verify Leaflet satellite basemap, marker clusters, and tooltips.
-  4. **Pitch Delivery**: Rehearse the 120-second demo script using `docs/PITCH_SCRIPT.md` and time live UI click cues.
+- **AI Persona Prompt**:
+  > *"I am Member 3, the Feature Owner for Confidence Transparency, AI Briefings & Incident Response. I own `backend/modules/briefing/` and `frontend/js/modules/incident_briefs.js`. Let's enhance..."*
+- **Your Core Tasks**:
+  1. **Confidence & Noise Model**: Tune cloud edge heuristics and sensor saturation penalties in `confidence_model.py`.
+  2. **Decision-Ready Briefings**: Enhance operational guidance and connect optional LLM keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) in `narrative_engine.py`.
+  3. **🔊 Read Aloud Voice Synthesis**: Test and calibrate the browser speech synthesis pitch and rate in `incident_briefs.js`.
+  4. **Field Response & Docket**: Refine the operational checklist, dispatch button workflows, and printable executive docket styling.
+  5. **Pitch Delivery**: Rehearse and lead the 2-minute pitch demonstration using `docs/PITCH_SCRIPT.md`.
 
 ---
 
 ## 🔀 Conflict-Free Git Workflow
 
-### 1. Initial Branching
+### 1. Branch Initialization
+When you start working on your laptop, create and switch to your feature branch:
+
 ```bash
-# Member 1:
-git checkout -b feature/member1-cv-pipeline
+# Member 1
+git checkout -b feature/member1-change-detection-studio
 
-# Member 2:
-git checkout -b feature/member2-ai-prioritization
+# Member 2
+git checkout -b feature/member2-prioritization-triage
 
-# Member 3:
-git checkout -b feature/member3-frontend-ux
+# Member 3
+git checkout -b feature/member3-confidence-ai-briefs
 ```
 
-### 2. Pushing & Merging Protocol
-Before pushing:
+### 2. Regular Push & Merge Protocol
+Whenever you want to commit your progress:
+
 ```bash
+git add .
+git commit -m "feat(member<N>): describe your functional update"
 git fetch origin
 git merge origin/main
-git push -u origin <your-branch-name>
+git push -u origin feature/member<N>-<feature-name>
 ```
 
-> **Why This Guarantees Zero Merge Conflicts:**
-> Since each member only commits changes to their designated directory and files, Git will automatically fast-forward and merge changes with zero conflict resolution required.
+> **Why This Guarantees Zero Merge Conflicts:**  
+> Because each member works in completely separate files, Git can automatically fast-forward and merge branches into `main` with zero manual conflict resolution required!
 
 ---
 
-## ⏱️ 6-Hour Hackathon Schedule
+## ⏱️ 6-Hour Hackathon Roadmap
 
-| Hour | Focus | Member 1 (CV) | Member 2 (AI/Backend) | Member 3 (Frontend/Pitch) |
-| :--- | :--- | :--- | :--- | :--- |
-| **0:00 - 1:00** | **Baseline Setup** | Verify CV differencing & sample data | Test urgency formulas & schema | Test local UI & navigation views |
-| **1:00 - 2:30** | **Core Enhancements** | NBR & NDWI spectral indices | Refine scoring weights & cloud logic | Enhance Side-by-Side & Curtain slider |
-| **2:30 - 3:30** | **Intelligence Layer**| Refine contour clustering & noise | Connect LLM keys & dispatch briefs | Integrate audio synthesis & docket |
-| **3:30 - 4:30** | **Integration** | Test custom upload with sample imagery | Run `backend/test_pipeline.py` | Polish Leaflet popups & inspection tabs |
-| **4:30 - 5:15** | **Sync & Merge** | Merge Member 1 branch to `main` | Merge Member 2 branch to `main` | Merge Member 3 branch to `main` |
-| **5:15 - 6:00** | **Rehearsal & Pitch**| Live testing & edge-case checks | Validate latency & score ranges | Rehearse 2-minute pitch presentation |
+| Hour | Member 1 (Detection Studio) | Member 2 (Prioritization & Map) | Member 3 (Confidence & AI Briefs) |
+| :--- | :--- | :--- | :--- |
+| **0:00 - 1:30** | Multi-band spectral indices & curtain swipe handle | Urgency score weights & Leaflet map markers | Confidence noise thresholds & briefing templates |
+| **1:30 - 3:00** | Contour smoothing & Side-by-side zoom synchronization | Community proximity decay & Triage Table sorting | Audio voice synthesis & Field response checklist |
+| **3:00 - 4:15** | Custom upload normalization & new disaster datasets | Change-type classification badges & polygon popups | Printable executive docket modal & PDF styling |
+| **4:15 - 5:00** | End-to-end testing of detection pipeline | Validate urgency ranking across all 3 datasets | Review voice briefings & error handling |
+| **5:00 - 5:30** | Merge branch to `main` | Merge branch to `main` | Merge branch to `main` |
+| **5:30 - 6:00** | Live demo testing & latency checks | Live demo testing & scoring checks | Final pitch rehearsal with UI cues |

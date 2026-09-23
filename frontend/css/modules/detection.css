@@ -1,0 +1,268 @@
+/* ==========================================================================
+   FEATURE 1: SATELLITE CHANGE DETECTION & OBSERVATION STUDIO
+   Owned by: MEMBER 1
+   Styles for Dual Side-by-Side View, Curtain Swipe Slider, Heatmap & Upload
+   ========================================================================== */
+
+/* Sub-toolbar controls */
+.comparison-mode-switch {
+  display: flex;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.mode-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mode-tab-btn:hover {
+  color: #fff;
+}
+
+.mode-tab-btn.active {
+  background: var(--cyan-primary);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.visual-layer-toggles {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.toggle-label input[type="checkbox"] {
+  accent-color: var(--cyan-primary);
+  cursor: pointer;
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+.slider-group input[type="range"] {
+  width: 70px;
+  accent-color: var(--cyan-primary);
+  cursor: pointer;
+}
+
+/* 1. Side-by-Side Dual View */
+.side-by-side-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #020409;
+}
+
+.dual-panel {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.dual-panel-header {
+  height: 32px;
+  background: rgba(11, 17, 32, 0.95);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  z-index: 5;
+}
+
+.dual-img-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dual-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dual-heatmap-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* 2. Curtain Swipe View */
+.curtain-swipe-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.curtain-stage-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.curtain-img-base {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;
+}
+
+.curtain-after-clipped {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.curtain-img-after {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.curtain-heatmap-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.stage-vector-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  cursor: crosshair;
+}
+
+.curtain-divider-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--cyan-primary);
+  box-shadow: 0 0 14px var(--cyan-primary);
+  z-index: 10;
+  cursor: ew-resize;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.divider-knob {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 2px solid var(--cyan-primary);
+  box-shadow: 0 0 15px var(--cyan-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cyan-primary);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+/* Radar Sweep Animation */
+.scanning-radar-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan-primary), transparent);
+  box-shadow: 0 0 16px var(--cyan-primary);
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scanning-radar-line.active {
+  opacity: 1;
+  animation: scan-radar 2.4s infinite linear;
+}
+
+@keyframes scan-radar {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+
+/* Custom Upload Dropzone */
+.upload-target-area {
+  border: 2px dashed rgba(6, 182, 212, 0.4);
+  background: var(--cyan-soft);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
+}
+
+.upload-target-area:hover {
+  border-color: var(--cyan-primary);
+  background: rgba(6, 182, 212, 0.18);
+}
