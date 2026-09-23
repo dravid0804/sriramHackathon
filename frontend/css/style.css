@@ -362,14 +362,14 @@ body {
 }
 
 .top-intelligence-bar {
-  height: var(--topbar-h);
-  background: rgba(9, 14, 26, 0.92);
+  height: var(--topbar-h, 60px);
+  background: rgba(9, 14, 26, 0.95);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 24px;
   z-index: 40;
   flex-shrink: 0;
   gap: 16px;
@@ -378,14 +378,14 @@ body {
 .top-search-group {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
+  gap: 10px;
+  flex: 1.2;
   min-width: 0;
 }
 
 .search-input-wrapper {
   position: relative;
-  width: clamp(170px, 14vw, 230px);
+  width: 240px;
   flex-shrink: 0;
 }
 
@@ -394,17 +394,17 @@ body {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   color: var(--text-dim);
   pointer-events: none;
 }
 
 .global-search-input {
   width: 100%;
-  background: var(--bg-input);
+  background: rgba(15, 23, 42, 0.8);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   padding: 7px 12px 7px 34px;
   font-size: 0.80rem;
   color: var(--text-main);
@@ -418,26 +418,30 @@ body {
   box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
 }
 
-/* Scenario Demo Chips */
+/* Scenario Demo Chips — Clean Structured Group */
 .scenario-demo-pills {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 3px 5px;
   flex-shrink: 0;
 }
 
 .scenario-chip {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  padding: 4px 9px;
-  font-size: 0.72rem;
+  background: transparent;
+  border: none;
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.2s;
@@ -446,15 +450,13 @@ body {
 .scenario-chip:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-main);
-  border-color: var(--border-medium);
 }
 
 .scenario-chip.active {
-  background: rgba(6, 182, 212, 0.15);
-  border-color: var(--color-water);
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 0 10px rgba(6, 182, 212, 0.35);
+  background: #06B6D4;
+  color: #040814;
+  font-weight: 800;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
 }
 
 .top-temporal-group {
@@ -467,49 +469,50 @@ body {
 .date-range-badge {
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: var(--bg-input);
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.8);
   border: 1px solid var(--border-subtle);
-  padding: 5px 10px;
-  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  border-radius: 8px;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   white-space: nowrap;
 }
 
 .date-label {
   color: var(--text-dim);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .date-val {
   color: var(--text-main);
+  font-weight: 600;
 }
 
 .date-arrow {
   color: var(--color-water);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .btn-run-analysis {
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #06B6D4 0%, #0284C7 100%);
+  color: #040814;
   border: 1px solid rgba(56, 189, 248, 0.4);
-  border-radius: var(--radius-md);
-  padding: 8px 16px;
+  border-radius: 8px;
+  padding: 7px 16px;
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 7px;
   transition: all 0.2s;
-  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.3);
+  box-shadow: 0 2px 12px rgba(6, 182, 212, 0.35);
 }
 
 .btn-run-analysis:hover {
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-  box-shadow: 0 0 16px rgba(14, 165, 233, 0.45);
+  background: linear-gradient(135deg, #22D3EE 0%, #06B6D4 100%);
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.55);
   transform: translateY(-1px);
 }
 
