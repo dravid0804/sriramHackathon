@@ -156,6 +156,22 @@ def list_datasets():
                     datasets.append(meta)
     return {"datasets": datasets}
 
+def sanitize_for_json(obj):
+    """Recursively converts numpy numbers and arrays to standard Python types for JSON serialization."""
+    if isinstance(obj, dict):
+        return {k: sanitize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [sanitize_for_json(v) for v in obj]
+    elif isinstance(obj, (np.floating, float)):
+        return float(obj)
+    elif isinstance(obj, (np.integer, int)):
+        return int(obj)
+    elif isinstance(obj, (np.bool_, bool)):
+        return bool(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    return obj
+
 @app.post("/api/analyze")
 def analyze_dataset(req: AnalyzeRequest):
     """Executes computer vision differencing and community impact analysis on a dataset."""
@@ -195,7 +211,7 @@ def analyze_dataset(req: AnalyzeRequest):
     result["community_impact"] = impact_data
     result["metadata"] = metadata
     
-    return result
+    return sanitize_for_json(result)
 
 @app.get("/api/impact/{dataset_id}")
 def get_community_impact(dataset_id: str):
@@ -209,7 +225,7 @@ def get_community_impact(dataset_id: str):
                 metadata = json.load(f)
                 
     impact_data = analyze_community_impact(dataset_id, [], metadata)
-    return impact_data
+    return sanitize_for_json(impact_data)
 
 @app.get("/api/historical")
 def get_historical_analysis():
@@ -258,6 +274,11 @@ def update_alert_status(alert_id: str, update: AlertStatusUpdate):
             alert["status"] = update.status
             return {"success": True, "alert": alert}
     raise HTTPException(status_code=404, detail="Alert not found")
+
+@app.get("/api/historical/timeline")
+def get_historical_timeline():
+    """Returns multi-year historical surveillance, hotspot evolution, velocity, anomalies, and change events."""
+    return get_historical_timeline_data()
 
 @app.get("/api/datasources")
 def get_data_sources():

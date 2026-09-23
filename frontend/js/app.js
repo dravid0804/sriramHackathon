@@ -124,6 +124,15 @@ class EarthLensApp {
     if (targetPanel) {
       targetPanel.style.display = 'block';
 
+      // If switching to Historical Analysis, resize Chart.js instances
+      if (viewName === 'historical-analysis' && window.historicalAnalyticsModule) {
+        setTimeout(() => {
+          if (window.historicalAnalyticsModule.chartArea) window.historicalAnalyticsModule.chartArea.resize();
+          if (window.historicalAnalyticsModule.chartCategories) window.historicalAnalyticsModule.chartCategories.resize();
+          if (window.historicalAnalyticsModule.chartPriority) window.historicalAnalyticsModule.chartPriority.resize();
+        }, 50);
+      }
+
       // If switching to Community Impact, also set map comparison mode to impact and invalidate split map
       if (viewName === 'community-impact') {
         if (window.earthMap) {
@@ -192,9 +201,12 @@ class EarthLensApp {
         window.communityImpactModule.updateImpact(data.community_impact, data.metadata);
       }
 
-      // 3. Pre-generate Report
+      // 3. Pre-generate Report & Update AI Assistant context
       if (window.reportsGeneratorModule) {
         window.reportsGeneratorModule.generateReport(scenarioId, data.ranked_zones || []);
+      }
+      if (window.investigationAssistantModule) {
+        window.investigationAssistantModule.setActiveDataset(scenarioId);
       }
 
       // 4. Update Tables & Overview KPIs
@@ -588,14 +600,73 @@ class EarthLensApp {
       if (!res.ok) return;
       const data = await res.json();
       this.alertsData = data.alerts || [];
+
+      // Restore any persisted statuses from localStorage
+      try {
+        const cached = JSON.parse(localStorage.getItem('earthlens_alert_statuses') || '{}');
+        this.alertsData.forEach(a => {
+          if (cached[a.id]) {
+            a.status = cached[a.id];
+          }
+        });
+      } catch (e) {}
+
       this.renderAlerts(this.alertsData);
-      
-      const badge = document.getElementById('sidebar-alert-badge');
-      if (badge) {
-        badge.textContent = this.alertsData.filter(a => a.status === 'ACTIVE').length;
-      }
+      this.updateAlertBadges();
     } catch (err) {
       console.warn('Error fetching alerts:', err);
+    }
+  }
+
+  updateAlertBadges() {
+    const activeCount = this.alertsData.filter(a => a.status === 'ACTIVE').length;
+    const badge = document.getElementById('sidebar-alert-badge');
+    if (badge) {
+      badge.textContent = activeCount;
+      badge.style.display = activeCount > 0 ? 'inline-block' : 'none';
+    }
+
+    const countAll = document.getElementById('count-all-alerts');
+    const countCrit = document.getElementById('count-crit-alerts');
+    const countMod = document.getElementById('count-mod-alerts');
+
+    if (countAll) countAll.textContent = this.alertsData.length;
+    if (countCrit) countCrit.textContent = this.alertsData.filter(a => a.severity === 'CRITICAL').length;
+    if (countMod) countMod.textContent = this.alertsData.filter(a => a.severity === 'MODERATE').length;
+  }
+
+  async updateAlertLifecycle(alertId, newStatus) {
+    const alert = this.alertsData.find(a => a.id === alertId);
+    if (!alert) return;
+
+    alert.status = newStatus;
+
+    // 1. Update localStorage cache
+    try {
+      const cached = JSON.parse(localStorage.getItem('earthlens_alert_statuses') || '{}');
+      cached[alertId] = newStatus;
+      localStorage.setItem('earthlens_alert_statuses', JSON.stringify(cached));
+    } catch (e) {}
+
+    // 2. Persist to backend API
+    try {
+      await fetch(`/api/alerts/${alertId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+    } catch (err) {
+      console.warn('Failed to update alert status on server:', err);
+    }
+
+    // 3. Update badges and re-render current view
+    this.updateAlertBadges();
+    const activeFilterBtn = document.querySelector('.alert-filter-btn.active');
+    const filter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+    if (filter === 'all') {
+      this.renderAlerts(this.alertsData);
+    } else {
+      this.renderAlerts(this.alertsData.filter(a => a.severity === filter));
     }
   }
 
@@ -604,33 +675,76 @@ class EarthLensApp {
     if (!container) return;
     container.innerHTML = '';
 
+    if (alerts.length === 0) {
+      container.innerHTML = '<div style="padding: 24px; text-align: center; color: #94a3b8; font-size: 0.85rem;">No alerts matching current filter.</div>';
+      return;
+    }
+
     alerts.forEach(a => {
       const card = document.createElement('div');
-      card.className = 'alert-item-card';
+      const statusClass = (a.status || 'ACTIVE').toLowerCase().replace('_', '-');
+      card.className = `alert-item-card status-${statusClass}`;
       card.style.borderLeftColor = a.severity === 'CRITICAL' ? '#ef4444' : '#f97316';
-      
+
+      let statusBadgeColor = '#ef4444';
+      let statusBg = 'rgba(239, 68, 68, 0.15)';
+      if (a.status === 'UNDER_REVIEW') {
+        statusBadgeColor = '#f97316';
+        statusBg = 'rgba(249, 115, 22, 0.15)';
+      } else if (a.status === 'DISPATCHED') {
+        statusBadgeColor = '#38bdf8';
+        statusBg = 'rgba(56, 189, 248, 0.15)';
+      } else if (a.status === 'REVIEWED' || a.status === 'RESOLVED') {
+        statusBadgeColor = '#10b981';
+        statusBg = 'rgba(16, 185, 129, 0.15)';
+      }
+
+      // Lifecycle action buttons
+      let lifecycleButtons = '';
+      if (a.status === 'ACTIVE') {
+        lifecycleButtons = `
+          <button class="btn-alert-action btn-alert-review" data-id="${a.id}">Mark Reviewed</button>
+          <button class="btn-alert-action btn-alert-dispatch" data-id="${a.id}" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">Dispatch Unit</button>
+        `;
+      } else if (a.status === 'UNDER_REVIEW' || a.status === 'REVIEWED') {
+        lifecycleButtons = `
+          <button class="btn-alert-action btn-alert-dispatch" data-id="${a.id}" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">Dispatch Unit</button>
+          <button class="btn-alert-action btn-alert-resolve" data-id="${a.id}" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">Resolve ✓</button>
+        `;
+      } else if (a.status === 'DISPATCHED') {
+        lifecycleButtons = `
+          <button class="btn-alert-action btn-alert-resolve" data-id="${a.id}" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">Resolve ✓</button>
+        `;
+      } else if (a.status === 'RESOLVED') {
+        lifecycleButtons = `
+          <button class="btn-alert-action btn-alert-reactivate" data-id="${a.id}" style="color: #94a3b8;">Reactivate</button>
+        `;
+      }
+
       card.innerHTML = `
         <div class="alert-meta-col">
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span class="${a.severity === 'CRITICAL' ? 'priority-badge-pill text-red' : 'hazard-badge-pill'}">${a.severity} PRIORITY</span>
             <span class="alert-loc-text">${new Date(a.detection_time).toLocaleDateString()}</span>
-            <span class="score-pill" style="font-size: 0.68rem;">Status: ${a.status}</span>
+            <span style="font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; padding: 2px 8px; border-radius: 4px; color: ${statusBadgeColor}; background: ${statusBg}; border: 1px solid ${statusBadgeColor};">
+              ● ${a.status}
+            </span>
           </div>
           <div class="alert-title-text">${a.title}</div>
-          <div class="alert-loc-text">Region: ${a.location} · Area: ${a.affected_area_km2} km² · Confidence: ${a.confidence}%</div>
+          <div class="alert-loc-text">Region: <strong>${a.location}</strong> · Area: ${a.affected_area_km2} km² · Confidence: ${a.confidence}%</div>
           <div class="alert-summary-text">${a.community_impact}</div>
         </div>
         <div class="alert-actions-col">
           <button class="btn-alert-action btn-primary-action btn-alert-map" data-id="${a.id}">View on Map</button>
-          <button class="btn-alert-action btn-alert-investigate" data-id="${a.id}">Investigate</button>
-          <button class="btn-alert-action btn-alert-review" data-id="${a.id}">Mark Reviewed</button>
+          <button class="btn-alert-action btn-alert-investigate" data-id="${a.id}">Investigate ✦</button>
+          ${lifecycleButtons}
         </div>
       `;
 
       container.appendChild(card);
     });
 
-    // Setup action button listeners
+    // View on Map listener
     container.querySelectorAll('.btn-alert-map').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -643,6 +757,7 @@ class EarthLensApp {
       });
     });
 
+    // Investigate in AI Copilot listener
     container.querySelectorAll('.btn-alert-investigate').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -655,21 +770,40 @@ class EarthLensApp {
           if (drawer) drawer.classList.remove('minimized');
           const assistantTab = document.getElementById('tab-btn-assistant');
           if (assistantTab) assistantTab.click();
+
+          if (window.investigationAssistantModule) {
+            window.investigationAssistantModule.handleQuery(`Investigate alert ${alertItem.title} in ${alertItem.location}. What is the community exposure?`);
+          }
         }
       });
     });
 
+    // Lifecycle action listeners
     container.querySelectorAll('.btn-alert-review').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const alertId = btn.dataset.id;
-        await fetch(`/api/alerts/${alertId}/status`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'REVIEWED' })
-        });
-        btn.textContent = 'Reviewed ✓';
-        btn.style.color = '#10b981';
+        this.updateAlertLifecycle(btn.dataset.id, 'REVIEWED');
+      });
+    });
+
+    container.querySelectorAll('.btn-alert-dispatch').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.updateAlertLifecycle(btn.dataset.id, 'DISPATCHED');
+      });
+    });
+
+    container.querySelectorAll('.btn-alert-resolve').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.updateAlertLifecycle(btn.dataset.id, 'RESOLVED');
+      });
+    });
+
+    container.querySelectorAll('.btn-alert-reactivate').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.updateAlertLifecycle(btn.dataset.id, 'ACTIVE');
       });
     });
   }
