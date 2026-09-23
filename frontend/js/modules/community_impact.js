@@ -421,16 +421,17 @@ class CommunityImpactModule {
       attributionControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd'
     }).addTo(this.splitMap);
 
     // Draw change polygon
     L.circle([coords.lat, coords.lon], {
       radius: 1200,
-      color: '#0284C7',
-      fillColor: '#0284C7',
-      fillOpacity: 0.25,
+      color: '#06B6D4',
+      fillColor: '#06B6D4',
+      fillOpacity: 0.2,
       weight: 2
     }).addTo(this.splitMap).bindTooltip(`<strong>${metadata.change_type || 'Change Area'}</strong>`, { sticky: true });
 
@@ -440,8 +441,8 @@ class CommunityImpactModule {
       if (item.lat && item.lon) {
         const marker = L.circleMarker([item.lat, item.lon], {
           radius: 8,
-          color: '#0284C7',
-          fillColor: '#FFFFFF',
+          color: '#06B6D4',
+          fillColor: '#070A12',
           fillOpacity: 1.0,
           weight: 2.5
         }).addTo(this.splitMap);
@@ -463,6 +464,15 @@ class CommunityImpactModule {
     });
 
     this.fitSplitMapToVisibleMarkers();
+  }
+
+  onPanelShow() {
+    if (this.splitMap) {
+      setTimeout(() => {
+        this.splitMap.invalidateSize();
+        this.fitSplitMapToVisibleMarkers();
+      }, 100);
+    }
   }
 
   updateSplitMapMarkers() {
@@ -502,7 +512,7 @@ class CommunityImpactModule {
   highlightMapMarker(id) {
     const marker = this.splitMarkers[id];
     if (marker) {
-      marker.setStyle({ radius: 12, color: '#DC2626', fillColor: '#FEE2E2', weight: 4 });
+      marker.setStyle({ radius: 12, color: '#EF4444', fillColor: '#38BDF8', weight: 4 });
       marker.bringToFront();
     }
   }
@@ -510,7 +520,7 @@ class CommunityImpactModule {
   unhighlightMapMarker(id) {
     const marker = this.splitMarkers[id];
     if (marker) {
-      marker.setStyle({ radius: 8, color: '#0284C7', fillColor: '#FFFFFF', weight: 2.5 });
+      marker.setStyle({ radius: 8, color: '#06B6D4', fillColor: '#070A12', weight: 2.5 });
     }
   }
 
@@ -609,8 +619,9 @@ class CommunityImpactModule {
       attributionControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd'
     }).addTo(this.drawerMap);
 
     L.marker([lat, lon]).addTo(this.drawerMap).bindTooltip(`<strong>${item.name}</strong>`, { permanent: true }).openTooltip();

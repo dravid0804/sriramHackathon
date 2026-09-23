@@ -97,13 +97,18 @@ class EarthLensApp {
     if (targetPanel) {
       targetPanel.style.display = 'block';
 
-      // If switching to Community Impact, also set map comparison mode to impact
-      if (viewName === 'community-impact' && window.earthMap) {
-        window.earthMap.setComparisonMode('impact');
-        const impactTab = document.getElementById('tab-mode-impact');
-        if (impactTab) {
-          document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-          impactTab.classList.add('active');
+      // If switching to Community Impact, also set map comparison mode to impact and invalidate split map
+      if (viewName === 'community-impact') {
+        if (window.earthMap) {
+          window.earthMap.setComparisonMode('impact');
+          const impactTab = document.getElementById('tab-mode-impact');
+          if (impactTab) {
+            document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+            impactTab.classList.add('active');
+          }
+        }
+        if (window.communityImpactModule && window.communityImpactModule.onPanelShow) {
+          window.communityImpactModule.onPanelShow();
         }
       }
     }
