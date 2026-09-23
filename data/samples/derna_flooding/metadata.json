@@ -1,0 +1,21 @@
+{
+  "id": "derna_flooding",
+  "title": "Mediterranean Coastal Basin \u2014 Extreme Flash Inundation",
+  "location": "Derna Coastal District, Libya",
+  "coordinates": {
+    "lat": 32.7667,
+    "lon": 22.6367,
+    "zoom": 14
+  },
+  "sensor": "Sentinel-1 SAR / Sentinel-2 MSI",
+  "date_before": "2023-09-08",
+  "date_after": "2023-09-13",
+  "change_type": "Flooding",
+  "settlement_center": {
+    "x": 420,
+    "y": 420,
+    "name": "Central Municipal District",
+    "radius": 180
+  },
+  "description": "Catastrophic reservoir breach and intense rainfall storm event washing out primary transit bridges and densely populated residential zones."
+}

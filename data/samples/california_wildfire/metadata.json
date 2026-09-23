@@ -1,0 +1,21 @@
+{
+  "id": "california_wildfire",
+  "title": "Sierra Nevada Foothills \u2014 Complex Wildfire Burn Scar",
+  "location": "Butte County, California, USA",
+  "coordinates": {
+    "lat": 39.7596,
+    "lon": -121.6219,
+    "zoom": 13
+  },
+  "sensor": "Sentinel-2 SWIR / Landsat-9 OLI",
+  "date_before": "2024-07-10",
+  "date_after": "2024-08-04",
+  "change_type": "Wildfire Burn Scar",
+  "settlement_center": {
+    "x": 600,
+    "y": 180,
+    "name": "Paradise Ridge Township",
+    "radius": 90
+  },
+  "description": "Rapidly propagating high-intensity timber canopy blaze with severe thermal burn scar threatening residential wildland-urban interface (WUI)."
+}

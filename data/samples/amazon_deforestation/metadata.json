@@ -1,0 +1,21 @@
+{
+  "id": "amazon_deforestation",
+  "title": "Amazon Rainforest \u2014 Rond\u00f4nia Fishbone Clearing",
+  "location": "Rond\u00f4nia, Brazil",
+  "coordinates": {
+    "lat": -10.8256,
+    "lon": -62.9512,
+    "zoom": 13
+  },
+  "sensor": "Sentinel-2 MSI",
+  "date_before": "2024-05-14",
+  "date_after": "2024-09-22",
+  "change_type": "Deforestation",
+  "settlement_center": {
+    "x": 630,
+    "y": 190,
+    "name": "Nova Esperan\u00e7a Community",
+    "radius": 70
+  },
+  "description": "Rapid commercial timber extraction and slash-and-burn incursions encroaching on native reserve perimeter and agricultural settlement buffer."
+}

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EarthGuard AI — Satellite Change Detection & Prioritized Response System</title>
+  <meta name="description" content="AI for Space & Earth Intelligence: Automated satellite change detection, severity-ranked incident prioritization, confidence-aware telemetry, and natural-language operational briefs.">
+  
+  <!-- Leaflet CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- TOP AEROSPACE COMMAND BAR -->
+  <header class="command-header">
+    <div class="brand-section">
+      <div class="brand-icon-wrapper">
+        <span class="brand-pulse"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+          <path d="M2 12h20"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">
+          EARTHGUARD AI <span class="brand-tag">MISSION V1.0</span>
+        </div>
+        <div class="brand-subtitle">
+          SATELLITE CHANGE DETECTION &amp; PRIORITIZED RESPONSE SYSTEM
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Telemetry HUD -->
+    <div class="telemetry-bar">
+      <div class="hud-pill">
+        <span class="label">CONSTELLATION:</span>
+        <span class="value" id="hud-sensor">Sentinel-2 MSI (10m)</span>
+      </div>
+      <div class="hud-pill">
+        <span class="label">REVISIT:</span>
+        <span class="value" style="color: var(--emerald-safe);">GEO-SYNC ACTIVE</span>
+      </div>
+      <div class="triage-counters">
+        <div class="counter-pill critical" id="counter-critical">
+          <span>CRITICAL:</span> <span id="val-critical">0</span>
+        </div>
+        <div class="counter-pill moderate" id="counter-moderate">
+          <span>MODERATE:</span> <span id="val-moderate">0</span>
+        </div>
+        <div class="counter-pill low" id="counter-low">
+          <span>LOW:</span> <span id="val-low">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions & Dataset Selection -->
+    <div class="header-actions">
+      <div class="dataset-select-wrapper">
+        <select id="dataset-select" class="select-aerospace">
+          <option value="amazon_deforestation">🌲 Amazon Rainforest Deforestation</option>
+          <option value="derna_flooding">🌊 Derna Flash Flood Inundation</option>
+          <option value="california_wildfire">🔥 California Wildfire Burn Scar</option>
+        </select>
+        <span class="select-arrow">▼</span>
+      </div>
+
+      <button id="btn-open-upload" class="btn-secondary" title="Upload Custom Imagery">
+        <span>+ Upload Imagery</span>
+      </button>
+
+      <button id="btn-export-docket" class="btn-cyber" title="Export Executive Incident Docket">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Export Incident Docket</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN COMMAND INTERFACE -->
+  <main class="main-command-grid">
+    
+    <!-- LEFT: SATELLITE & MAP STAGE -->
+    <section class="visualizer-section">
+      
+      <!-- Toolbar -->
+      <div class="visualizer-toolbar">
+        <div class="view-mode-tabs">
+          <button id="tab-curtain" class="tab-btn active">
+            <span>⚡ Interactive Split Curtain</span>
+          </button>
+          <button id="tab-leaflet" class="tab-btn">
+            <span>🌍 Geospatial Satellite Map</span>
+          </button>
+        </div>
+
+        <div class="overlay-controls">
+          <label class="control-toggle" id="lbl-toggle-heatmap">
+            <input type="checkbox" id="chk-heatmap" checked>
+            <span>Diff Heatmap</span>
+          </label>
+
+          <div class="opacity-slider-wrapper">
+            <span>Heatmap Opacity:</span>
+            <input type="range" id="rng-heatmap-opacity" min="0" max="100" value="85">
+          </div>
+
+          <label class="control-toggle" id="lbl-toggle-vectors">
+            <input type="checkbox" id="chk-vectors" checked>
+            <span>Zone Bounding Vectors</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Stage Viewport -->
+      <div class="stage-viewport" id="stage-viewport">
+        
+        <!-- Radar Scan Line Animation -->
+        <div class="radar-scan-line" id="radar-scanner"></div>
+
+        <!-- Curtains Viewport Container -->
+        <div class="curtain-container" id="curtain-view">
+          <div class="curtain-wrapper" id="curtain-wrapper">
+            <!-- Before Image Base -->
+            <img id="img-before" class="curtain-img curtain-before" src="" alt="Before Observation">
+
+            <!-- After Image Clipped by Split Divider -->
+            <div id="curtain-after-wrapper" class="curtain-after-wrapper">
+              <img id="img-after" class="curtain-img curtain-after" src="" alt="After Observation">
+            </div>
+
+            <!-- Heatmap Overlay -->
+            <img id="img-heatmap" class="curtain-heatmap" src="" alt="Difference Heatmap">
+
+            <!-- Vector Canvas Layer -->
+            <canvas id="vector-canvas" class="vector-canvas"></canvas>
+
+            <!-- Draggable Curtain Handle -->
+            <div id="curtain-handle" class="curtain-handle" style="left: 50%;">
+              <div class="curtain-handle-knob">◄►</div>
+            </div>
+          </div>
+
+          <!-- Floating Info HUD -->
+          <div class="visualizer-hud">
+            <div class="hud-location" id="hud-location-title">Loading Target Observation...</div>
+            <div class="hud-coords" id="hud-location-coords">LAT: --.---- | LON: --.----</div>
+          </div>
+
+          <!-- Curtain Before/After indicator labels -->
+          <div class="hud-curtain-labels">
+            <div class="curtain-label-tag before" id="tag-before-date">BEFORE BASELINE</div>
+            <div class="curtain-label-tag after" id="tag-after-date">AFTER OBSERVATION</div>
+          </div>
+        </div>
+
+        <!-- Leaflet Map Container (Hidden by default, toggled with tab) -->
+        <div id="leaflet-map" style="display: none;"></div>
+
+      </div>
+
+      <!-- Bottom Analytics & Telemetry Bar -->
+      <div class="bottom-telemetry-drawer">
+        <div class="drawer-stat-group">
+          <div class="drawer-stat">
+            <span class="stat-name">IMPACTED AREA</span>
+            <span class="stat-val" id="stat-hectares" style="color: var(--cyan-primary);">0.00 ha</span>
+          </div>
+          <div class="drawer-stat">
+            <span class="stat-name">SURFACE DELTA</span>
+            <span class="stat-val" id="stat-change-pct">0.00%</span>
+          </div>
+          <div class="drawer-stat">
+            <span class="stat-name">MEAN CONFIDENCE</span>
+            <span class="stat-val" id="stat-mean-conf" style="color: var(--emerald-safe);">96%</span>
+          </div>
+          <div class="drawer-stat">
+            <span class="stat-name">PIPELINE LATENCY</span>
+            <span class="stat-val" style="color: #a78bfa;">128 ms (CV Accelerated)</span>
+          </div>
+        </div>
+
+        <div class="drawer-stat-group">
+          <div class="drawer-stat" style="text-align: right;">
+            <span class="stat-name">ALGORITHM STACK</span>
+            <span class="stat-val">OpenCV Contours + Multi-Band Spectral + Urgency Ranker</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT: TACTICAL RESPONSE SIDEBAR (NOVELTY SUITE) -->
+    <aside class="sidebar-triage">
+      <div class="sidebar-header">
+        <div class="sidebar-title-row">
+          <div class="sidebar-title">
+            <span>PRIORITIZED INCIDENT QUEUE</span>
+          </div>
+          <span class="sidebar-badge" id="badge-total-incidents">0 FLAGGED</span>
+        </div>
+
+        <!-- Triage Priority Filter Tabs -->
+        <div class="triage-filter-tabs">
+          <button class="filter-pill active" data-filter="ALL">ALL (<span id="count-all">0</span>)</button>
+          <button class="filter-pill" data-filter="CRITICAL" style="color: var(--crimson-hazard);">CRITICAL (<span id="count-crit">0</span>)</button>
+          <button class="filter-pill" data-filter="MODERATE" style="color: var(--amber-warn);">MODERATE (<span id="count-mod">0</span>)</button>
+          <button class="filter-pill" data-filter="LOW" style="color: var(--emerald-safe);">LOW (<span id="count-low">0</span>)</button>
+        </div>
+      </div>
+
+      <!-- Scrollable Incident Card Queue -->
+      <div class="incident-queue-list" id="incident-queue-list">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- MODAL: CUSTOM IMAGERY UPLOAD -->
+  <div class="modal-overlay" id="modal-upload">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Upload Custom Satellite Observation Pair</div>
+        <button class="modal-close-btn" id="btn-close-upload">&times;</button>
+      </div>
+
+      <form id="form-upload">
+        <div class="upload-dropzone" id="dropzone-before">
+          <p><strong>1. Select / Drop "BEFORE" Satellite Image</strong></p>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">PNG, JPG, TIFF (Max 20MB)</span>
+          <input type="file" id="file-before" accept="image/*" style="display: none;">
+          <div id="preview-before-name" style="margin-top: 8px; font-family: var(--font-mono); color: var(--cyan-primary);"></div>
+        </div>
+
+        <div class="upload-dropzone" id="dropzone-after">
+          <p><strong>2. Select / Drop "AFTER" Satellite Image</strong></p>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">PNG, JPG, TIFF (Matching bounding extent)</span>
+          <input type="file" id="file-after" accept="image/*" style="display: none;">
+          <div id="preview-after-name" style="margin-top: 8px; font-family: var(--font-mono); color: var(--crimson-hazard);"></div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); display: block; margin-bottom: 6px;">
+            Target Mission Title / Area:
+          </label>
+          <input type="text" id="upload-title" value="Custom AOI Incident Sweep" style="width: 100%; background: #050811; border: 1px solid var(--border-subtle); color: #fff; padding: 8px 12px; border-radius: var(--radius-sm); font-family: var(--font-main);">
+        </div>
+
+        <button type="submit" class="btn-cyber" style="width: 100%; justify-content: center; padding: 12px;">
+          Run EarthGuard AI Triage Pipeline
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EXECUTIVE INCIDENT DISPATCH DOCKET -->
+  <div class="modal-overlay" id="modal-docket">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Executive Incident Dispatch Briefing</div>
+        <button class="modal-close-btn" id="btn-close-docket">&times;</button>
+      </div>
+
+      <div class="printable-report" id="docket-content">
+        <!-- Filled dynamically by app.js -->
+      </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-secondary" onclick="window.print()">Print / Save PDF</button>
+        <button class="btn-cyber" id="btn-copy-docket-json">Copy JSON Docket</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
