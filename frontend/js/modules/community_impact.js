@@ -1,11 +1,14 @@
 /**
  * EarthLens AI — Community Impact & Vulnerability UI Module
+ * Owned by: MEMBER 2 (Community Impact & Vulnerability Lead)
+ * Zero Merge Conflicts: Only Member 2 edits this file.
  * Answers: "Who and what could be affected by this environmental change?"
  */
 
 class CommunityImpactModule {
   constructor() {
     this.currentImpactData = null;
+    this.activeFilter = 'all';
   }
 
   updateImpact(impactData, metadata) {
@@ -26,7 +29,7 @@ class CommunityImpactModule {
     if (elRoads) elRoads.textContent = summary.roads_count || 0;
     if (elAgri) elAgri.textContent = `${summary.agricultural_land_km2 || 0} km²`;
 
-    // 2. Update Community Impact Dedicated Panel
+    // 2. Update Community Impact Dedicated Panel Quick Stats
     const ciSettlements = document.getElementById('ci-settlements-count');
     const ciSchools = document.getElementById('ci-schools-count');
     const ciHospitals = document.getElementById('ci-hospitals-count');
@@ -39,7 +42,7 @@ class CommunityImpactModule {
     if (ciRoads) ciRoads.textContent = summary.roads_count || 0;
     if (ciAgri) ciAgri.textContent = `${summary.agricultural_land_km2 || 0} km²`;
 
-    // Vulnerability Tier
+    // 3. Vulnerability Banner & Rationale
     const ciVulnLevel = document.getElementById('ci-vuln-level');
     const ciVulnRationale = document.getElementById('ci-vuln-rationale');
     if (ciVulnLevel) ciVulnLevel.textContent = `${(summary.vulnerability_tier || 'MODERATE').toUpperCase()} VULNERABILITY TERRAIN`;
@@ -47,57 +50,106 @@ class CommunityImpactModule {
       ciVulnRationale.textContent = impactData.vulnerability_layer.rationale || 'Geospatial infrastructure density evaluation.';
     }
 
-    // Hospitals List
+    // 4. Hospitals List with ICU Badges & Exposure Metrics
     const hospList = document.getElementById('ci-hospitals-list');
     if (hospList) {
       hospList.innerHTML = '';
       (facilities.hospitals || []).forEach(h => {
         const item = document.createElement('div');
-        item.className = 'facility-item-row';
+        item.className = 'facility-item-row enhanced-facility-card';
+        const distKm = h.distance_km != null ? h.distance_km : 1.0;
         item.innerHTML = `
-          <div>
-            <strong>${h.name}</strong>
-            <div style="font-size: 0.72rem; color: #94a3b8;">${h.beds} Beds · ${h.emergency_icu ? 'Emergency ICU Active' : 'Clinic'}</div>
+          <div class="facility-info-meta">
+            <div class="facility-title-row">
+              <strong class="facility-name">${h.name}</strong>
+              ${h.emergency_icu ? '<span class="badge-icu-active">🏥 ICU EMERGENCY ACTIVE</span>' : '<span class="badge-clinic">CLINIC</span>'}
+            </div>
+            <div class="facility-sub-detail">
+              <span>🛏️ ${h.beds} Hospital Beds</span> · 
+              <span>📍 ${distKm} km from epicenter</span>
+            </div>
           </div>
-          <span style="color: #ef4444; font-weight: 600; font-size: 0.72rem;">${h.status}</span>
+          <div class="facility-status-col">
+            <span class="facility-status-pill status-red">${h.status}</span>
+          </div>
         `;
         hospList.appendChild(item);
       });
     }
 
-    // Schools List
+    // 5. Schools List with Student Enrollment Badges
     const schoolsList = document.getElementById('ci-schools-list');
     if (schoolsList) {
       schoolsList.innerHTML = '';
       (facilities.schools || []).forEach(sc => {
         const item = document.createElement('div');
-        item.className = 'facility-item-row';
+        item.className = 'facility-item-row enhanced-facility-card';
+        const distKm = sc.distance_km != null ? sc.distance_km : 0.8;
         item.innerHTML = `
-          <div>
-            <strong>${sc.name}</strong>
-            <div style="font-size: 0.72rem; color: #94a3b8;">${sc.students} Students Enrolled</div>
+          <div class="facility-info-meta">
+            <div class="facility-title-row">
+              <strong class="facility-name">${sc.name}</strong>
+              <span class="badge-students">🏫 ${sc.students} Students</span>
+            </div>
+            <div class="facility-sub-detail">
+              <span>📍 Proximity Buffer: ${distKm} km</span>
+            </div>
           </div>
-          <span style="color: #f97316; font-weight: 600; font-size: 0.72rem;">${sc.status}</span>
+          <div class="facility-status-col">
+            <span class="facility-status-pill status-orange">${sc.status}</span>
+          </div>
         `;
         schoolsList.appendChild(item);
       });
     }
 
-    // Roads List
+    // 6. Roads & Transit Access Links
     const roadsList = document.getElementById('ci-roads-list');
     if (roadsList) {
       roadsList.innerHTML = '';
       (facilities.roads || []).forEach(r => {
         const item = document.createElement('div');
-        item.className = 'facility-item-row';
+        item.className = 'facility-item-row enhanced-facility-card';
         item.innerHTML = `
-          <div>
-            <strong>${r.name}</strong>
-            <div style="font-size: 0.72rem; color: #94a3b8;">${r.type} (${r.lanes} Lanes)</div>
+          <div class="facility-info-meta">
+            <div class="facility-title-row">
+              <strong class="facility-name">${r.name}</strong>
+              <span class="badge-transit">🛣️ ${r.type} (${r.lanes} Lanes)</span>
+            </div>
+            <div class="facility-sub-detail">
+              <span>Transit Capacity & Evacuation Corridor</span>
+            </div>
           </div>
-          <span style="color: #06b6d4; font-weight: 600; font-size: 0.72rem;">${r.status}</span>
+          <div class="facility-status-col">
+            <span class="facility-status-pill status-cyan">${r.status}</span>
+          </div>
         `;
         roadsList.appendChild(item);
+      });
+    }
+
+    // 7. Settlements & Population Clusters (if container exists or dynamically added)
+    const settlementsList = document.getElementById('ci-settlements-list');
+    if (settlementsList) {
+      settlementsList.innerHTML = '';
+      (facilities.settlements || []).forEach(s => {
+        const item = document.createElement('div');
+        item.className = 'facility-item-row enhanced-facility-card';
+        item.innerHTML = `
+          <div class="facility-info-meta">
+            <div class="facility-title-row">
+              <strong class="facility-name">${s.name}</strong>
+              <span class="badge-population">👥 ${s.population.toLocaleString()} Residents</span>
+            </div>
+            <div class="facility-sub-detail">
+              <span>📍 Distance: ${s.distance_km} km</span>
+            </div>
+          </div>
+          <div class="facility-status-col">
+            <span class="facility-status-pill status-purple">${s.status}</span>
+          </div>
+        `;
+        settlementsList.appendChild(item);
       });
     }
   }
