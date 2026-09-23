@@ -876,25 +876,74 @@
             </p>
           </div>
 
-          <!-- Detailed Facilities List -->
+          <!-- Emergency Access & Dispatch Alert Banner -->
+          <div class="ci-emergency-alert-banner">
+            <div class="ci-alert-left">
+              <div class="ci-alert-icon-ring">🚨</div>
+              <div>
+                <div class="ci-alert-title" id="ci-alert-title">Critical Emergency Access Corridor Warning</div>
+                <div class="ci-alert-sub" id="ci-alert-sub">Primary hospital access route & secondary bridge choke points require immediate triage protocol.</div>
+              </div>
+            </div>
+            <div class="ci-alert-badge" id="ci-alert-badge">STATUS: POTENTIALLY CUT</div>
+          </div>
+
+          <!-- Interactive Category Filter & Live Search Toolbar -->
+          <div class="ci-controls-toolbar">
+            <div class="ci-filter-tabs" id="ci-filter-tabs">
+              <button class="ci-filter-btn active" data-filter="all">🌐 All Facilities</button>
+              <button class="ci-filter-btn" data-filter="hospitals">🏥 Healthcare</button>
+              <button class="ci-filter-btn" data-filter="schools">🏫 Education</button>
+              <button class="ci-filter-btn" data-filter="roads">🛣️ Transit Links</button>
+              <button class="ci-filter-btn" data-filter="settlements">🏘️ Settlements</button>
+            </div>
+            <div class="ci-search-box">
+              <svg class="ci-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="ci-search-input" class="ci-search-input" placeholder="Search facilities, status, roads...">
+            </div>
+          </div>
+
+          <!-- Detailed Facilities List Grid (Clinical & Spacious 2-Column Grid) -->
           <div class="facilities-grid">
-            <div class="facility-card-block">
-              <div class="facility-card-header">🏥 Hospitals &amp; Emergency Health Facilities</div>
+            <div class="facility-card-block" data-category="hospitals">
+              <div class="facility-card-header">
+                <span>🏥 Hospitals &amp; Emergency Health Facilities</span>
+                <span class="facility-card-count-badge" id="ci-hosp-count-badge">1 Facility</span>
+              </div>
               <div class="facility-items-list" id="ci-hospitals-list">
                 <!-- Populated via JS -->
               </div>
             </div>
 
-            <div class="facility-card-block">
-              <div class="facility-card-header">🏫 Schools &amp; Educational Centers</div>
+            <div class="facility-card-block" data-category="schools">
+              <div class="facility-card-header">
+                <span>🏫 Schools &amp; Educational Centers</span>
+                <span class="facility-card-count-badge" id="ci-schools-count-badge">3 Facilities</span>
+              </div>
               <div class="facility-items-list" id="ci-schools-list">
                 <!-- Populated via JS -->
               </div>
             </div>
 
-            <div class="facility-card-block">
-              <div class="facility-card-header">🛣️ Primary &amp; Secondary Transit Corridors</div>
+            <div class="facility-card-block" data-category="roads">
+              <div class="facility-card-header">
+                <span>🛣️ Primary &amp; Secondary Transit Corridors</span>
+                <span class="facility-card-count-badge" id="ci-roads-count-badge">6 Corridors</span>
+              </div>
               <div class="facility-items-list" id="ci-roads-list">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+
+            <div class="facility-card-block" data-category="settlements">
+              <div class="facility-card-header">
+                <span>🏘️ Nearby Settlements &amp; Residential Wards</span>
+                <span class="facility-card-count-badge" id="ci-settlements-count-badge">6 Settlements</span>
+              </div>
+              <div class="facility-items-list" id="ci-settlements-list">
                 <!-- Populated via JS -->
               </div>
             </div>

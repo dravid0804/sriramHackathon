@@ -2,18 +2,92 @@
    EarthLens AI — Feature Domain 2: Community Impact & Vulnerability Styles
    Owned by: MEMBER 2 (Community Impact & Vulnerability Lead)
    Zero Merge Conflicts: Only Member 2 edits this file.
+   Design Aesthetic: Clinical, Dark Aerospace Command, Spacious, Luminous
    ========================================================================== */
 
-/* Community Vulnerability Banner */
+/* 1. Emergency Dispatch Alert Banner */
+.ci-emergency-alert-banner {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  border-left: 4px solid #ef4444;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.12);
+}
+
+.ci-alert-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ci-alert-icon-ring {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.ci-alert-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.ci-alert-sub {
+  font-size: 0.75rem;
+  color: #fca5a5;
+  margin-top: 2px;
+}
+
+.ci-alert-badge {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* 2. Community Vulnerability Banner */
 .vulnerability-intel-box {
-  background: linear-gradient(135deg, rgba(225, 29, 72, 0.14) 0%, rgba(9, 14, 26, 0.85) 100%);
-  border: 1px solid rgba(225, 29, 72, 0.4);
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.12) 0%, rgba(13, 19, 33, 0.95) 100%);
+  border: 1px solid rgba(225, 29, 72, 0.35);
   border-radius: var(--radius-lg);
   padding: 18px 22px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 4px 20px rgba(225, 29, 72, 0.15);
+  gap: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.vuln-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vuln-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .vuln-badge {
@@ -22,193 +96,350 @@
   font-weight: 700;
   background: rgba(225, 29, 72, 0.25);
   color: #fda4af;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 4px;
-  margin-right: 8px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .vuln-level {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.02em;
 }
 
-/* Infrastructure Facilities Grid */
-.facilities-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 16px;
+.vuln-disclaimer-pill {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 3px 10px;
+  border-radius: 12px;
 }
 
-.facility-card-block {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  backdrop-filter: blur(8px);
+.vuln-text {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #cbd5e1;
 }
 
-.facility-card-header {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #f8fafc;
-  border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: 8px;
+/* 3. Interactive Category Filter & Search Bar */
+.ci-controls-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.ci-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.ci-filter-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ci-filter-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ci-filter-btn.active {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+}
+
+.ci-search-box {
+  position: relative;
+  min-width: 240px;
+}
+
+.ci-search-input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 7px 12px 7px 32px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ci-search-input:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
+}
+
+.ci-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+/* 4. Clinical Spacious Facilities Grid Layout */
+.facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+  gap: 20px;
+}
+
+.facility-card-block {
+  background: rgba(13, 19, 33, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease;
+}
+
+.facility-card-block:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.facility-card-header {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  letter-spacing: 0.01em;
+}
+
+.facility-card-count-badge {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .facility-items-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
+/* Clinical Vertical Card Layout for Each Facility Item */
 .facility-item-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-sm);
-  font-size: 0.78rem;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
 }
 
 .facility-item-row:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.14);
   transform: translateY(-1px);
 }
 
-.enhanced-facility-card {
-  gap: 12px;
-}
-
-.facility-info-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
+/* Header row inside facility card: Title on top-left, Status pill on top-right */
 .facility-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+}
+
+.facility-name {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  flex: 1;
+}
+
+/* Badges & Telemetry Row */
+.facility-badges-row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.facility-name {
-  color: #f8fafc;
-  font-weight: 600;
-  font-size: 0.82rem;
-}
-
-.facility-sub-detail {
-  font-size: 0.72rem;
-  color: var(--text-dim);
-}
-
-/* Facility Badges */
 .badge-icu-active {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
   font-weight: 700;
-  background: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.2);
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.4);
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
 }
 
 .badge-clinic {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
   font-weight: 600;
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.15);
   color: #cbd5e1;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
 }
 
 .badge-students {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
   font-weight: 600;
-  background: rgba(249, 115, 22, 0.2);
+  background: rgba(249, 115, 22, 0.18);
   color: #fdba74;
-  border: 1px solid rgba(249, 115, 22, 0.3);
-  padding: 2px 6px;
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  padding: 3px 8px;
   border-radius: 4px;
 }
 
 .badge-transit {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
   font-weight: 600;
-  background: rgba(6, 182, 212, 0.2);
+  background: rgba(6, 182, 212, 0.18);
   color: #67e8f9;
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  padding: 2px 6px;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  padding: 3px 8px;
   border-radius: 4px;
 }
 
 .badge-population {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
   font-weight: 600;
-  background: rgba(168, 85, 247, 0.2);
+  background: rgba(168, 85, 247, 0.18);
   color: #e9d5ff;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  padding: 2px 6px;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  padding: 3px 8px;
   border-radius: 4px;
+}
+
+.badge-dist {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* Proximity Distance Threat Meter Bar */
+.threat-meter-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.threat-meter-label {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.threat-meter-bar-wrapper {
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.threat-meter-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.fill-red { background: linear-gradient(90deg, #f97316 0%, #ef4444 100%); }
+.fill-orange { background: linear-gradient(90deg, #eab308 0%, #f97316 100%); }
+.fill-cyan { background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%); }
+.fill-purple { background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 100%); }
+
+.threat-meter-val {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Status Pills */
-.facility-status-col {
-  text-align: right;
-  flex-shrink: 0;
-}
-
 .facility-status-pill {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-family: var(--font-mono);
-  display: inline-block;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.2;
 }
 
 .status-red {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
 .status-orange {
   color: #f97316;
   background: rgba(249, 115, 22, 0.15);
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  border: 1px solid rgba(249, 115, 22, 0.35);
 }
 
 .status-cyan {
   color: #06b6d4;
   background: rgba(6, 182, 212, 0.15);
-  border: 1px solid rgba(6, 182, 212, 0.3);
+  border: 1px solid rgba(6, 182, 212, 0.35);
 }
 
 .status-purple {
   color: #a855f7;
   background: rgba(168, 85, 247, 0.15);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  border: 1px solid rgba(168, 85, 247, 0.35);
 }
 
 /* Detail Drawer Community Section */
