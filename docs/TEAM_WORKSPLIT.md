@@ -1,166 +1,203 @@
-# 👥 EarthGuard AI — Functional Team Worksplit & Zero-Merge-Conflict Guide
+# 👥 EarthLens AI — Functional Team Worksplit & Zero-Merge-Conflict Architecture
 
-Welcome team! To ensure everyone can code concurrently **without git merge conflicts**, our project is partitioned by **Full-Stack Functional Feature Domains** rather than technical layers. 
+Welcome team! To ensure all three team members can develop concurrently **without git merge conflicts**, the **EarthLens AI** codebase is partitioned by **Full-Stack Functional Feature Domains** rather than technical layers (no frontend vs backend separation).
 
-Each member is an **End-to-End Feature Owner** (owning the backend algorithm, data structures, and frontend interactive component for their specific feature).
+Each member is an **End-to-End Feature Owner** owning the backend algorithms, data models, frontend UI module, and styling for their dedicated feature domain.
 
 ---
 
-## 🏗️ Functional Feature Directory Isolation
+## 🏛️ Directory Isolation & File Ownership Matrix
 
-Every feature has its own dedicated files in both the backend and frontend. You will **only** edit files belonging to your feature domain:
+Every team member has exclusive write access to their own files. Follow this golden rule:  
+**Only edit files assigned to your role.**
 
 ```
 SRIRAM_HACKATHON/
 │
 ├── backend/
 │   ├── modules/
-│   │   ├── detection/          <-- 🟢 MEMBER 1 (Feature 1 Backend)
-│   │   │   ├── cv_engine.py
-│   │   │   └── spectral_indices.py
+│   │   ├── detection/                 <-- 🟢 MEMBER 1 (Feature 1 Backend)
+│   │   │   ├── cv_engine.py           # Differencing, Otsu adaptive thresholding, bounding boxes
+│   │   │   ├── classifier.py          # Multi-hazard environmental change classifier
+│   │   │   └── spectral_indices.py    # NDVI & NDWI proxy vegetation/water metrics
 │   │   │
-│   │   ├── prioritization/     <-- 🔵 MEMBER 2 (Feature 2 Backend)
-│   │   │   ├── urgency_ranker.py
-│   │   │   ├── classifier.py
-│   │   │   └── geospatial_coords.py
+│   │   ├── impact/                    <-- 🔵 MEMBER 2 (Feature 2 Backend)
+│   │   │   ├── community_engine.py    # Proximity modeling, exposure metrics, vulnerability tiers
+│   │   │   └── cadastral_loader.py    # OpenStreetMap / HDX infrastructure vector loader
 │   │   │
-│   │   └── briefing/           <-- 🟣 MEMBER 3 (Feature 3 Backend)
-│   │       ├── confidence_model.py
-│   │       └── narrative_engine.py
+│   │   ├── historical/                <-- 🟣 MEMBER 3 (Feature 3 Backend)
+│   │   │   └── timeline_engine.py     # Multi-year metrics (2024-2026) & hotspot clusters
+│   │   │
+│   │   └── assistant/                 <-- 🟣 MEMBER 3 (Feature 3 Backend)
+│   │       └── query_engine.py        # Grounded AI Copilot Q&A engine (zero hallucinations)
 │   │
-│   ├── main.py                 <-- 🔒 Shared API Router (Fixed contract)
-│   └── test_pipeline.py        <-- 🔒 Integration Test Suite
+│   ├── main.py                        <-- 🔒 Fixed Shared API Contract (Read-Only)
+│   └── test_pipeline.py               <-- 🔒 Shared Regression Test Suite (Read-Only)
 │
 ├── frontend/
 │   ├── js/modules/
-│   │   ├── detection_studio.js <-- 🟢 MEMBER 1 (Feature 1 Frontend)
-│   │   ├── triage_map.js       <-- 🔵 MEMBER 2 (Feature 2 Frontend)
-│   │   └── incident_briefs.js  <-- 🟣 MEMBER 3 (Feature 3 Frontend)
+│   │   ├── intelligence_map.js        <-- 🟢 MEMBER 1 (Feature 1 Frontend)
+│   │   ├── community_impact.js        <-- 🔵 MEMBER 2 (Feature 2 Frontend)
+│   │   ├── historical_analytics.js    <-- 🟣 MEMBER 3 (Feature 3 Frontend)
+│   │   ├── investigation_assistant.js <-- 🟣 MEMBER 3 (Feature 3 Frontend)
+│   │   └── reports_generator.js       <-- 🟣 MEMBER 3 (Feature 3 Frontend)
 │   │
 │   ├── css/modules/
-│   │   ├── detection.css       <-- 🟢 MEMBER 1 (Feature 1 Styles)
-│   │   ├── triage.css          <-- 🔵 MEMBER 2 (Feature 2 Styles)
-│   │   └── briefs.css          <-- 🟣 MEMBER 3 (Feature 3 Styles)
+│   │   ├── map_studio.css             <-- 🟢 MEMBER 1 (Feature 1 Styles)
+│   │   ├── community_impact.css       <-- 🔵 MEMBER 2 (Feature 2 Styles)
+│   │   └── analytics_copilot.css      <-- 🟣 MEMBER 3 (Feature 3 Styles)
 │   │
-│   ├── index.html              <-- 🔒 Base Layout Shell
-│   ├── css/style.css           <-- 🔒 Base Design Tokens (Imports feature styles)
-│   └── js/app.js               <-- 🔒 Master Event Hub (Coordinates feature modules)
+│   ├── index.html                     <-- 🔒 Base Layout Shell (Fixed DOM IDs)
+│   ├── css/style.css                  <-- 🔒 Master Stylesheet (Imports modular feature CSS)
+│   └── js/app.js                      <-- 🔒 Master Orchestrator (Dispatches shared events)
 │
-├── data/                       <-- 🟢 MEMBER 1 (Datasets & Synthetic Scenarios)
+├── data/                              <-- 🟢 MEMBER 1 (Datasets & Synthetic Scenarios)
 │   ├── generate_sample_data.py
 │   └── samples/
+│       ├── derna_flooding/
+│       ├── amazon_deforestation/
+│       ├── madurai_urban/
+│       └── california_wildfire/
 │
 └── docs/
-    ├── TEAM_WORKSPLIT.md       <-- 🔒 Team Onboarding Guide (This file)
-    └── PITCH_SCRIPT.md         <-- 🟣 MEMBER 3 & ALL (2-Minute Demo Script)
+    ├── TEAM_WORKSPLIT.md              <-- 🔒 This Team Worksplit Document
+    └── walkthrough.md                 <-- 🔒 Project Capabilities Walkthrough
 ```
 
 ---
 
-## 🎯 Select Your Role
+## 🎯 Role Selection & Feature Ownership
 
-Select one role below. When you work with your AI assistant, begin your prompt with the **AI Persona Prompt** for your role!
+Choose one of the 3 roles below. When you work with your AI assistant, begin your prompt with the **AI Persona Prompt** for your role!
 
 ---
 
-### 🟢 MEMBER 1: Satellite Change Detection & Observation Studio Lead
-- **Domain**: Computer vision differencing algorithms, multispectral math, and the interactive comparison studio.
-- **Git Feature Branch**: `feature/member1-change-detection-studio`
-- **Your Exclusive Files**:
+### 🟢 MEMBER 1: Detection Studio, Computer Vision & Live Geospatial Map Engine Lead
+
+* **Functional Scope**:
+  - Satellite pair ingestion and pre-processing
+  - Classical CV differencing (Otsu adaptive thresholding, contour extraction, bounding boxes)
+  - Multi-hazard classifier (Flooding, Deforestation, Urban Expansion, Wildfire, Coastal)
+  - Interactive Leaflet Map centerpiece with ESRI Satellite & CartoDB Dark Matter basemaps
+  - 16-Layer toggle system & drawer
+  - Top comparison mode switcher: `[ BEFORE ] [ AFTER ] [ DIFFERENCE ] [ IMPACT ]`
+  - Draggable Before/After curtain comparison swipe slider
+  - Demo scenario data synthesis (`data/generate_sample_data.py` & `data/samples/`)
+* **Git Feature Branch**: `feature/member1-map-detection-studio`
+* **Your Exclusive Files (Zero Conflicts)**:
   - `backend/modules/detection/cv_engine.py`
+  - `backend/modules/detection/classifier.py`
   - `backend/modules/detection/spectral_indices.py`
-  - `frontend/js/modules/detection_studio.js`
-  - `frontend/css/modules/detection.css`
+  - `frontend/js/modules/intelligence_map.js`
+  - `frontend/css/modules/map_studio.css`
   - `data/generate_sample_data.py`
-  - `data/samples/`
-- **AI Persona Prompt**:
-  > *"I am Member 1, the Feature Owner for Satellite Change Detection & Observation Studio. I own `backend/modules/detection/` and `frontend/js/modules/detection_studio.js`. Let's enhance..."*
-- **Your Core Tasks**:
-  1. **Advanced Spectral Indices**: Enhance Normalized Burn Ratio (NBR) and Normalized Difference Water Index (NDWI) in `spectral_indices.py`.
-  2. **Contour Consolidation**: Tune Otsu thresholding and morphological closing kernels in `cv_engine.py` so contiguous tracts merge cleanly without fragmented noise.
-  3. **Observation Studio Interactivity**: Refine the Side-by-Side Dual View and Curtain Swipe handle dragging mechanics in `detection_studio.js`.
-  4. **New Datasets**: Add 1-2 new disaster scenarios in `data/generate_sample_data.py` with known ground truths.
+  - `data/samples/**`
+* **Your AI Persona Prompt**:
+  > *"I am Member 1, the Feature Owner for Detection Studio, Computer Vision & Live Geospatial Map Engine in EarthLens AI. I exclusively own `backend/modules/detection/`, `frontend/js/modules/intelligence_map.js`, `frontend/css/modules/map_studio.css`, and `data/`. Let's work on..."*
+* **Your Key Tasks**:
+  1. **Enhanced Edge & Contour Differencing**: Tune morphological closing kernels in `cv_engine.py` to prevent fragmented anomaly noise and produce crisp change polygons.
+  2. **Spectral Classifier Refinement**: Improve distinction between urban concrete development vs dry bare soil in `classifier.py`.
+  3. **Swipe Curtain Performance**: Optimize the draggable divider curtain in `intelligence_map.js` for high frame rates on large displays.
+  4. **New Datasets**: Add or fine-tune high-resolution satellite sample pairs in `data/generate_sample_data.py`.
 
 ---
 
-### 🔵 MEMBER 2: Severity-Ranked Prioritization & Geospatial Triage Lead
-- **Domain**: Anomaly triage scoring, settlement proximity decay, and the fullscreen geospatial map/queue.
-- **Git Feature Branch**: `feature/member2-prioritization-triage`
-- **Your Exclusive Files**:
-  - `backend/modules/prioritization/urgency_ranker.py`
-  - `backend/modules/prioritization/classifier.py`
-  - `backend/modules/prioritization/geospatial_coords.py`
-  - `frontend/js/modules/triage_map.js`
-  - `frontend/css/modules/triage.css`
-- **AI Persona Prompt**:
-  > *"I am Member 2, the Feature Owner for Severity-Ranked Prioritization & Geospatial Triage. I own `backend/modules/prioritization/` and `frontend/js/modules/triage_map.js`. Let's enhance..."*
-- **Your Core Tasks**:
-  1. **Urgency Score Formula**: Calibrate weights across Magnitude (35%), Community Proximity (40%), and Contiguous Area (25%) in `urgency_ranker.py`.
-  2. **Event Classifier**: Expand classification heuristics in `classifier.py` to recognize Urban Development and Industrial expansion.
-  3. **Geospatial Leaflet Map**: Enhance the fullscreen Leaflet map in `triage_map.js` with custom satellite markers, popups, and click-to-spotlight interactions.
-  4. **Priority Triage Queue**: Improve sorting, filtering chips, and metrics display in the triage table.
+### 🔵 MEMBER 2: Community Impact Intelligence, Vulnerability & Critical Infrastructure Lead
+
+* **Functional Scope**:
+  - Community impact calculation engine (answers *"Who and what could be affected by this environmental change?"*)
+  - Critical infrastructure proximity modeling:
+    - 🏘️ Nearby Settlements / Population clusters
+    - 🏫 Schools & educational facilities
+    - 🏥 Hospitals & emergency health centers (ICU status, severed road warnings)
+    - 🛣️ Primary & secondary transit bridges (washout / impassable status)
+    - 🌾 Agricultural reserves & farmland
+    - 💧 Water reservoirs & treatment infrastructure
+  - Demographic Vulnerability Heatmap (High, Moderate, Low vulnerability buffer zones)
+  - Transparent Multi-Factor Investigation Priority Formula (Area + Velocity + Infrastructure Proximity + AI Confidence)
+  - Right-side Change Detail Drawer (Anomaly telemetry, severity, and potential impacts)
+* **Git Feature Branch**: `feature/member2-community-vulnerability`
+* **Your Exclusive Files (Zero Conflicts)**:
+  - `backend/modules/impact/community_engine.py`
+  - `backend/modules/impact/cadastral_loader.py`
+  - `backend/modules/impact/__init__.py`
+  - `frontend/js/modules/community_impact.js`
+  - `frontend/css/modules/community_impact.css`
+* **Your AI Persona Prompt**:
+  > *"I am Member 2, the Feature Owner for Community Impact Intelligence, Vulnerability & Critical Infrastructure in EarthLens AI. I exclusively own `backend/modules/impact/`, `frontend/js/modules/community_impact.js`, and `frontend/css/modules/community_impact.css`. Let's work on..."*
+* **Your Key Tasks**:
+  1. **Proximity Decay Formula**: Enhance distance attenuation in `community_engine.py` to weight hospitals and bridges higher than general land parcels.
+  2. **Demographic Vulnerability Modeling**: Refine the buffer radii and socioeconomic vulnerability rationale for High, Moderate, and Low tiers.
+  3. **Impact Inventory UI**: Polish the facility breakdown cards in `community_impact.js` with capacity badges and emergency routing alerts.
+  4. **Strict Labeling Rigor**: Maintain clear "Potentially Affected" disclaimers on all outputs to prevent speculative casualty figures.
 
 ---
 
-### 🟣 MEMBER 3: Confidence Transparency & AI Incident Response Briefings Lead
-- **Domain**: Atmospheric uncertainty modeling, natural-language operational briefs, audio speech synthesis, and pitch delivery.
-- **Git Feature Branch**: `feature/member3-confidence-ai-briefs`
-- **Your Exclusive Files**:
-  - `backend/modules/briefing/confidence_model.py`
-  - `backend/modules/briefing/narrative_engine.py`
-  - `frontend/js/modules/incident_briefs.js`
-  - `frontend/css/modules/briefs.css`
-  - `docs/PITCH_SCRIPT.md`
-- **AI Persona Prompt**:
-  > *"I am Member 3, the Feature Owner for Confidence Transparency, AI Briefings & Incident Response. I own `backend/modules/briefing/` and `frontend/js/modules/incident_briefs.js`. Let's enhance..."*
-- **Your Core Tasks**:
-  1. **Confidence & Noise Model**: Tune cloud edge heuristics and sensor saturation penalties in `confidence_model.py`.
-  2. **Decision-Ready Briefings**: Enhance operational guidance and connect optional LLM keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) in `narrative_engine.py`.
-  3. **🔊 Read Aloud Voice Synthesis**: Test and calibrate the browser speech synthesis pitch and rate in `incident_briefs.js`.
-  4. **Field Response & Docket**: Refine the operational checklist, dispatch button workflows, and printable executive docket styling.
-  5. **Pitch Delivery**: Rehearse and lead the 2-minute pitch demonstration using `docs/PITCH_SCRIPT.md`.
+### 🟣 MEMBER 3: Intelligence Operations: Historical Analytics, Alerts, Grounded AI Copilot & Dossiers Lead
+
+* **Functional Scope**:
+  - Multi-year historical surveillance (2024 $\rightarrow$ 2025 $\rightarrow$ 2026 timeline scrubber)
+  - Interactive Chart.js visualizations (Area over time, Categories doughnut, Priority trends)
+  - Geographic Change Hotspot Clusters (Hotspots Alpha, Bravo, Charlie, Delta with click-to-zoom)
+  - Active Alerts Queue (Critical threats, moderate warnings, actions: View on Map, Investigate, Mark as Reviewed)
+  - Grounded AI Investigation Assistant (conversational Copilot answering prompt pills with verified dataset telemetry and zero hallucinations)
+  - Executive Investigation Reports Dossier (official brief with metadata, infrastructure audit, and PDF print export)
+  - Data Sources catalog (Copernicus, Landsat, MODIS, OSM HDX, ESRI)
+* **Git Feature Branch**: `feature/member3-intelligence-ops-copilot`
+* **Your Exclusive Files (Zero Conflicts)**:
+  - `backend/modules/historical/timeline_engine.py`
+  - `backend/modules/historical/__init__.py`
+  - `backend/modules/assistant/query_engine.py`
+  - `backend/modules/assistant/__init__.py`
+  - `frontend/js/modules/historical_analytics.js`
+  - `frontend/js/modules/investigation_assistant.js`
+  - `frontend/js/modules/reports_generator.js`
+  - `frontend/css/modules/analytics_copilot.css`
+* **Your AI Persona Prompt**:
+  > *"I am Member 3, the Feature Owner for Historical Analytics, Alerts, Grounded AI Copilot & Dossiers in EarthLens AI. I exclusively own `backend/modules/historical/`, `backend/modules/assistant/`, `frontend/js/modules/historical_analytics.js`, `frontend/js/modules/investigation_assistant.js`, `frontend/js/modules/reports_generator.js`, and `frontend/css/modules/analytics_copilot.css`. Let's work on..."*
+* **Your Key Tasks**:
+  1. **Historical Chart Analytics**: Add interactive year-over-year percentage delta tooltips to the Chart.js graphs in `historical_analytics.js`.
+  2. **Grounded AI Copilot Queries**: Expand query parsing in `query_engine.py` to answer questions about specific evacuation roads and infrastructure names.
+  3. **Alerts Lifecycle Management**: Implement status persistence for Reviewed/Dispatched alerts in `app.js` and `main.py`.
+  4. **Executive Dossier Export**: Refine the print-optimized CSS layout in `analytics_copilot.css` for one-click PDF generation.
 
 ---
 
-## 🔀 Conflict-Free Git Workflow
+## 🔄 Zero-Merge-Conflict Git Protocol
 
-### 1. Branch Initialization
-When you start working on your laptop, create and switch to your feature branch:
-
+### 1. Checkout Your Feature Branch
 ```bash
-# Member 1
-git checkout -b feature/member1-change-detection-studio
+# Member 1:
+git checkout -b feature/member1-map-detection-studio
 
-# Member 2
-git checkout -b feature/member2-prioritization-triage
+# Member 2:
+git checkout -b feature/member2-community-vulnerability
 
-# Member 3
-git checkout -b feature/member3-confidence-ai-briefs
+# Member 3:
+git checkout -b feature/member3-intelligence-ops-copilot
 ```
 
-### 2. Regular Push & Merge Protocol
-Whenever you want to commit your progress:
-
+### 2. Work & Commit Regularly
 ```bash
-git add .
-git commit -m "feat(member<N>): describe your functional update"
-git fetch origin
-git merge origin/main
-git push -u origin feature/member<N>-<feature-name>
+git add <your-exclusive-files>
+git commit -m "feat(domain): enhance feature capability"
 ```
 
-> **Why This Guarantees Zero Merge Conflicts:**  
-> Because each member works in completely separate files, Git can automatically fast-forward and merge branches into `main` with zero manual conflict resolution required!
+### 3. Merge Back to Main
+Because each member modified entirely distinct files across different folders, merging your branches into `main` will be a clean, automatic fast-forward merge with **ZERO merge conflicts**:
+```bash
+git checkout main
+git pull origin main
+git merge <your-feature-branch>
+git push origin main
+```
 
 ---
 
-## ⏱️ 6-Hour Hackathon Roadmap
+## 🧪 Integration Verification Contract
 
-| Hour | Member 1 (Detection Studio) | Member 2 (Prioritization & Map) | Member 3 (Confidence & AI Briefs) |
-| :--- | :--- | :--- | :--- |
-| **0:00 - 1:30** | Multi-band spectral indices & curtain swipe handle | Urgency score weights & Leaflet map markers | Confidence noise thresholds & briefing templates |
-| **1:30 - 3:00** | Contour smoothing & Side-by-side zoom synchronization | Community proximity decay & Triage Table sorting | Audio voice synthesis & Field response checklist |
-| **3:00 - 4:15** | Custom upload normalization & new disaster datasets | Change-type classification badges & polygon popups | Printable executive docket modal & PDF styling |
-| **4:15 - 5:00** | End-to-end testing of detection pipeline | Validate urgency ranking across all 3 datasets | Review voice briefings & error handling |
-| **5:00 - 5:30** | Merge branch to `main` | Merge branch to `main` | Merge branch to `main` |
-| **5:30 - 6:00** | Live demo testing & latency checks | Live demo testing & scoring checks | Final pitch rehearsal with UI cues |
+Whenever any member finishes an update, run the verification suite:
+```bash
+python -m backend.test_pipeline
+```
+If all 4 datasets pass with `100% SUCCESS`, your feature slice is fully backward-compatible and ready to ship!

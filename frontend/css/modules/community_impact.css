@@ -1,0 +1,113 @@
+/* ==========================================================================
+   EarthLens AI — Feature Domain 2: Community Impact & Vulnerability Styles
+   Owned by: MEMBER 2 (Community Impact & Vulnerability Lead)
+   Zero Merge Conflicts: Only Member 2 edits this file.
+   ========================================================================== */
+
+/* Community Vulnerability Banner */
+.vulnerability-intel-box {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.12) 0%, rgba(14, 21, 38, 0.8) 100%);
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vuln-badge {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background: rgba(225, 29, 72, 0.25);
+  color: #fda4af;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.vuln-level {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* Infrastructure Facilities Grid */
+.facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.facility-card-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.facility-card-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+
+.facility-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.facility-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+}
+
+/* Detail Drawer Community Section */
+.impact-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.impact-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.scientific-disclaimer-note {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.btn-view-impact-deep {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  color: #d8b4fe;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+  text-align: center;
+}

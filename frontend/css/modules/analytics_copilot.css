@@ -1,0 +1,130 @@
+/* ==========================================================================
+   EarthLens AI — Feature Domain 3: Historical Analytics, Alerts & Copilot Styles
+   Owned by: MEMBER 3 (Intelligence Operations, Analytics & Copilot Lead)
+   Zero Merge Conflicts: Only Member 3 edits this file.
+   ========================================================================== */
+
+/* Timeline Scrubber */
+.timeline-scrubber-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-range-input {
+  width: 100%;
+  accent-color: var(--color-water);
+  cursor: pointer;
+}
+
+/* Charts Grid */
+.charts-row-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 18px;
+}
+
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart-canvas-box {
+  height: 220px;
+  position: relative;
+}
+
+/* Hotspots Grid */
+.hotspots-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.hotspot-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hotspot-card:hover {
+  border-color: var(--color-water);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+/* Alerts Queue */
+.alerts-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alert-item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--color-critical);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* AI Assistant Chat Panel */
+.assistant-chat-feed {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+  min-height: 250px;
+}
+
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.bot-msg .msg-bubble {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: #e2e8f0;
+}
+
+.user-msg .msg-bubble {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  align-self: flex-end;
+}
+
+/* Printable Dossier */
+.report-dossier-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}

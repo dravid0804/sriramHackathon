@@ -1,7 +1,7 @@
-/* ==========================================================================
-   EarthLens AI — AI for Space & Earth Intelligence
-   Master Design System & Geospatial Intelligence Stylesheet
-   ========================================================================== */
+/* Modular Feature CSS Imports (Zero-Conflict Worksplit) */
+@import 'modules/map_studio.css';       /* Member 1: Map Studio & Geospatial Canvas */
+@import 'modules/community_impact.css'; /* Member 2: Community Impact & Vulnerability */
+@import 'modules/analytics_copilot.css';/* Member 3: Historical Analytics & Copilot */
 
 :root {
   /* Dark Geospatial Intelligence Theme Palette */
