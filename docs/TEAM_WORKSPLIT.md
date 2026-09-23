@@ -1,110 +1,173 @@
-# EarthGuard AI — Team Worksplit & Architecture Guide
+# 👥 EarthGuard AI — Team Worksplit & Zero-Merge-Conflict Architecture Guide
 
-This document defines the modular development breakdown for our **3-person hackathon team** to continue building features in parallel with **zero merge conflicts**.
+This guide establishes the modular development breakdown for our **3-person hackathon team** to develop features concurrently with **100% zero merge conflicts**.
 
 ---
 
-## 🏗️ Repository Architecture & Separation of Concerns
+## 🏗️ Strict Architectural Separation & Ownership
 
-To prevent merge conflicts, the codebase is strictly separated into independent modular boundaries:
+Merge conflicts occur when multiple developers edit the same file simultaneously. To prevent this entirely, our project is divided into **strictly isolated ownership zones**:
 
 ```
 SRIRAM_HACKATHON/
-├── backend/
-│   ├── cv_engine.py         <-- [MEMBER 1 OWNERSHIP: CV & Geospatial]
-│   ├── classifier.py        <-- [MEMBER 1 OWNERSHIP: Spectral Classification]
-│   ├── prioritization.py    <-- [MEMBER 2 OWNERSHIP: Urgency Ranking Algorithm]
-│   ├── confidence.py        <-- [MEMBER 2 OWNERSHIP: Uncertainty & Cloud Heuristics]
-│   ├── briefing_engine.py   <-- [MEMBER 2 OWNERSHIP: LLM & Operational Briefings]
-│   ├── main.py              <-- [SHARED: API Endpoints - PR coordination required]
-│   └── test_pipeline.py     <-- [ALL: Automated test verification]
 │
-├── frontend/
-│   ├── index.html           <-- [MEMBER 3 OWNERSHIP: UI Layout & DOM structure]
-│   ├── css/style.css        <-- [MEMBER 3 OWNERSHIP: Styling, Animations, Themes]
-│   └── js/app.js            <-- [MEMBER 3 OWNERSHIP: Canvas, Leaflet Map, Interactivity]
+├── backend/
+│   ├── cv_engine.py          <-- 🟢 MEMBER 1 (CV & Spectral Differencing)
+│   ├── classifier.py         <-- 🟢 MEMBER 1 (Spectral Event Classification)
+│   ├── prioritization.py     <-- 🔵 MEMBER 2 (Urgency Scoring Formula)
+│   ├── confidence.py         <-- 🔵 MEMBER 2 (Confidence & Uncertainty Modeling)
+│   ├── briefing_engine.py    <-- 🔵 MEMBER 2 (Operational LLM Briefings)
+│   ├── main.py               <-- 🔒 SHARED API CONTRACT (Locked Schema)
+│   └── test_pipeline.py      <-- 🔵 MEMBER 2 & ALL (Integration Testing)
 │
 ├── data/
-│   ├── samples/             <-- [MEMBER 1 OWNERSHIP: Pre-packaged Satellite Datasets]
-│   └── generate_sample_data.py
+│   ├── generate_sample_data.py <-- 🟢 MEMBER 1 (Dataset Synthesizer & Georeferencing)
+│   └── samples/              <-- 🟢 MEMBER 1 (Sample Imagery & Metadata)
+│
+├── frontend/
+│   ├── index.html            <-- 🟣 MEMBER 3 (Layout, Sidebar Nav & Inspector)
+│   ├── css/style.css         <-- 🟣 MEMBER 3 (Aerospace Design System & Animations)
+│   └── js/app.js             <-- 🟣 MEMBER 3 (Canvas, Map & Interactivity)
 │
 └── docs/
-    ├── TEAM_WORKSPLIT.md    <-- [THIS DOCUMENT]
-    └── PITCH_SCRIPT.md      <-- [MEMBER 3 & ALL: 2-Minute Winning Pitch Script]
+    ├── TEAM_WORKSPLIT.md     <-- 🔒 Shared Reference Guide
+    └── PITCH_SCRIPT.md       <-- 🟣 MEMBER 3 & ALL (2-Minute Demo Script)
 ```
 
 ---
 
-## 👥 3-Member Role & Task Breakdown
+## 🔒 The Shared API Contract
 
-### 🛰️ Member 1: Computer Vision & Spectral Processing Lead
-**Primary Focus**: Image differencing accuracy, multi-band spectral indices, cloud masking, and custom imagery ingestion.
-- **Dedicated Files**:
+Members 1 & 2 (Backend) and Member 3 (Frontend) communicate strictly through this defined JSON contract. As long as this schema remains stable, frontend and backend development are completely decoupled.
+
+### Endpoint: `POST /api/analyze`
+```json
+{
+  "status": "success",
+  "dataset_id": "amazon_deforestation",
+  "dataset_metadata": {
+    "title": "Amazon Rainforest — Rondônia Fishbone Clearing",
+    "location": "Rondônia, Brazil",
+    "coordinates": { "lat": -10.8256, "lon": -62.9512, "zoom": 13 },
+    "sensor": "Sentinel-2 MSI",
+    "settlement_center": { "x": 630, "y": 190, "name": "Nova Esperança Community", "radius": 70 }
+  },
+  "before_image_url": "/samples/amazon_deforestation/before.png",
+  "after_image_url": "/samples/amazon_deforestation/after.png",
+  "heatmap_overlay": "data:image/png;base64,...",
+  "telemetry": {
+    "total_zones_detected": 15,
+    "critical_count": 2,
+    "moderate_count": 12,
+    "low_count": 1,
+    "total_hectares_impacted": 769.14,
+    "mean_confidence_pct": 96
+  },
+  "ranked_zones": [
+    {
+      "rank": 1,
+      "zone_id": "ZONE-01",
+      "tier": "CRITICAL",
+      "urgency_score": 65.9,
+      "tier_color": "#ef4444",
+      "hectares": 8.1,
+      "bbox": [510, 240, 160, 150],
+      "polygon": [[510, 240], [670, 240], [670, 390], [510, 390]],
+      "classification": { "type": "Deforestation", "icon": "🌲", "signature": "..." },
+      "confidence": { "percentage": 96, "level": "High Confidence", "reason": "..." },
+      "incident_brief": {
+        "brief_text": "...",
+        "recommended_action": "...",
+        "timeline": "Within 48 Hours"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## 👥 3-Member Role & Task Matrix
+
+### 🟢 Member 1: Computer Vision & Spectral Processing Lead
+- **Git Branch**: `feature/member1-cv-pipeline`
+- **Exclusive Files**:
   - `backend/cv_engine.py`
   - `backend/classifier.py`
   - `data/generate_sample_data.py`
-- **Immediate Next Steps**:
-  1. Add support for true Sentinel-2 12-band GeoTIFF reading via `rasterio` or GDAL if available.
-  2. Implement Normalized Difference Water Index (NDWI) with shortwave infrared (SWIR) proxy bands to detect turbid flood boundaries even more sharply.
-  3. Expand the dataset generator in `data/generate_sample_data.py` with 2 additional natural disaster scenarios (e.g. Hurricane storm surge, Glacier calving).
-  4. Optimize contour segmentation to reduce false positives from uniform shadows.
-- **Dedicated Git Branch**: `feature/cv-spectral-pipeline`
+  - `data/samples/`
+- **Core Tasks**:
+  1. **Spectral Indices**: Implement Normalized Burn Ratio (NBR) and Normalized Difference Water Index (NDWI) proxies.
+  2. **Contour Consolidation**: Fine-tune morphological closing filters so large contiguous clear-cuts form single unified priority zones.
+  3. **Noise Suppression**: Filter out sub-pixel shadows and sensor glare (< 250 px).
+  4. **Dataset Generation**: Add 1-2 new disaster scenarios (e.g. Valencia Inundation, Maui Wildfire) in `data/generate_sample_data.py`.
 
 ---
 
-### 🧠 Member 2: AI Engine, Prioritization & Operational Reasoning Lead
-**Primary Focus**: Composite urgency scoring, sensor confidence modeling, LLM prompt engineering, and operational protocol directives.
-- **Dedicated Files**:
+### 🔵 Member 2: AI Reasoning, Prioritization & Backend Lead
+- **Git Branch**: `feature/member2-ai-prioritization`
+- **Exclusive Files**:
   - `backend/prioritization.py`
   - `backend/confidence.py`
   - `backend/briefing_engine.py`
-- **Immediate Next Steps**:
-  1. Connect live LLM API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`, or `ANTHROPIC_API_KEY`) via `.env` for dynamic, multi-lingual dispatch briefings.
-  2. Enhance the explainable Urgency formula with population density heatmaps or critical infrastructure points (hospitals, power grids, evacuation routes).
-  3. Add a structured JSON evacuation / dispatch checklist generator for international relief agencies (UN OCHA, FEMA, Red Cross).
-  4. Write unit tests in `backend/test_pipeline.py` verifying edge-case scores (e.g. massive change in uninhabited desert vs. minor change in dense school zone).
-- **Dedicated Git Branch**: `feature/scoring-llm-engine`
+  - `backend/test_pipeline.py`
+- **Core Tasks**:
+  1. **Urgency Formula Tuning**: Calibrate weights across Magnitude (35%), Community Proximity (40%), and Size (25%).
+  2. **Confidence Modeling**: Expand atmospheric uncertainty detection (cloud edge detection, specular variance).
+  3. **LLM Integration**: Wire optional API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) via `.env` while preserving deterministic offline fallback.
+  4. **Test Suite**: Maintain `backend/test_pipeline.py` ensuring all datasets pass with valid urgency scores.
 
 ---
 
-### 🎨 Member 3: Frontend UX, Geospatial Visualizations & Pitch Lead
-**Primary Focus**: Aerospace Command Center UI, interactive Leaflet mapping, voice synthesis audio briefings, live telemetry, and pitch delivery.
-- **Dedicated Files**:
+### 🟣 Member 3: Frontend UX, Visualizations & Pitch Lead
+- **Git Branch**: `feature/member3-frontend-ux`
+- **Exclusive Files**:
   - `frontend/index.html`
   - `frontend/css/style.css`
   - `frontend/js/app.js`
   - `docs/PITCH_SCRIPT.md`
-- **Immediate Next Steps**:
-  1. Add 3D satellite elevation tilt / pitch effect or MapLibre GL 3D terrain switch for demo judges.
-  2. Add sound effects (tactical aerospace clicks, radar sweep audio, alert chime for Critical Tier-1 cards).
-  3. Enhance mobile/tablet responsive view for on-the-go tablet field demonstrations.
-  4. Rehearse the 2-minute pitch script using `docs/PITCH_SCRIPT.md` and time the live clicks with Member 1 & 2!
-- **Dedicated Git Branch**: `feature/ui-map-visualizer`
+- **Core Tasks**:
+  1. **Studio Enhancements**: Refine Side-by-Side Dual View and Curtain Swipe handle dragging mechanics.
+  2. **Inspector Polishing**: Enhance the 4 tabs (*Metrics*, *AI Brief*, *Protocol*, *Spectral*) and test **🔊 Read Aloud** speech synthesis.
+  3. **Geospatial Map**: Verify Leaflet satellite basemap, marker clusters, and tooltips.
+  4. **Pitch Delivery**: Rehearse the 120-second demo script using `docs/PITCH_SCRIPT.md` and time live UI click cues.
 
 ---
 
-## 🔀 Git Branching & Merge Strategy (Zero Conflicts)
+## 🔀 Conflict-Free Git Workflow
 
-### 1. Branch Naming Convention
-Always branch off `main` before starting your task:
+### 1. Initial Branching
 ```bash
 # Member 1:
-git checkout -b feature/cv-spectral-pipeline
+git checkout -b feature/member1-cv-pipeline
 
 # Member 2:
-git checkout -b feature/scoring-llm-engine
+git checkout -b feature/member2-ai-prioritization
 
 # Member 3:
-git checkout -b feature/ui-map-visualizer
+git checkout -b feature/member3-frontend-ux
 ```
 
-### 2. Synchronization Protocol
-Before pushing or creating a Pull Request:
+### 2. Pushing & Merging Protocol
+Before pushing:
 ```bash
 git fetch origin
 git merge origin/main
+git push -u origin <your-branch-name>
 ```
-Because each member owns isolated files, automatic merges will succeed with **zero conflicts**!
 
-### 3. Modifying `backend/main.py`
-If a new endpoint is needed (e.g., Member 2 creates a new LLM endpoint), communicate in team chat before modifying `backend/main.py` to prevent overlapping edits.
+> **Why This Guarantees Zero Merge Conflicts:**
+> Since each member only commits changes to their designated directory and files, Git will automatically fast-forward and merge changes with zero conflict resolution required.
+
+---
+
+## ⏱️ 6-Hour Hackathon Schedule
+
+| Hour | Focus | Member 1 (CV) | Member 2 (AI/Backend) | Member 3 (Frontend/Pitch) |
+| :--- | :--- | :--- | :--- | :--- |
+| **0:00 - 1:00** | **Baseline Setup** | Verify CV differencing & sample data | Test urgency formulas & schema | Test local UI & navigation views |
+| **1:00 - 2:30** | **Core Enhancements** | NBR & NDWI spectral indices | Refine scoring weights & cloud logic | Enhance Side-by-Side & Curtain slider |
+| **2:30 - 3:30** | **Intelligence Layer**| Refine contour clustering & noise | Connect LLM keys & dispatch briefs | Integrate audio synthesis & docket |
+| **3:30 - 4:30** | **Integration** | Test custom upload with sample imagery | Run `backend/test_pipeline.py` | Polish Leaflet popups & inspection tabs |
+| **4:30 - 5:15** | **Sync & Merge** | Merge Member 1 branch to `main` | Merge Member 2 branch to `main` | Merge Member 3 branch to `main` |
+| **5:15 - 6:00** | **Rehearsal & Pitch**| Live testing & edge-case checks | Validate latency & score ranges | Rehearse 2-minute pitch presentation |
