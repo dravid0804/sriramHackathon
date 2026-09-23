@@ -867,6 +867,28 @@ class IntelligenceMapEngine {
     });
   }
 
+  renderDependencyCascadeOverlay(cascade) {
+    if (!this.map || !cascade || !cascade.dependency_path_coordinates) return;
+
+    // Clear existing road layer lines or create dedicated cascade group
+    if (this.cascadePathLayer) {
+      this.map.removeLayer(this.cascadePathLayer);
+    }
+
+    const coords = cascade.dependency_path_coordinates;
+    if (coords.length < 2) return;
+
+    this.cascadePathLayer = L.polyline(coords, {
+      color: cascade.status_color || '#dc2626',
+      weight: 4,
+      opacity: 0.9,
+      dashArray: '8, 8',
+      lineCap: 'round'
+    }).bindTooltip(`<strong>${cascade.title || 'Impact Cascade Path'}</strong><br>${cascade.accessibility_status}`, { sticky: true });
+
+    this.cascadePathLayer.addTo(this.map);
+  }
+
   /**
    * Select a zone: Automatically navigates the map to the location,
    * draws pulsing proximity connector rays to nearby facilities,
