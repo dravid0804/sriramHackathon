@@ -2,8 +2,8 @@
 EarthLens AI — Historical Timeline & Geographic Hotspots Engine
 Owned by: MEMBER 3 (Intelligence Operations, Analytics & Copilot Lead)
 Provides temporal multi-year surveillance across 2024, 2025, and 2026.
-Computes multi-year trends, Year-over-Year (YoY) percentage deltas,
-category distributions, and spatial hotspot clusters.
+Powers the Visual Earth Change Investigation Workspace with multi-year
+footprint evolutions, change velocities, anomaly detection, and event timelines.
 """
 
 from typing import Dict, List, Any
@@ -11,8 +11,8 @@ from typing import Dict, List, Any
 def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
     """
     Returns multi-year historical surveillance data (2024 -> 2025 -> 2026)
-    including computed YoY percentage deltas, affected area trajectories,
-    category breakdowns, and geographic hotspot clusters.
+    including computed YoY percentage deltas, footprint expansion trajectories,
+    change velocities, historical anomaly flags, and chronological change event milestones.
     """
     timeline_years = ["2024", "2025", "2026"]
     
@@ -53,7 +53,7 @@ def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
         }
     ]
     
-    # Event count distribution and percentage share of total 215.9 km2 surveyed
+    # Event count distribution and percentage share of total surveyed terrain
     category_distribution = [
         {
             "category": "Flooding / Water Bodies",
@@ -144,12 +144,12 @@ def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
         }
     }
     
-    # Geographic Hotspots (Section 13) with deep geospatial attributes
+    # Geographic Hotspots (Section 13) — Interactive Investigation Objects with Multi-Year Evolution
     hotspots = [
         {
             "id": "hotspot-alpha",
-            "name": "Hotspot Alpha — North African Coastal Basin",
-            "region": "Mediterranean Shoreline / Derna",
+            "name": "Hotspot Alpha - North African Coastal Basin",
+            "region": "Derna Coastal District, Libya",
             "coordinates": {"lat": 32.7667, "lon": 22.6367},
             "detected_events": 14,
             "total_area_km2": 38.6,
@@ -160,11 +160,69 @@ def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
             "color": "#ef4444",
             "active_since": "2024",
             "linked_dataset": "derna_flooding",
-            "critical_infrastructure_risk": "Coastal Road Al-Bahr severed; Derna Central Hospital perimeter exposed."
+            "sample_before_image": "/samples/derna_flooding/before.png",
+            "sample_after_image": "/samples/derna_flooding/after.png",
+            "change_velocity": "Rapid",
+            "footprint_expansion_percent": 112.1,
+            "footprint_evolution": {
+                "2024": {"area_km2": 18.2, "boundary_radius_m": 850, "label": "2024 Baseline Wadi Basin"},
+                "2025": {"area_km2": 26.4, "boundary_radius_m": 1250, "label": "2025 Dam Reservoir Surge"},
+                "2026": {"area_km2": 38.6, "boundary_radius_m": 1800, "label": "2026 Coastal Inundation Footprint"}
+            },
+            "historical_anomaly": {
+                "detected": True,
+                "headline": "[ALERT] HISTORICAL RUNOFF ANOMALY",
+                "message": "Current 2026 storm water discharge volume exceeds the 10-year Mediterranean basin baseline by 2.8 standard deviations.",
+                "severity": "CRITICAL"
+            },
+            "image_quality": {
+                "cloud_cover_pct": 1.2,
+                "quality_rating": "98% (Optimal)",
+                "sensor": "Sentinel-1 SAR / Sentinel-2 MSI",
+                "uncertainty": "Low (95% Confidence)"
+            },
+            "historical_community_impact": {
+                "2024": {"settlements": 2, "schools": 1, "hospitals": 0, "roads": 2},
+                "2025": {"settlements": 4, "schools": 2, "hospitals": 1, "roads": 4},
+                "2026": {"settlements": 6, "schools": 3, "hospitals": 1, "roads": 6}
+            },
+            "critical_infrastructure_risk": "Coastal Road Al-Bahr severed; Derna Central Hospital perimeter exposed within 1.2km.",
+            "timeline_events": [
+                {
+                    "year": "2024",
+                    "date": "2024-03-12",
+                    "title": "Hydrological Baseline Established",
+                    "change_type": "Water Baseline",
+                    "area_km2": 18.2,
+                    "severity": "LOW",
+                    "confidence": 96,
+                    "description": "Initial multispectral radar baseline mapped across Wadi Derna riverbed."
+                },
+                {
+                    "year": "2025",
+                    "date": "2025-08-20",
+                    "title": "Dam Reservoir Siltation & Water Rise",
+                    "change_type": "Water Surge",
+                    "area_km2": 26.4,
+                    "severity": "MODERATE",
+                    "confidence": 94,
+                    "description": "Upstream reservoir water level increased by 4.2m following seasonal runoff."
+                },
+                {
+                    "year": "2026",
+                    "date": "2026-09-13",
+                    "title": "Extreme Dam Overtopping & Flash Flood",
+                    "change_type": "Flash Flood Inundation",
+                    "area_km2": 38.6,
+                    "severity": "CRITICAL",
+                    "confidence": 95,
+                    "description": "Catastrophic breach of secondary earth dam inundates urban residential sectors."
+                }
+            ]
         },
         {
             "id": "hotspot-bravo",
-            "name": "Hotspot Bravo — Southwest Amazon Frontier",
+            "name": "Hotspot Bravo - Southwest Amazon Frontier",
             "region": "Rondônia Logging Arc, Brazil",
             "coordinates": {"lat": -10.8256, "lon": -62.9512},
             "detected_events": 18,
@@ -176,11 +234,69 @@ def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
             "color": "#ef4444",
             "active_since": "2024",
             "linked_dataset": "amazon_deforestation",
-            "critical_infrastructure_risk": "BR-364 corridor access; Nova Esperança hamlet perimeter breached."
+            "sample_before_image": "/samples/amazon_deforestation/before.png",
+            "sample_after_image": "/samples/amazon_deforestation/after.png",
+            "change_velocity": "Moderate",
+            "footprint_expansion_percent": 84.2,
+            "footprint_evolution": {
+                "2024": {"area_km2": 24.0, "boundary_radius_m": 1100, "label": "2024 Secondary Logging Trails"},
+                "2025": {"area_km2": 34.2, "boundary_radius_m": 1500, "label": "2025 Lateral Feeder Corridors"},
+                "2026": {"area_km2": 44.2, "boundary_radius_m": 1950, "label": "2026 Deep Reserve Incursion"}
+            },
+            "historical_anomaly": {
+                "detected": True,
+                "headline": "[ALERT] CANOPY DEPLETION ANOMALY",
+                "message": "Fishbone logging expansion rate into Nova Esperança protected indigenous perimeter is 1.8x the regional seasonal average.",
+                "severity": "CRITICAL"
+            },
+            "image_quality": {
+                "cloud_cover_pct": 4.1,
+                "quality_rating": "94% (High)",
+                "sensor": "Sentinel-2 MSI / Landsat-8/9 OLI",
+                "uncertainty": "Low-Moderate (Minor Cloud Filtering Applied)"
+            },
+            "historical_community_impact": {
+                "2024": {"settlements": 1, "schools": 0, "hospitals": 0, "roads": 1},
+                "2025": {"settlements": 2, "schools": 1, "hospitals": 0, "roads": 2},
+                "2026": {"settlements": 3, "schools": 1, "hospitals": 1, "roads": 3}
+            },
+            "critical_infrastructure_risk": "BR-364 corridor access; Nova Esperança hamlet perimeter breached within 1.1km.",
+            "timeline_events": [
+                {
+                    "year": "2024",
+                    "date": "2024-05-10",
+                    "title": "Primary Arterial Clearing",
+                    "change_type": "Deforestation",
+                    "area_km2": 24.0,
+                    "severity": "MODERATE",
+                    "confidence": 92,
+                    "description": "Initial logging feeder road cut through primary rainforest canopy."
+                },
+                {
+                    "year": "2025",
+                    "date": "2025-07-18",
+                    "title": "Fishbone Lateral Spoke Network",
+                    "change_type": "Clear-cutting",
+                    "area_km2": 34.2,
+                    "severity": "HIGH",
+                    "confidence": 91,
+                    "description": "Parallel clearing spokes branch outward perpendicularly along 18km strip."
+                },
+                {
+                    "year": "2026",
+                    "date": "2026-08-30",
+                    "title": "Indigenous Reserve Buffer Breach",
+                    "change_type": "Protected Forest Loss",
+                    "area_km2": 44.2,
+                    "severity": "CRITICAL",
+                    "confidence": 93,
+                    "description": "Clear-cut boundary penetrates 1.1km inside the official indigenous conservation territory."
+                }
+            ]
         },
         {
             "id": "hotspot-charlie",
-            "name": "Hotspot Charlie — South Asian Agricultural Transition Zone",
+            "name": "Hotspot Charlie - South Asian Agricultural Transition Zone",
             "region": "Madurai Peri-Urban Corridor, India",
             "coordinates": {"lat": 9.9252, "lon": 78.1198},
             "detected_events": 11,
@@ -192,11 +308,69 @@ def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
             "color": "#f97316",
             "active_since": "2025",
             "linked_dataset": "madurai_urban",
-            "critical_infrastructure_risk": "Vilangudi-Dindigul bypass construction encroaching on tank beds."
+            "sample_before_image": "/samples/madurai_urban/before.png",
+            "sample_after_image": "/samples/madurai_urban/after.png",
+            "change_velocity": "Rapid",
+            "footprint_expansion_percent": 96.3,
+            "footprint_evolution": {
+                "2024": {"area_km2": 10.9, "boundary_radius_m": 700, "label": "2024 Agricultural Baseline"},
+                "2025": {"area_km2": 15.8, "boundary_radius_m": 1050, "label": "2025 Outer Ring Bypass Works"},
+                "2026": {"area_km2": 21.4, "boundary_radius_m": 1400, "label": "2026 High-Density Commercial Layouts"}
+            },
+            "historical_anomaly": {
+                "detected": True,
+                "headline": "[ALERT] URBAN EXPANSION ACCELERATION",
+                "message": "Conversion of natural groundwater percolation tanks along NH-44 expanded at 2.4x the regional urban master plan projection.",
+                "severity": "MODERATE"
+            },
+            "image_quality": {
+                "cloud_cover_pct": 0.8,
+                "quality_rating": "99% (Optimal)",
+                "sensor": "Sentinel-2 MSI (10m Optical)",
+                "uncertainty": "Low"
+            },
+            "historical_community_impact": {
+                "2024": {"settlements": 2, "schools": 1, "hospitals": 0, "roads": 1},
+                "2025": {"settlements": 3, "schools": 2, "hospitals": 1, "roads": 3},
+                "2026": {"settlements": 4, "schools": 2, "hospitals": 1, "roads": 5}
+            },
+            "critical_infrastructure_risk": "Vilangudi-Dindigul bypass construction encroaching on traditional tank beds.",
+            "timeline_events": [
+                {
+                    "year": "2024",
+                    "date": "2024-02-15",
+                    "title": "Agricultural Baseline Survey",
+                    "change_type": "Cropland Baseline",
+                    "area_km2": 10.9,
+                    "severity": "LOW",
+                    "confidence": 95,
+                    "description": "High vegetation index (NDVI > 0.6) across traditional paddy and tank catchments."
+                },
+                {
+                    "year": "2025",
+                    "date": "2025-06-12",
+                    "title": "Groundbreaking of Bypass Transit Corridor",
+                    "change_type": "Land Clearing",
+                    "area_km2": 15.8,
+                    "severity": "MODERATE",
+                    "confidence": 92,
+                    "description": "Grading and topsoil removal for new four-lane bypass connecting to NH-44."
+                },
+                {
+                    "year": "2026",
+                    "date": "2026-09-18",
+                    "title": "Dense Peri-Urban Impervious Sprawl",
+                    "change_type": "Urban Expansion",
+                    "area_km2": 21.4,
+                    "severity": "MODERATE",
+                    "confidence": 93,
+                    "description": "Asphalt and commercial warehousing replace 28% of historical catchment."
+                }
+            ]
         },
         {
             "id": "hotspot-delta",
-            "name": "Hotspot Delta — Sierra Nevada Wildland Interface",
+            "name": "Hotspot Delta - Sierra Nevada Wildland Interface",
             "region": "Butte County, California, USA",
             "coordinates": {"lat": 39.7596, "lon": -121.6219},
             "detected_events": 9,
@@ -208,7 +382,65 @@ def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
             "color": "#f97316",
             "active_since": "2026",
             "linked_dataset": "california_wildfire",
-            "critical_infrastructure_risk": "Skyway Ridge evacuation route restricted by heavy smoke plumes."
+            "sample_before_image": "/samples/california_wildfire/before.png",
+            "sample_after_image": "/samples/california_wildfire/after.png",
+            "change_velocity": "Rapid",
+            "footprint_expansion_percent": 141.5,
+            "footprint_evolution": {
+                "2024": {"area_km2": 8.2, "boundary_radius_m": 600, "label": "2024 Dry Fuel Accumulation"},
+                "2025": {"area_km2": 12.4, "boundary_radius_m": 850, "label": "2025 Ridge Lightning Strike Scar"},
+                "2026": {"area_km2": 19.8, "boundary_radius_m": 1300, "label": "2026 Crown Fire & Canyon Run"}
+            },
+            "historical_anomaly": {
+                "detected": True,
+                "headline": "[ALERT] THERMAL RADIATIVE POWER SPIKE",
+                "message": "MODIS/VIIRS thermal radiative power peaked at 480 MW during high-wind gust alignment, exceeding historical summer fire velocity.",
+                "severity": "HIGH"
+            },
+            "image_quality": {
+                "cloud_cover_pct": 2.2,
+                "quality_rating": "96% (High)",
+                "sensor": "Sentinel-2 MSI / Landsat-9 TIRS",
+                "uncertainty": "Low (Minor Smoke Haze Corrected)"
+            },
+            "historical_community_impact": {
+                "2024": {"settlements": 1, "schools": 0, "hospitals": 0, "roads": 1},
+                "2025": {"settlements": 1, "schools": 1, "hospitals": 0, "roads": 2},
+                "2026": {"settlements": 2, "schools": 1, "hospitals": 1, "roads": 3}
+            },
+            "critical_infrastructure_risk": "Skyway Ridge evacuation route restricted by heavy smoke plumes.",
+            "timeline_events": [
+                {
+                    "year": "2024",
+                    "date": "2024-07-04",
+                    "title": "Low-Severity Understory Burn",
+                    "change_type": "Brush Fire",
+                    "area_km2": 8.2,
+                    "severity": "LOW",
+                    "confidence": 90,
+                    "description": "Contained localized brush fire along east ridge canyon."
+                },
+                {
+                    "year": "2025",
+                    "date": "2025-08-11",
+                    "title": "Lightning Ignition on Ridge Crest",
+                    "change_type": "Thermal Anomaly",
+                    "area_km2": 12.4,
+                    "severity": "MODERATE",
+                    "confidence": 93,
+                    "description": "Dry lightning strike establishes moderate burn scar in conifer timber."
+                },
+                {
+                    "year": "2026",
+                    "date": "2026-09-08",
+                    "title": "High-Wind Crown Fire Flare-Up",
+                    "change_type": "Wildfire Burn Scar",
+                    "area_km2": 19.8,
+                    "severity": "CRITICAL",
+                    "confidence": 94,
+                    "description": "Wind-driven crown fire crosses Skyway Ridge and threatens wildland-urban interface."
+                }
+            ]
         }
     ]
 
@@ -223,6 +455,7 @@ def get_historical_timeline_data(dataset_id: str = "all") -> Dict[str, Any]:
             "satellite_sensors": ["Sentinel-2 MSI", "Landsat-8/9 OLI", "Sentinel-1 SAR", "MODIS/VIIRS"],
             "temporal_resolution": "Quarterly composite benchmarks",
             "confidence_standard": "95% statistical confidence interval",
-            "yoy_calculation_method": "Compound annual spatial differencing against 2024 baseline"
+            "yoy_calculation_method": "Compound annual spatial differencing against 2024 baseline",
+            "investigation_workspace_version": "3.0.0-prakash"
         }
     }

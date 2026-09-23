@@ -105,8 +105,26 @@ class ReportsGeneratorModule {
             <span class="infra-status-tag ${isSevered ? 'tag-crit' : 'tag-info'}">${r.status}</span>
           `;
           elTable.appendChild(row);
-        });
-      }
+      // Attach saved investigation evidence snapshots if available
+      try {
+        const savedEvidence = JSON.parse(localStorage.getItem('earthlens_saved_evidence') || '[]');
+        if (savedEvidence.length > 0) {
+          const evidenceHeader = document.createElement('div');
+          evidenceHeader.style.cssText = 'margin-top: 14px; font-size: 0.72rem; font-weight: 700; color: #06b6d4; font-family: monospace; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;';
+          evidenceHeader.textContent = `ATTACHED INVESTIGATION EVIDENCE SNAPSHOTS (${savedEvidence.length})`;
+          elTable.appendChild(evidenceHeader);
+
+          savedEvidence.forEach(ev => {
+            const evRow = document.createElement('div');
+            evRow.className = 'dossier-infra-row';
+            evRow.innerHTML = `
+              <span>📸 <strong>Snapshot ${ev.id}</strong>: ${ev.region} · Epoch ${ev.year} (${ev.hazard})</span>
+              <span class="infra-status-tag tag-info">ATTACHED VERIFIED</span>
+            `;
+            elTable.appendChild(evRow);
+          });
+        }
+      } catch (e) {}
     }
 
     // Export button PDF listener
