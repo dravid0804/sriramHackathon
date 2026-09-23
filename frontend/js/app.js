@@ -39,6 +39,11 @@ class EarthLensApp {
     await this.fetchAlerts();
     await this.fetchDataSources();
 
+    // 6. Initialize Government Multi-Tenant Portal Subsystem
+    if (window.governmentPortalModule) {
+      await window.governmentPortalModule.init();
+    }
+
     // Setup detail drawer close
     const btnMinDrawer = document.getElementById('btn-minimize-drawer');
     const drawer = document.getElementById('detail-drawer');
@@ -55,6 +60,25 @@ class EarthLensApp {
         this.switchWorkspace('community-impact');
       });
     }
+
+    // Setup quick action buttons in Government Portal
+    document.getElementById('gov-quick-action-center')?.addEventListener('click', () => {
+      this.switchWorkspace('action-center');
+    });
+    document.getElementById('gov-quick-response-cases')?.addEventListener('click', () => {
+      this.switchWorkspace('response-cases');
+    });
+    document.getElementById('gov-quick-map')?.addEventListener('click', () => {
+      this.switchWorkspace('live-map');
+    });
+    document.getElementById('btn-gov-focus-map')?.addEventListener('click', () => {
+      this.switchWorkspace('live-map');
+    });
+    document.getElementById('btn-gov-assign-only')?.addEventListener('click', () => {
+      const dept = document.getElementById('drawer-gov-dept')?.value;
+      const officer = document.getElementById('drawer-gov-officer')?.value;
+      alert(`Assignment staged: Department [${dept}] assigned to [${officer}]. Click 'Create Response Case' to finalize dispatch.`);
+    });
 
     console.log('EarthLens AI Master Orchestrator initialized successfully.');
   }
@@ -104,6 +128,17 @@ class EarthLensApp {
         if (impactTab) {
           document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
           impactTab.classList.add('active');
+        }
+      }
+
+      // Government Module View Triggers
+      if (window.governmentPortalModule) {
+        if (viewName === 'government-portal') {
+          window.governmentPortalModule.renderPortalDashboard();
+        } else if (viewName === 'action-center') {
+          window.governmentPortalModule.renderActionCenter();
+        } else if (viewName === 'response-cases') {
+          window.governmentPortalModule.renderResponseCases();
         }
       }
     }

@@ -364,23 +364,23 @@ class IntelligenceMapEngine {
     const divider = document.getElementById('swipe-divider-handle');
     if (divider) divider.style.left = `${percentage}%`;
 
-    // 1. Pane-level clipping on Leaflet map panes
+    // Ensure parent panes do not clip or constrain child overlays
     const bPane = this.map.getPane('beforePane');
     const aPane = this.map.getPane('afterPane');
     if (bPane) {
-      bPane.style.clipPath = `inset(0 calc(100% - ${percentage}%) 0 0)`;
-      bPane.style.webkitClipPath = `inset(0 calc(100% - ${percentage}%) 0 0)`;
+      bPane.style.clipPath = 'none';
+      bPane.style.webkitClipPath = 'none';
     }
     if (aPane) {
-      aPane.style.clipPath = `inset(0 0 0 ${percentage}%)`;
-      aPane.style.webkitClipPath = `inset(0 0 0 ${percentage}%)`;
+      aPane.style.clipPath = 'none';
+      aPane.style.webkitClipPath = 'none';
     }
 
-    // 2. Element-level raster clipping on satellite overlays for razor-sharp visual precision
+    // Direct pixel-accurate raster overlay clipping
     const container = this.map.getContainer();
     if (!container) return;
     const containerRect = container.getBoundingClientRect();
-    const dividerX = containerRect.left + (percentage / 100) * containerRect.width;
+    const dividerX = containerRect.left + (percentage / 100.0) * containerRect.width;
 
     const clipOverlay = (overlay, isBefore) => {
       if (!overlay) return;
@@ -391,7 +391,7 @@ class IntelligenceMapEngine {
 
       const cutX = Math.round(dividerX - rect.left);
       if (isBefore) {
-        // Show left side of divider
+        // Left side of divider: Before Satellite image visible
         if (cutX <= 0) {
           el.style.clipPath = 'polygon(0 0, 0 0, 0 100%, 0 100%)';
           el.style.webkitClipPath = 'polygon(0 0, 0 0, 0 100%, 0 100%)';
@@ -403,7 +403,7 @@ class IntelligenceMapEngine {
           el.style.webkitClipPath = `polygon(0 0, ${cutX}px 0, ${cutX}px 100%, 0 100%)`;
         }
       } else {
-        // Show right side of divider
+        // Right side of divider: After Satellite + Difference Heatmap visible
         if (cutX <= 0) {
           el.style.clipPath = 'none';
           el.style.webkitClipPath = 'none';
@@ -529,6 +529,8 @@ class IntelligenceMapEngine {
       if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.85);
 
       this.applyCurtainClipping(this.curtainPosition || 50);
+      requestAnimationFrame(() => this.applyCurtainClipping(this.curtainPosition || 50));
+      setTimeout(() => this.applyCurtainClipping(this.curtainPosition || 50), 60);
     } else if (mode === 'impact') {
       this.isCurtainActive = false;
       if (curtain) curtain.style.display = 'none';
@@ -584,6 +586,12 @@ class IntelligenceMapEngine {
     if (this.afterOverlay) this.map.removeLayer(this.afterOverlay);
     if (this.heatmapOverlay) this.map.removeLayer(this.heatmapOverlay);
 
+    const triggerSwipeSync = () => {
+      if (this.currentMode === 'swipe') {
+        this.applyCurtainClipping(this.curtainPosition || 50);
+      }
+    };
+
     // Mount satellite raster overlays with smooth feathered blending
     if (analysisResult.before_image_url) {
       this.beforeOverlay = L.imageOverlay(analysisResult.before_image_url, this.currentBounds, {
@@ -591,6 +599,7 @@ class IntelligenceMapEngine {
         opacity: 0.0,
         className: 'satellite-raster-overlay'
       }).addTo(this.map);
+      this.beforeOverlay.on('load', triggerSwipeSync);
     }
     if (analysisResult.after_image_url) {
       this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, this.currentBounds, {
@@ -598,6 +607,7 @@ class IntelligenceMapEngine {
         opacity: 0.0,
         className: 'satellite-raster-overlay'
       }).addTo(this.map);
+      this.afterOverlay.on('load', triggerSwipeSync);
     }
     if (analysisResult.heatmap_overlay) {
       this.heatmapOverlay = L.imageOverlay(analysisResult.heatmap_overlay, this.currentBounds, {
@@ -605,6 +615,7 @@ class IntelligenceMapEngine {
         opacity: 0.0,
         className: 'satellite-difference-overlay'
       }).addTo(this.map);
+      this.heatmapOverlay.on('load', triggerSwipeSync);
     }
 
     // Clear vector layers

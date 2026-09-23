@@ -2,6 +2,7 @@
 @import 'modules/map_studio.css';       /* Member 1: Map Studio & Geospatial Canvas */
 @import 'modules/community_impact.css'; /* Member 2: Community Impact & Vulnerability */
 @import 'modules/analytics_copilot.css';/* Member 3: Historical Analytics & Copilot */
+@import 'modules/government.css';       /* Multi-Tenant Government Portal & Operations */
 
 :root {
   /* Dark Geospatial Intelligence Theme Palette */

@@ -264,6 +264,11 @@
   z-index: 25;
 }
 
+.is-swipe-active .swipe-curtain-overlay {
+  pointer-events: auto !important;
+  cursor: ew-resize;
+}
+
 .swipe-divider-line {
   position: absolute;
   top: 0;
