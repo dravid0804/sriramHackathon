@@ -192,6 +192,7 @@ def analyze_dataset(req: AnalyzeRequest):
     # Compute community impact and vulnerability intelligence
     impact_data = analyze_community_impact(req.dataset_id, result.get("ranked_zones", []), metadata)
     result["community_impact"] = impact_data
+    result["metadata"] = metadata
     
     return result
 

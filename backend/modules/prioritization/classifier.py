@@ -41,8 +41,8 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         return {
             "type": "Flooding / Inundation",
             "icon": "🌊",
-            "confidence": min(0.96, 0.75 + abs(delta_wi) * 2),
-            "signature": f"Water index surged by {delta_wi:+.2f}; surface reflectance dropped by {abs(delta_bright):.1f} units."
+            "confidence": float(round(min(0.96, 0.75 + float(abs(delta_wi)) * 2), 2)),
+            "signature": f"Water index surged by {float(delta_wi):+.2f}; surface reflectance dropped by {abs(float(delta_bright)):.1f} units."
         }
         
     # 2. Wildfire Burn Scar
@@ -50,8 +50,8 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         return {
             "type": "Wildfire Burn Scar",
             "icon": "🔥",
-            "confidence": min(0.98, 0.80 + abs(delta_bright) / 100),
-            "signature": f"Severe thermal charring; total surface reflectance dropped by {abs(delta_bright):.1f} with dense charcoal tone."
+            "confidence": float(round(min(0.98, 0.80 + float(abs(delta_bright)) / 100), 2)),
+            "signature": f"Severe thermal charring; total surface reflectance dropped by {abs(float(delta_bright)):.1f} with dense charcoal tone."
         }
         
     # 3. Deforestation / Canopy Loss
@@ -59,8 +59,8 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         return {
             "type": "Deforestation",
             "icon": "🌲",
-            "confidence": min(0.95, 0.78 + abs(delta_vi) * 2),
-            "signature": f"Vegetation index declined by {abs(delta_vi):.2f}; mineral soil and clear-cut pattern observed."
+            "confidence": float(round(min(0.95, 0.78 + float(abs(delta_vi)) * 2), 2)),
+            "signature": f"Vegetation index declined by {abs(float(delta_vi)):.2f}; mineral soil and clear-cut pattern observed."
         }
         
     # 4. Urban Development / Construction
@@ -69,12 +69,12 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
             "type": "Urban Development",
             "icon": "🏗️",
             "confidence": 0.84,
-            "signature": f"High surface albedo surge (+{delta_bright:.1f}) consistent with structural development."
+            "signature": f"High surface albedo surge (+{float(delta_bright):.1f}) consistent with structural development."
         }
         
     return {
         "type": "Environmental Shift",
         "icon": "🌐",
         "confidence": 0.72,
-        "signature": f"Spectral alteration detected across visible bands (delta magnitude: {mean_mag:.2f})."
+        "signature": f"Spectral alteration detected across visible bands (delta magnitude: {float(mean_mag):.2f})."
     }

@@ -54,8 +54,8 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         return {
             "type": "Flooding",
             "icon": "🌊",
-            "confidence": min(0.96, 0.75 + abs(delta_wi) * 2),
-            "signature": f"Water index increased by {delta_wi:+.2f}, surface reflectance dropped by {abs(delta_bright):.1f} units."
+            "confidence": float(round(min(0.96, 0.75 + float(abs(delta_wi)) * 2), 2)),
+            "signature": f"Water index increased by {float(delta_wi):+.2f}, surface reflectance dropped by {abs(float(delta_bright)):.1f} units."
         }
         
     # 2. Wildfire Burn Scar:
@@ -63,8 +63,8 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         return {
             "type": "Wildfire Burn Scar",
             "icon": "🔥",
-            "confidence": min(0.95, 0.80 + abs(delta_bright) / 100),
-            "signature": f"Severe thermal albedo drop of {abs(delta_bright):.1f} units with charcoal ash residue signature."
+            "confidence": float(round(min(0.95, 0.80 + abs(float(delta_bright)) / 100.0), 2)),
+            "signature": f"Severe thermal albedo drop of {abs(float(delta_bright)):.1f} units with charcoal ash residue signature."
         }
         
     # 3. Deforestation / Vegetation Loss:
@@ -72,8 +72,8 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         return {
             "type": "Deforestation",
             "icon": "🌳",
-            "confidence": min(0.94, 0.78 + abs(delta_vi) * 1.5),
-            "signature": f"Canopy vigor dropped by {abs(delta_vi):.2f}, bare exposed soil reflectance emerged."
+            "confidence": float(round(min(0.94, 0.78 + abs(float(delta_vi)) * 1.5), 2)),
+            "signature": f"Canopy vigor dropped by {abs(float(delta_vi)):.2f}, bare exposed soil reflectance emerged."
         }
         
     # 4. Urban Expansion & Infrastructure:
@@ -81,8 +81,8 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         return {
             "type": "Urban Expansion",
             "icon": "🏙️",
-            "confidence": min(0.93, 0.75 + delta_bright / 120),
-            "signature": f"High-albedo built-up surfaces (concrete/asphalt) expanded with +{delta_bright:.1f} reflectance surge."
+            "confidence": float(round(min(0.93, 0.75 + float(delta_bright) / 120.0), 2)),
+            "signature": f"High-albedo built-up surfaces (concrete/asphalt) expanded with +{float(delta_bright):.1f} reflectance surge."
         }
 
     # 5. Coastal Erosion / Shoreline Shift:
@@ -91,7 +91,7 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
             "type": "Coastal Erosion",
             "icon": "🏖️",
             "confidence": 0.88,
-            "signature": f"Shoreline boundary shift detected with sediment plume movement of {abs(delta_wi):.2f} NDWI."
+            "signature": f"Shoreline boundary shift detected with sediment plume movement of {abs(float(delta_wi)):.2f} NDWI."
         }
         
     # Default fallback
@@ -99,5 +99,5 @@ def classify_change(before_crop: np.ndarray, after_crop: np.ndarray, mean_mag: f
         "type": "General Environmental Shift",
         "icon": "⚠️",
         "confidence": 0.78,
-        "signature": f"Multi-spectral variance magnitude {mean_mag:.1f} detected across visible bands."
+        "signature": f"Multi-spectral variance magnitude {float(mean_mag):.1f} detected across visible bands."
     }

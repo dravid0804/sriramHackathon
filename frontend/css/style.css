@@ -377,14 +377,15 @@ body {
 .top-search-group {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex: 1;
-  max-width: 780px;
+  min-width: 0;
 }
 
 .search-input-wrapper {
   position: relative;
-  width: 320px;
+  width: clamp(220px, 18vw, 290px);
+  flex-shrink: 0;
 }
 
 .search-icon {
@@ -403,8 +404,8 @@ body {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 8px 12px 8px 36px;
-  font-size: 0.82rem;
+  padding: 7px 12px 7px 34px;
+  font-size: 0.80rem;
   color: var(--text-main);
   outline: none;
   transition: all 0.2s;
@@ -421,22 +422,23 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  overflow-x: auto;
+  flex-shrink: 0;
 }
 
 .scenario-chip {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 0.78rem;
-  font-weight: 500;
+  padding: 5px 10px;
+  font-size: 0.74rem;
+  font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s;
 }
 
@@ -450,26 +452,28 @@ body {
   background: rgba(6, 182, 212, 0.15);
   border-color: var(--color-water);
   color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.35);
 }
 
 .top-temporal-group {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .date-range-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: var(--radius-md);
   font-family: var(--font-mono);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .date-label {

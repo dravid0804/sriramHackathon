@@ -358,25 +358,29 @@ class IntelligenceMapEngine {
       if (this.afterOverlay) this.afterOverlay.setOpacity(0.0);
       this.map.removeLayer(this.layers.changes);
       this.map.removeLayer(this.layers.vulnerability);
+      this.map.removeLayer(this.layers.impactRays);
     } else if (mode === 'after') {
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
       if (this.afterOverlay) this.afterOverlay.setOpacity(1.0);
       this.map.removeLayer(this.layers.changes);
       this.map.removeLayer(this.layers.vulnerability);
+      this.map.removeLayer(this.layers.impactRays);
     } else if (mode === 'difference') {
-      if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.4);
-      if (this.afterOverlay) this.afterOverlay.setOpacity(0.85);
+      if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.82);
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.severity);
       this.map.removeLayer(this.layers.vulnerability);
+      this.map.removeLayer(this.layers.impactRays);
     } else if (mode === 'impact') {
-      if (this.afterOverlay) this.afterOverlay.setOpacity(0.7);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.70);
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.vulnerability);
       this.map.addLayer(this.layers.settlements);
       this.map.addLayer(this.layers.schools);
       this.map.addLayer(this.layers.hospitals);
       this.map.addLayer(this.layers.roads);
+      this.map.addLayer(this.layers.impactRays);
     }
   }
 
@@ -391,8 +395,8 @@ class IntelligenceMapEngine {
     const bDateEl = document.getElementById('top-date-before');
     const aDateEl = document.getElementById('top-date-after');
 
-    if (titleEl) titleEl.textContent = meta.title || meta.location;
-    if (coordEl) coordEl.textContent = `${coords.lat.toFixed(4)}°N, ${coords.lon.toFixed(4)}°E`;
+    if (titleEl) titleEl.textContent = meta.title || meta.location || 'Target Reconnaissance Footprint';
+    if (coordEl) coordEl.textContent = `${coords.lat.toFixed(4)}°N, ${coords.lon.toFixed(4)}°E · Z${coords.zoom || 14} LOCK`;
     if (bDateEl) bDateEl.textContent = meta.date_before || 'Baseline';
     if (aDateEl) aDateEl.textContent = meta.date_after || 'Current';
 
@@ -414,12 +418,18 @@ class IntelligenceMapEngine {
     if (this.beforeOverlay) this.map.removeLayer(this.beforeOverlay);
     if (this.afterOverlay) this.map.removeLayer(this.afterOverlay);
 
-    // Mount satellite raster overlays
+    // Mount satellite raster overlays with smooth feathered blending
     if (analysisResult.before_image_url) {
-      this.beforeOverlay = L.imageOverlay(analysisResult.before_image_url, this.currentBounds, { opacity: 0.0 }).addTo(this.map);
+      this.beforeOverlay = L.imageOverlay(analysisResult.before_image_url, this.currentBounds, {
+        opacity: 0.0,
+        className: 'satellite-raster-overlay'
+      }).addTo(this.map);
     }
     if (analysisResult.after_image_url) {
-      this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, this.currentBounds, { opacity: 0.85 }).addTo(this.map);
+      this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, this.currentBounds, {
+        opacity: 0.82,
+        className: 'satellite-raster-overlay'
+      }).addTo(this.map);
     }
 
     // Clear vector layers
@@ -437,6 +447,13 @@ class IntelligenceMapEngine {
 
     // Apply active comparison mode
     this.setComparisonMode(this.currentMode);
+
+    // Automatically showcase primary anomaly and connected infrastructure
+    if (zones.length > 0) {
+      setTimeout(() => {
+        this.selectZone(zones[0]);
+      }, 600);
+    }
   }
 
   renderChangeZone(zone, bounds, meta) {
@@ -451,52 +468,85 @@ class IntelligenceMapEngine {
     const geoLon1 = lonMin + (px / 800.0) * lonSpan;
     const geoLon2 = lonMin + ((px + pw) / 800.0) * lonSpan;
 
-    const polyCoords = [
-      [geoLat1, geoLon1],
-      [geoLat1, geoLon2],
-      [geoLat2, geoLon2],
-      [geoLat2, geoLon1]
-    ];
-
     const centerLat = (geoLat1 + geoLat2) / 2;
     const centerLon = (geoLon1 + geoLon2) / 2;
     zone.center = [centerLat, centerLon];
+
+    // Map true Douglas-Peucker organic polygon vertices to geo-coordinates
+    let polyCoords;
+    if (zone.polygon && Array.isArray(zone.polygon) && zone.polygon.length >= 3) {
+      polyCoords = zone.polygon.map(([vx, vy]) => [
+        latMin + (1.0 - vy / 800.0) * latSpan,
+        lonMin + (vx / 800.0) * lonSpan
+      ]);
+    } else {
+      // Natural organic oval contour instead of harsh box
+      const cx = centerLon;
+      const cy = centerLat;
+      const rx = Math.abs(geoLon2 - geoLon1) / 2;
+      const ry = Math.abs(geoLat2 - geoLat1) / 2;
+      polyCoords = [];
+      const numPts = 16;
+      for (let i = 0; i < numPts; i++) {
+        const theta = (i / numPts) * 2 * Math.PI;
+        const wave = 0.90 + 0.18 * Math.sin(theta * 3);
+        polyCoords.push([
+          cy + ry * Math.sin(theta) * wave,
+          cx + rx * Math.cos(theta) * wave
+        ]);
+      }
+    }
     zone.polyCoords = polyCoords;
 
+    const zoneType = zone.classification ? zone.classification.type : (meta.change_type || 'Detected Anomaly');
     const tier = zone.tier || 'MODERATE';
-    let strokeColor = '#f97316';
-    let fillColor = '#f97316';
-    if (tier === 'CRITICAL') {
+
+    // Color theme tailored to physical hazard type
+    let strokeColor = '#f59e0b';
+    let fillColor = '#f59e0b';
+    if (zoneType.toLowerCase().includes('flood') || zoneType.toLowerCase().includes('water')) {
+      strokeColor = '#06b6d4';
+      fillColor = '#06b6d4';
+    } else if (zoneType.toLowerCase().includes('fire') || zoneType.toLowerCase().includes('burn') || tier === 'CRITICAL') {
       strokeColor = '#ef4444';
       fillColor = '#ef4444';
-    } else if (tier === 'LOW') {
-      strokeColor = '#eab308';
-      fillColor = '#eab308';
+    } else if (zoneType.toLowerCase().includes('deforest') || zoneType.toLowerCase().includes('forest')) {
+      strokeColor = '#10b981';
+      fillColor = '#10b981';
+    } else if (zoneType.toLowerCase().includes('urban')) {
+      strokeColor = '#a855f7';
+      fillColor = '#a855f7';
     }
 
-    // Precision Vector Polygon
+    // High-tech Organic Hazard Polygon
     const poly = L.polygon(polyCoords, {
       color: strokeColor,
-      weight: 2.5,
+      weight: tier === 'CRITICAL' ? 3 : 2,
       fillColor: fillColor,
-      fillOpacity: 0.38,
-      dashArray: tier === 'CRITICAL' ? null : '4, 4'
+      fillOpacity: tier === 'CRITICAL' ? 0.38 : 0.28,
+      dashArray: tier === 'CRITICAL' ? null : '4, 6',
+      className: tier === 'CRITICAL' ? 'hazard-contour-pulse' : ''
     });
 
     // Polygon Hover Micro-interactions
     poly.on('mouseover', () => {
-      poly.setStyle({ weight: 4, fillOpacity: 0.55 });
+      poly.setStyle({ weight: 4, fillOpacity: 0.60 });
     });
     poly.on('mouseout', () => {
-      poly.setStyle({ weight: 2.5, fillOpacity: 0.38 });
+      poly.setStyle({ weight: tier === 'CRITICAL' ? 3 : 2, fillOpacity: tier === 'CRITICAL' ? 0.38 : 0.28 });
     });
 
     poly.on('click', () => {
       this.selectZone(zone);
     });
 
-    const zoneType = zone.classification ? zone.classification.type : 'Detected Anomaly';
-    poly.bindTooltip(`<strong>${zoneType} (Zone ${zone.zone_id})</strong><br>Area: ${zone.hectares} ha | Urgency: ${zone.urgency_score}/100`, {
+    poly.bindTooltip(`
+      <div style="padding: 2px 4px;">
+        <strong style="color:${strokeColor};">${zoneType} (Sector ${zone.zone_id})</strong><br>
+        Area: ${zone.hectares} ha | Urgency: ${zone.urgency_score}/100<br>
+        <span style="font-size: 0.7rem; color: #94a3b8;">Click for direct on-map impact telemetry</span>
+      </div>
+    `, {
       className: 'leaflet-tooltip-dark',
       sticky: true
     });
@@ -504,13 +554,13 @@ class IntelligenceMapEngine {
     this.layers.changes.addLayer(poly);
     this.layers.severity.addLayer(poly);
 
-    // Pulsing Marker for Critical Priority Anomaly
+    // Tactical Target Reticle for Critical Anomaly
     if (tier === 'CRITICAL') {
       const pulseCircle = L.circleMarker([centerLat, centerLon], {
-        radius: 12,
-        color: '#ef4444',
-        fillColor: '#ef4444',
-        fillOpacity: 0.8,
+        radius: 10,
+        color: strokeColor,
+        fillColor: strokeColor,
+        fillOpacity: 0.85,
         weight: 2
       });
       pulseCircle.on('click', () => this.selectZone(zone));
@@ -557,20 +607,37 @@ class IntelligenceMapEngine {
       this.layers.settlements.addLayer(marker);
     });
 
-    // 4. Transit Roads & Bridges
-    (facilities.roads || []).forEach((r, idx) => {
-      const offset = (idx - 1) * 0.005;
-      const roadLine = L.polyline([
-        [centerCoords.lat - 0.015, centerCoords.lon - 0.015 + offset],
-        [centerCoords.lat, centerCoords.lon + offset],
-        [centerCoords.lat + 0.015, centerCoords.lon + 0.015 + offset]
-      ], {
-        color: '#f97316',
-        weight: 3.5,
-        opacity: 0.85
-      }).bindTooltip(`<strong>${r.name}</strong><br>${r.type} (${r.lanes} lanes)<br>Status: ${r.status}`, { sticky: true });
-      this.layers.roads.addLayer(roadLine);
-    });
+    // 4. Realistic Arterial Road Network & Bridges (No artificial diagonal slash lines)
+    if (facilities.roads && facilities.roads.length > 0) {
+      facilities.roads.forEach((r, idx) => {
+        const roadCoords = [];
+        if (idx === 0) {
+          // Primary Highway corridor along perimeter/coast
+          roadCoords.push(
+            [centerCoords.lat + 0.008, centerCoords.lon - 0.018],
+            [centerCoords.lat + 0.006, centerCoords.lon - 0.004],
+            [centerCoords.lat + 0.007, centerCoords.lon + 0.008],
+            [centerCoords.lat + 0.009, centerCoords.lon + 0.020]
+          );
+        } else {
+          // Secondary Municipal Access Road
+          roadCoords.push(
+            [centerCoords.lat + 0.016, centerCoords.lon - 0.002],
+            [centerCoords.lat + 0.005, centerCoords.lon + 0.001],
+            [centerCoords.lat - 0.008, centerCoords.lon - 0.003],
+            [centerCoords.lat - 0.018, centerCoords.lon + 0.002]
+          );
+        }
+        const isSevered = r.status && r.status.toLowerCase().includes('severed');
+        const roadLine = L.polyline(roadCoords, {
+          color: isSevered ? '#ef4444' : '#f59e0b',
+          weight: 3,
+          opacity: 0.85,
+          dashArray: isSevered ? '6, 6' : null
+        }).bindTooltip(`<strong>🛣️ ${r.name}</strong><br>${r.type} (${r.lanes} lanes)<br>Status: <span style="color:${isSevered ? '#ef4444' : '#10b981'}">${r.status}</span>`, { sticky: true });
+        this.layers.roads.addLayer(roadLine);
+      });
+    }
 
     // 5. Vulnerability Buffer Heatmap
     const vulnData = impact.vulnerability_layer || {};
@@ -579,7 +646,7 @@ class IntelligenceMapEngine {
         radius: z.radius_meters,
         color: z.color,
         fillColor: z.color,
-        fillOpacity: 0.18,
+        fillOpacity: 0.16,
         weight: 1.5,
         dashArray: '6, 6'
       }).bindTooltip(`<strong>${z.tier}</strong><br>${z.rationale}`, { sticky: true });
