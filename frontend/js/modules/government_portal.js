@@ -22,6 +22,7 @@ class GovernmentPortalModule {
     this.setupNotificationCenter();
     this.setupDrawerResponseIntegration();
     this.setupFilters();
+    this.setupInternalTabs();
 
     // Load initial views
     await this.renderPortalDashboard();
@@ -30,6 +31,47 @@ class GovernmentPortalModule {
     await this.loadNotifications();
 
     console.log('Government Multi-Tenant Module initialized successfully.');
+  }
+
+  setupInternalTabs() {
+    const tabs = document.querySelectorAll('.gov-internal-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const key = tab.dataset.govtab;
+        this.switchInternalGovTab(key);
+      });
+    });
+
+    document.getElementById('gov-btn-open-live-map')?.addEventListener('click', () => {
+      if (window.earthLensApp) {
+        window.earthLensApp.switchWorkspace('live-map');
+      }
+    });
+  }
+
+  switchInternalGovTab(tabKey) {
+    document.querySelectorAll('.gov-internal-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.govtab === tabKey);
+    });
+
+    const subviews = {
+      'intel': document.getElementById('gov-subview-intel'),
+      'action': document.getElementById('gov-subview-action'),
+      'cases': document.getElementById('gov-subview-cases'),
+      'profile': document.getElementById('gov-subview-profile')
+    };
+
+    Object.keys(subviews).forEach(k => {
+      if (subviews[k]) {
+        subviews[k].style.display = (k === tabKey) ? 'block' : 'none';
+      }
+    });
+
+    if (tabKey === 'action') {
+      this.renderActionCenter();
+    } else if (tabKey === 'cases') {
+      this.renderResponseCases();
+    }
   }
 
   // 1. Tenant Loading & Switching
@@ -193,6 +235,15 @@ class GovernmentPortalModule {
             </div>
           `).join('');
         }
+
+        const ctxOrg = document.getElementById('gov-context-org');
+        if (ctxOrg && this.activeTenant) {
+          ctxOrg.textContent = `${this.activeTenant.logo_icon} ${this.activeTenant.name}`;
+        }
+        const profOrg = document.getElementById('profile-org-name');
+        if (profOrg && this.activeTenant) {
+          profOrg.textContent = this.activeTenant.name;
+        }
       }
     } catch (err) {
       console.error('Error rendering portal dashboard:', err);
@@ -266,9 +317,7 @@ class GovernmentPortalModule {
         grid.querySelectorAll('.btn-open-case').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (window.earthLensApp) {
-              window.earthLensApp.switchWorkspace('response-cases');
-            }
+            this.switchInternalGovTab('cases');
           });
         });
       }
@@ -281,6 +330,7 @@ class GovernmentPortalModule {
   async renderResponseCases() {
     const tbody = document.getElementById('response-cases-tbody');
     const countBadge = document.getElementById('cases-count-badge');
+    const tabCasesCount = document.getElementById('tab-cases-count');
     if (!tbody) return;
 
     try {
@@ -288,6 +338,7 @@ class GovernmentPortalModule {
       if (res.ok) {
         this.cases = await res.json();
         if (countBadge) countBadge.textContent = `${this.cases.length} Total Cases`;
+        if (tabCasesCount) tabCasesCount.textContent = this.cases.length;
 
         if (this.cases.length === 0) {
           tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 30px;">No response cases logged for this organization.</td></tr>`;

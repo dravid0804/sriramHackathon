@@ -80,6 +80,9 @@ class EarthLensApp {
       alert(`Assignment staged: Department [${dept}] assigned to [${officer}]. Click 'Create Response Case' to finalize dispatch.`);
     });
 
+    // Start with default Overview workspace
+    this.switchWorkspace('overview');
+
     console.log('EarthLens AI Master Orchestrator initialized successfully.');
   }
 
