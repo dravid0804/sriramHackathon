@@ -1,6 +1,8 @@
 /**
  * EarthLens AI — Executive Investigation Reports Module
- * Generates and exports comprehensive investigation dossiers.
+ * Owned by: MEMBER 3 (Intelligence Operations, Analytics & Copilot Lead)
+ * Generates, renders, and exports comprehensive investigation dossiers.
+ * Optimizes layouts for one-click PDF printing.
  */
 
 class ReportsGeneratorModule {
@@ -28,6 +30,8 @@ class ReportsGeneratorModule {
   }
 
   renderReport(report) {
+    if (!report) return;
+
     const elId = document.getElementById('report-dossier-id');
     const elTitle = document.getElementById('report-mission-title');
     const elLoc = document.getElementById('report-location');
@@ -40,15 +44,23 @@ class ReportsGeneratorModule {
     const elNarrative = document.getElementById('report-ai-narrative');
     const elTable = document.getElementById('report-infra-table');
 
-    if (elId) elId.textContent = report.report_id || 'ELENS-DOSSIER-1001';
+    const dossierId = report.report_id || `ELENS-DOSSIER-${Math.floor(100000 + Math.random() * 900000)}`;
+    if (elId) elId.textContent = dossierId;
     if (elTitle) elTitle.textContent = report.title;
     if (elLoc) elLoc.textContent = report.location;
-    if (elDates) elDates.textContent = `${report.dates.before_date} → ${report.dates.after_date}`;
-    if (elSensor) elSensor.textContent = report.sensor_platform;
+    if (elDates) elDates.textContent = `${report.dates?.before_date || 'Baseline'} → ${report.dates?.after_date || 'Current'}`;
+    if (elSensor) elSensor.textContent = report.sensor_platform || 'Sentinel-2 MSI / Landsat-8/9 OLI';
     if (elHazard) elHazard.textContent = report.hazard_type;
     if (elArea) elArea.textContent = `${report.affected_area_km2} km²`;
-    if (elPrio) elPrio.textContent = `${report.investigation_priority.tier} (${report.investigation_priority.score}/100)`;
-    if (elComm) elComm.textContent = `${report.community_exposure.settlements_count} Settlements`;
+    
+    const prio = report.investigation_priority || { tier: 'CRITICAL', score: 94 };
+    if (elPrio) {
+      elPrio.textContent = `${prio.tier} (${prio.score}/100)`;
+      elPrio.className = `dossier-kpi-val ${prio.tier === 'CRITICAL' ? 'text-red' : 'text-orange'}`;
+    }
+
+    const comm = report.community_exposure || {};
+    if (elComm) elComm.textContent = `${comm.settlements_count || 0} Settlements Potentially Exposed`;
     if (elNarrative) elNarrative.textContent = report.ai_narrative;
 
     // Infrastructure list table
@@ -56,33 +68,58 @@ class ReportsGeneratorModule {
       elTable.innerHTML = '';
       const facilities = report.nearby_facilities || {};
       
-      (facilities.hospitals || []).forEach(h => {
-        const row = document.createElement('div');
-        row.className = 'dossier-infra-row';
-        row.innerHTML = `<span>🏥 <strong>${h.name}</strong></span><span style="color: #ef4444;">${h.status}</span>`;
-        elTable.appendChild(row);
-      });
+      const hospitals = facilities.hospitals || [];
+      const schools = facilities.schools || [];
+      const roads = facilities.roads || [];
 
-      (facilities.schools || []).forEach(s => {
-        const row = document.createElement('div');
-        row.className = 'dossier-infra-row';
-        row.innerHTML = `<span>🏫 <strong>${s.name}</strong></span><span style="color: #f97316;">${s.status}</span>`;
-        elTable.appendChild(row);
-      });
+      if (hospitals.length === 0 && schools.length === 0 && roads.length === 0) {
+        elTable.innerHTML = '<div style="padding: 12px; color: #94a3b8; font-size: 0.85rem;">No critical facilities detected within the proximity envelope.</div>';
+      } else {
+        hospitals.forEach(h => {
+          const row = document.createElement('div');
+          row.className = 'dossier-infra-row';
+          const isCompromised = (h.status || '').toUpperCase().includes('COMPROMISED');
+          row.innerHTML = `
+            <span>🏥 <strong>${h.name}</strong> <small style="color: #94a3b8;">(${h.distance_km || 1.2} km)</small></span>
+            <span class="infra-status-tag ${isCompromised ? 'tag-crit' : 'tag-warn'}">${h.status}</span>
+          `;
+          elTable.appendChild(row);
+        });
 
-      (facilities.roads || []).forEach(r => {
-        const row = document.createElement('div');
-        row.className = 'dossier-infra-row';
-        row.innerHTML = `<span>🛣️ <strong>${r.name}</strong></span><span style="color: #06b6d4;">${r.status}</span>`;
-        elTable.appendChild(row);
-      });
+        schools.forEach(s => {
+          const row = document.createElement('div');
+          row.className = 'dossier-infra-row';
+          row.innerHTML = `
+            <span>🏫 <strong>${s.name}</strong> <small style="color: #94a3b8;">(${s.distance_km || 0.8} km)</small></span>
+            <span class="infra-status-tag tag-warn">${s.status}</span>
+          `;
+          elTable.appendChild(row);
+        });
+
+        roads.forEach(r => {
+          const row = document.createElement('div');
+          row.className = 'dossier-infra-row';
+          const isSevered = (r.status || '').toUpperCase().includes('SEVERED') || (r.status || '').toUpperCase().includes('IMPASSABLE');
+          row.innerHTML = `
+            <span>🛣️ <strong>${r.name}</strong> <small style="color: #94a3b8;">(${r.distance_km || 0.5} km)</small></span>
+            <span class="infra-status-tag ${isSevered ? 'tag-crit' : 'tag-info'}">${r.status}</span>
+          `;
+          elTable.appendChild(row);
+        });
+      }
     }
 
-    // Export button listener
+    // Export button PDF listener
     const btnExport = document.getElementById('btn-export-report-pdf');
     if (btnExport) {
       btnExport.onclick = () => {
+        const origTitle = document.title;
+        const cleanLoc = (report.location || 'Mission').replace(/[^a-zA-Z0-9]/g, '_');
+        document.title = `EarthLens_Executive_Dossier_${cleanLoc}_${report.dates?.after_date || '2026'}`;
         window.print();
+        setTimeout(() => {
+          document.title = origTitle;
+        }, 1500);
       };
     }
   }
