@@ -3,669 +3,1097 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EarthGuard AI — Satellite Change Detection &amp; Prioritized Response System</title>
-  <meta name="description" content="AI for Space & Earth Intelligence: Automated satellite change detection, severity-ranked incident prioritization, confidence-aware telemetry, and natural-language operational briefs.">
+  <title>EarthLens AI — AI for Space &amp; Earth Intelligence</title>
+  <meta name="description" content="AI-powered satellite change detection and community impact intelligence platform. Monitors environmental changes, emerging risks, and critical infrastructure proximity from space.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Leaflet CDN -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+  <!-- Chart.js CDN for Historical Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- EarthLens AI Stylesheets -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-  <div class="app-container">
+  <div class="app-root">
 
-    <!-- ==========================================
-         1. LEFT NAVIGATION SIDEBAR
-         ========================================== -->
-    <aside class="app-sidebar">
-      
-      <!-- Brand Logo -->
+    <!-- ==========================================================
+         1. PERSISTENT LEFT SIDEBAR NAVIGATION
+         ========================================================== -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <!-- Brand Logo Section -->
       <div class="sidebar-brand">
-        <div class="brand-icon-box">
-          <span class="brand-pulse-dot"></span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-            <path d="M2 12h20"></path>
-          </svg>
-        </div>
-        <div class="brand-text-block">
-          <div class="brand-text-title">
-            EARTHGUARD <span class="brand-badge">V1.0</span>
+        <div class="brand-logo-container">
+          <div class="brand-orbit-ring">
+            <span class="brand-pulse-beacon"></span>
+            <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"></circle>
+              <ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-30 12 12)"></ellipse>
+              <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
+            </svg>
           </div>
-          <div class="brand-text-sub">ORBITAL TRIAGE HUD</div>
+          <div class="brand-text">
+            <div class="brand-name">EarthLens <span class="brand-ai">AI</span></div>
+            <div class="brand-sub">SPACE &amp; EARTH INTELLIGENCE</div>
+          </div>
         </div>
       </div>
 
-      <!-- Navigation Menu -->
-      <nav class="sidebar-menu">
-        <div class="nav-section-label">MISSION CONTROL</div>
+      <!-- Main Navigation Menu -->
+      <nav class="sidebar-nav">
+        <div class="nav-group-title">INTELLIGENCE PLATFORM</div>
 
-        <button class="nav-item active" data-view="studio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="12" y1="3" x2="12" y2="21"></line>
+        <button class="nav-btn active" data-nav="overview" id="nav-overview">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+            <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+            <rect x="3" y="16" width="7" height="5" rx="1"></rect>
           </svg>
-          <span>Mission Studio</span>
+          <span class="nav-label">Overview</span>
         </button>
 
-        <button class="nav-item" data-view="map">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button class="nav-btn" data-nav="live-map" id="nav-live-map">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
             <line x1="8" y1="2" x2="8" y2="18"></line>
             <line x1="16" y1="6" x2="16" y2="22"></line>
           </svg>
-          <span>Geospatial Map</span>
+          <span class="nav-label">Live Intelligence Map</span>
+          <span class="nav-badge pulse-dot"></span>
         </button>
 
-        <button class="nav-item" data-view="triage">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        <button class="nav-btn" data-nav="change-detection" id="nav-change-detection">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+            <line x1="12" y1="2" x2="12" y2="22"></line>
           </svg>
-          <span>Priority Triage</span>
-          <span class="nav-badge-pill" id="nav-badge-critical">0</span>
+          <span class="nav-label">Change Detection</span>
         </button>
 
-        <button class="nav-item" data-view="analytics">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
+        <button class="nav-btn" data-nav="community-impact" id="nav-community-impact">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          <span>Spectral Analytics</span>
+          <span class="nav-label">Community Impact</span>
         </button>
 
-        <button class="nav-item" data-view="docket">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button class="nav-btn" data-nav="historical-analysis" id="nav-historical-analysis">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span class="nav-label">Historical Analysis</span>
+        </button>
+
+        <button class="nav-btn" data-nav="alerts" id="nav-alerts">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="nav-label">Alerts</span>
+          <span class="nav-count-badge" id="sidebar-alert-badge">2</span>
+        </button>
+
+        <button class="nav-btn" data-nav="reports" id="nav-reports">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="16" y1="13" x2="8" y2="13"></line>
             <line x1="16" y1="17" x2="8" y2="17"></line>
             <polyline points="10 9 9 9 8 9"></polyline>
           </svg>
-          <span>Incident Docket</span>
+          <span class="nav-label">Reports</span>
         </button>
 
-        <div class="nav-section-label" style="margin-top: 14px;">OBSERVATION AOI</div>
+        <div class="nav-group-title" style="margin-top: 18px;">SYSTEM &amp; ASSETS</div>
 
-        <div class="aoi-selector-box">
-          <label class="aoi-label">SELECT TARGET AREA:</label>
-          <select id="aoi-select" class="aoi-select">
-            <option value="amazon_deforestation">🌲 Amazon Deforestation</option>
-            <option value="derna_flooding">🌊 Derna Flash Flood</option>
-            <option value="california_wildfire">🔥 California Wildfire</option>
-          </select>
-        </div>
+        <button class="nav-btn" data-nav="data-sources" id="nav-data-sources">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+          <span class="nav-label">Data Sources</span>
+        </button>
+
+        <button class="nav-btn" data-nav="settings" id="nav-settings">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span class="nav-label">Settings</span>
+        </button>
       </nav>
 
-      <!-- Sidebar Footer -->
+      <!-- Bottom Profile Section -->
       <div class="sidebar-footer">
-        <button id="btn-sidebar-upload" class="btn-sidebar-upload">
-          <span>+ Ingest Custom Imagery</span>
-        </button>
-
-        <div class="system-telemetry-chip">
-          <span class="telemetry-indicator-dot"></span>
-          <span>GEO-SYNC ONLINE</span>
+        <div class="user-profile-card" id="user-profile-trigger">
+          <div class="user-avatar">EL</div>
+          <div class="user-meta">
+            <div class="user-name">SpaceIntel Operative</div>
+            <div class="user-role">SENTINEL ACCESS · L3</div>
+          </div>
+          <div class="status-indicator-live" title="Earth observation link synchronized"></div>
         </div>
       </div>
-
     </aside>
 
-    <!-- ==========================================
-         2. MAIN CONTENT WRAPPER
-         ========================================== -->
-    <main class="main-content-wrapper">
+    <!-- ==========================================================
+         2. MASTER CONTENT AREA (MAP-FIRST CANVAS)
+         ========================================================== -->
+    <main class="app-main-viewport">
 
-      <!-- Top Header & Breadcrumbs Bar -->
-      <header class="top-header-bar">
-        <div class="breadcrumbs-box">
-          <span class="breadcrumb-root">EARTHGUARD AI</span>
-          <span class="breadcrumb-divider">/</span>
-          <span id="breadcrumb-location" class="breadcrumb-active">Amazon Basin, Brazil</span>
-          <span class="breadcrumb-divider">/</span>
-          <span style="color: var(--cyan-primary);" id="breadcrumb-sensor">Sentinel-2 (10m)</span>
+      <!-- TOP CONTROL & TELEMETRY BAR -->
+      <header class="top-intelligence-bar">
+        <!-- Location Search & AOI Preset Selector -->
+        <div class="top-search-group">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="global-location-search" class="global-search-input" placeholder="Search location, region, coordinates (e.g. Derna, Madurai, Amazon)...">
+          </div>
+
+          <!-- Scenario Demo Chips (Section 23) -->
+          <div class="scenario-demo-pills" id="scenario-selector">
+            <button class="scenario-chip active" data-scenario="derna_flooding" title="Coastal flash flood inundation">
+              🌊 <span class="chip-text">Derna Flooding</span>
+            </button>
+            <button class="scenario-chip" data-scenario="amazon_deforestation" title="Fishbone logging clearing">
+              🌳 <span class="chip-text">Amazon Forest</span>
+            </button>
+            <button class="scenario-chip" data-scenario="madurai_urban" title="Rapid urban and peri-urban expansion">
+              🏙️ <span class="chip-text">Madurai Urban</span>
+            </button>
+            <button class="scenario-chip" data-scenario="california_wildfire" title="Sierra Nevada wildfire scar">
+              🔥 <span class="chip-text">Wildfire Scar</span>
+            </button>
+          </div>
         </div>
 
-        <div class="top-telemetry-strip">
-          <div class="triage-chip critical">
-            <span>CRITICAL:</span>
-            <span id="top-val-critical">0</span>
+        <!-- Date Range Controls & Run Analysis Action -->
+        <div class="top-temporal-group">
+          <div class="date-range-badge">
+            <span class="date-label">BEFORE:</span>
+            <span class="date-val" id="top-date-before">2023-09-08</span>
+            <span class="date-arrow">→</span>
+            <span class="date-label">AFTER:</span>
+            <span class="date-val" id="top-date-after">2023-09-13</span>
           </div>
-          <div class="triage-chip moderate">
-            <span>MODERATE:</span>
-            <span id="top-val-moderate">0</span>
-          </div>
-          <div class="triage-chip low">
-            <span>LOW:</span>
-            <span id="top-val-low">0</span>
-          </div>
-        </div>
 
-        <div class="top-actions-box">
-          <button id="btn-rescan" class="btn-header-action" title="Re-run Computer Vision Triage">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          <button class="btn-run-analysis" id="btn-run-analysis">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
-            <span>Re-Scan</span>
-          </button>
-
-          <button id="btn-export-docket-top" class="btn-header-action btn-accent">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Export Docket</span>
+            <span>Run Analysis</span>
           </button>
         </div>
       </header>
 
-      <!-- Viewports Container (Switched by Left Sidebar) -->
-      <div class="view-viewport-container">
+      <!-- ==========================================================
+           3. THE EXTRAORDINARY LIVE GEOSPATIAL MAP CANVAS
+           ========================================================== -->
+      <div class="map-viewport-container">
 
-        <!-- ==========================================
-             VIEW 1: MISSION STUDIO (Comparison & Inspector)
-             ========================================== -->
-        <section id="view-studio" class="app-view active">
-          <div class="studio-layout">
+        <!-- Top Comparison Modes Selector Bar (Section 5) -->
+        <div class="map-mode-bar-container">
+          <div class="map-mode-segmented-control" id="map-mode-control">
+            <button class="mode-tab" data-mode="before" id="tab-mode-before">[ BEFORE ]</button>
+            <button class="mode-tab" data-mode="after" id="tab-mode-after">[ AFTER ]</button>
+            <button class="mode-tab active" data-mode="difference" id="tab-mode-difference">[ DIFFERENCE ]</button>
+            <button class="mode-tab" data-mode="impact" id="tab-mode-impact">[ IMPACT ]</button>
+          </div>
 
-            <!-- Visualizer Left Pane -->
-            <div class="studio-visualizer-pane">
-              
-              <!-- Sub-Toolbar (Comparison Mode & Layers) -->
-              <div class="studio-subtoolbar">
-                <div class="comparison-mode-switch">
-                  <button id="btn-mode-dual" class="mode-tab-btn active">
-                    <span>⚡ Side-by-Side</span>
-                  </button>
-                  <button id="btn-mode-curtain" class="mode-tab-btn">
-                    <span>🎚️ Swipe Curtain</span>
-                  </button>
-                  <button id="btn-mode-diff" class="mode-tab-btn">
-                    <span>🔥 Heatmap Diff</span>
-                  </button>
-                </div>
+          <!-- Swipe Comparison Toggle -->
+          <button class="btn-toggle-swipe" id="btn-toggle-swipe" title="Toggle interactive Before/After draggable curtain slider">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"></polyline>
+              <polyline points="9 18 3 12 9 6"></polyline>
+            </svg>
+            <span>Curtain Swipe</span>
+          </button>
+        </div>
 
-                <div class="visual-layer-toggles">
-                  <label class="toggle-label">
-                    <input type="checkbox" id="chk-layer-heatmap" checked>
-                    <span>Diff Overlay</span>
-                  </label>
+        <!-- Master Leaflet Map Element -->
+        <div id="geospatial-map" class="geospatial-map"></div>
 
-                  <div class="slider-group">
-                    <span>Opacity:</span>
-                    <input type="range" id="rng-layer-opacity" min="0" max="100" value="85">
-                  </div>
+        <!-- Draggable Comparison Swipe Slider Container (Section 5) -->
+        <div class="swipe-curtain-overlay" id="swipe-curtain-overlay" style="display: none;">
+          <div class="swipe-divider-line" id="swipe-divider-handle">
+            <div class="swipe-handle-grip">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 7l-5 5 5 5V7zm8 0v10l5-5-5-5z"/>
+              </svg>
+            </div>
+            <div class="curtain-label label-before">BEFORE SATELLITE</div>
+            <div class="curtain-label label-after">AFTER SATELLITE</div>
+          </div>
+        </div>
 
-                  <label class="toggle-label">
-                    <input type="checkbox" id="chk-layer-vectors" checked>
-                    <span>Vector BBoxes</span>
-                  </label>
-                </div>
+        <!-- FLOATING MAP CONTROLS: TOP-LEFT TELEMETRY HUD -->
+        <div class="floating-hud top-left-hud">
+          <div class="hud-pill">
+            <span class="hud-dot live-dot"></span>
+            <span class="hud-text" id="hud-aoi-title">Derna Basin, Libya</span>
+          </div>
+          <div class="hud-pill coordinates-hud">
+            <span id="hud-coordinates">32.7667°N, 22.6367°E</span>
+          </div>
+        </div>
+
+        <!-- FLOATING MAP CONTROLS: TOP-RIGHT TOOLBAR -->
+        <div class="floating-hud top-right-hud">
+          <!-- Basemap Style Switcher -->
+          <div class="basemap-toggle-btn" id="btn-basemap-toggle" title="Toggle High-Res Satellite vs Tactical Dark Terrain">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+              <path d="M2 12h20"></path>
+            </svg>
+            <span id="basemap-name">Satellite</span>
+          </div>
+
+          <!-- Layers Manager Toggle Button -->
+          <button class="btn-hud-tool" id="btn-open-layers" title="Open 16 Map Layer Controls">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            <span>Layers (16)</span>
+          </button>
+
+          <!-- AI Assistant Quick Toggle -->
+          <button class="btn-hud-tool btn-hud-ai" id="btn-toggle-assistant" title="Open AI Investigation Assistant">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>AI Intel</span>
+          </button>
+        </div>
+
+        <!-- FLOATING MAP CONTROLS: BOTTOM-LEFT SEMANTIC LEGEND (Section 4) -->
+        <div class="floating-hud bottom-left-hud">
+          <div class="map-semantic-legend" id="map-semantic-legend">
+            <div class="legend-header">
+              <span class="legend-title">GEOSPATIAL LEGEND</span>
+              <span class="legend-collapse-toggle" id="legend-toggle">−</span>
+            </div>
+            <div class="legend-body" id="legend-body">
+              <div class="legend-row">
+                <span class="legend-color-dot" style="background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
+                <span class="legend-label">Critical Change / Hazard</span>
               </div>
-
-              <!-- Stage Workspace -->
-              <div class="studio-stage" id="studio-stage">
-                
-                <!-- Radar Scanner Line -->
-                <div class="scanning-radar-line" id="studio-radar-line"></div>
-
-                <!-- 1. SIDE-BY-SIDE DUAL VIEW -->
-                <div class="side-by-side-view" id="stage-dual-view">
-                  <!-- Left: Before Image -->
-                  <div class="dual-panel">
-                    <div class="dual-panel-header">
-                      <span style="color: #38bdf8;">BEFORE OBSERVATION</span>
-                      <span id="lbl-dual-before-date" style="color: var(--text-dim);">BASELINE</span>
-                    </div>
-                    <div class="dual-img-wrapper">
-                      <img id="img-dual-before" class="dual-img" src="" alt="Before Baseline">
-                    </div>
-                  </div>
-
-                  <!-- Right: After Image with Vector Overlays -->
-                  <div class="dual-panel">
-                    <div class="dual-panel-header">
-                      <span style="color: var(--crimson-hazard);">AFTER OBSERVATION</span>
-                      <span id="lbl-dual-after-date" style="color: var(--text-dim);">POST-EVENT</span>
-                    </div>
-                    <div class="dual-img-wrapper">
-                      <img id="img-dual-after" class="dual-img" src="" alt="After Observation">
-                      <img id="img-dual-heatmap" class="dual-heatmap-overlay" src="" alt="Heatmap">
-                      <canvas id="dual-vector-canvas" class="stage-vector-canvas"></canvas>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 2. CURTAIN SWIPE VIEW (Hidden by default, switched via tab) -->
-                <div class="curtain-swipe-view" id="stage-curtain-view" style="display: none;">
-                  <div class="curtain-stage-wrapper" id="curtain-stage-wrapper">
-                    <!-- Before Base -->
-                    <img id="img-curtain-before" class="curtain-img-base" src="" alt="Before Baseline">
-
-                    <!-- After Clipped -->
-                    <div id="curtain-clipped-box" class="curtain-after-clipped">
-                      <img id="img-curtain-after" class="curtain-img-after" src="" alt="After Observation">
-                    </div>
-
-                    <!-- Heatmap Layer -->
-                    <img id="img-curtain-heatmap" class="curtain-heatmap-layer" src="" alt="Heatmap">
-
-                    <!-- Canvas Layer -->
-                    <canvas id="curtain-vector-canvas" class="stage-vector-canvas"></canvas>
-
-                    <!-- Draggable Divider Line -->
-                    <div id="curtain-divider-line" class="curtain-divider-line" style="left: 50%;">
-                      <div class="divider-knob">◄►</div>
-                    </div>
-                  </div>
-
-                  <!-- Floating Labels -->
-                  <div class="stage-labels-bottom">
-                    <div class="curtain-pill-tag before" id="pill-curtain-before">BEFORE BASELINE</div>
-                    <div class="curtain-pill-tag after" id="pill-curtain-after">AFTER OBSERVATION</div>
-                  </div>
-                </div>
-
-                <!-- Floating Coordinates HUD -->
-                <div class="stage-hud-overlay">
-                  <div style="font-weight: 700; color: #fff;" id="stage-aoi-title">Amazon Rainforest</div>
-                  <div style="color: var(--cyan-primary);" id="stage-aoi-coords">LAT: -10.8256 | LON: -62.9512</div>
-                </div>
-
+              <div class="legend-row">
+                <span class="legend-color-dot" style="background: #f97316;"></span>
+                <span class="legend-label">Moderate Change / Warning</span>
               </div>
-
-              <!-- Bottom Telemetry Bar -->
-              <div class="studio-bottom-bar">
-                <div class="studio-stat-item">
-                  <span class="stat-title">IMPACTED AREA:</span>
-                  <span class="stat-value" id="stat-ha-val" style="color: var(--cyan-primary);">0.00 ha</span>
-                </div>
-                <div class="studio-stat-item">
-                  <span class="stat-title">SURFACE DELTA:</span>
-                  <span class="stat-value" id="stat-delta-val">0.00%</span>
-                </div>
-                <div class="studio-stat-item">
-                  <span class="stat-title">MEAN CONFIDENCE:</span>
-                  <span class="stat-value" id="stat-conf-val" style="color: var(--emerald-safe);">96%</span>
-                </div>
-                <div class="studio-stat-item">
-                  <span class="stat-title">LATENCY:</span>
-                  <span class="stat-value" style="color: var(--purple-accent);">134ms (CV-Accelerated)</span>
-                </div>
+              <div class="legend-row">
+                <span class="legend-color-dot" style="background: #eab308;"></span>
+                <span class="legend-label">Minor Change / Observation</span>
               </div>
+              <div class="legend-row">
+                <span class="legend-color-dot" style="background: #06b6d4;"></span>
+                <span class="legend-label">Water / Flood Inundation</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-color-dot" style="background: #a855f7;"></span>
+                <span class="legend-label">Community Impact Infrastructure</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-color-dot" style="background: #10b981;"></span>
+                <span class="legend-label">Stable / Verified Perimeter</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <!-- FLOATING MAP CONTROLS: BOTTOM-RIGHT NAVIGATION TOOLS -->
+        <div class="floating-hud bottom-right-hud">
+          <div class="nav-tool-stack">
+            <button class="map-ctrl-btn" id="ctrl-zoom-in" title="Zoom In">+</button>
+            <button class="map-ctrl-btn" id="ctrl-zoom-out" title="Zoom Out">−</button>
+            <button class="map-ctrl-btn" id="ctrl-recenter" title="Recenter Observation AOI">⌖</button>
+            <button class="map-ctrl-btn" id="ctrl-measure" title="Measure Distance Tool">📏</button>
+            <button class="map-ctrl-btn" id="ctrl-fullscreen" title="Toggle Fullscreen">⛶</button>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             4. DEDICATED 16-LAYER CONTROL DRAWER (Section 4)
+             ========================================================== -->
+        <div class="layers-drawer-panel" id="layers-drawer" style="display: none;">
+          <div class="drawer-header">
+            <div class="drawer-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+              <span>Geospatial Intelligence Layers</span>
+            </div>
+            <button class="drawer-close-btn" id="btn-close-layers">×</button>
+          </div>
+
+          <div class="layers-list-scroll">
+            <div class="layer-category-label">DETECTION &amp; SEVERITY</div>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-changes" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Detected Changes</span>
+              <span class="layer-dot" style="background: #ef4444;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-severity" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Change Severity Polygons</span>
+              <span class="layer-dot" style="background: #f97316;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-priority" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Investigation Priority Zones</span>
+              <span class="layer-dot" style="background: #ef4444;"></span>
+            </label>
+
+            <div class="layer-category-label">HAZARD CLASSIFICATIONS</div>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-flood" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Flood Inundation Corridors</span>
+              <span class="layer-dot" style="background: #06b6d4;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-deforest" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Deforestation Clearing Scars</span>
+              <span class="layer-dot" style="background: #10b981;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-fire" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Fire Damage / Thermal Burn</span>
+              <span class="layer-dot" style="background: #ef4444;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-urban" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Urban &amp; Built-up Expansion</span>
+              <span class="layer-dot" style="background: #a855f7;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-coastal" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Coastal &amp; Shoreline Changes</span>
+              <span class="layer-dot" style="background: #0ea5e9;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-water" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Water Bodies &amp; Reservoirs</span>
+              <span class="layer-dot" style="background: #3b82f6;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-agri" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Agricultural Areas &amp; Crops</span>
+              <span class="layer-dot" style="background: #84cc16;"></span>
+            </label>
+
+            <div class="layer-category-label">CRITICAL COMMUNITY ASSETS</div>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-settlements" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Settlements &amp; Neighborhoods</span>
+              <span class="layer-dot" style="background: #a855f7;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-schools" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Schools &amp; Education Centers</span>
+              <span class="layer-tag">🏫</span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-hospitals" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Hospitals &amp; Medical Centers</span>
+              <span class="layer-tag">🏥</span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-roads" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Roads &amp; Transit Bridges</span>
+              <span class="layer-tag">🛣️</span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-buildings" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Buildings &amp; Commercial Units</span>
+              <span class="layer-dot" style="background: #94a3b8;"></span>
+            </label>
+
+            <label class="layer-item">
+              <input type="checkbox" id="layer-opt-vulnerability" checked>
+              <span class="custom-chk"></span>
+              <span class="layer-text">Community Vulnerability Heatmap</span>
+              <span class="layer-dot" style="background: #e11d48;"></span>
+            </label>
+          </div>
+
+          <div class="drawer-footer">
+            <button class="btn-layer-action" id="btn-select-all-layers">Select All</button>
+            <button class="btn-layer-action" id="btn-clear-layers">Reset</button>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             5. RIGHT-SIDE CHANGE DETAIL & AI ASSISTANT DRAWER
+             ========================================================== -->
+        <aside class="detail-slide-drawer" id="detail-drawer">
+          <div class="detail-drawer-header">
+            <div class="drawer-tab-switch">
+              <button class="tab-drawer-btn active" data-tab="details" id="tab-btn-details">Change Detail</button>
+              <button class="tab-drawer-btn" data-tab="assistant" id="tab-btn-assistant">AI Assistant</button>
+            </div>
+            <button class="btn-minimize-drawer" id="btn-minimize-drawer" title="Close Panel">✕</button>
+          </div>
+
+          <!-- TAB 1: CHANGE DETAIL & POTENTIAL COMMUNITY IMPACT (Section 8) -->
+          <div class="drawer-tab-content active" id="content-tab-details">
+            <div class="detail-header-card">
+              <div class="detail-badge-row">
+                <span class="hazard-badge-pill" id="detail-hazard-type">Flooding</span>
+                <span class="priority-badge-pill" id="detail-priority-tag">CRITICAL PRIORITY</span>
+              </div>
+              <h2 class="detail-location-title" id="detail-location-name">Derna Coastal District</h2>
+              <div class="detail-dates-caption">
+                Detected: <span id="detail-date-detected">September 2023</span> · Compared With: <span id="detail-date-compared">August 2023</span>
+              </div>
             </div>
 
-            <!-- Right Inspector Pane (Structured with Tabs) -->
-            <aside class="studio-inspector-pane">
-              
-              <!-- Inspector Header -->
-              <div class="inspector-header">
-                <div class="inspector-title-row">
-                  <div class="inspector-zone-title">
-                    <span id="insp-zone-id">ZONE-01</span>
-                    <span id="insp-tier-pill" class="inspector-tier-pill critical">CRITICAL</span>
-                  </div>
-                  <div id="insp-conf-badge" style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--emerald-safe);">
-                    ● 96% High Conf
-                  </div>
-                </div>
+            <!-- Primary Telemetry Metrics Grid -->
+            <div class="detail-metrics-grid">
+              <div class="metric-cell">
+                <div class="metric-caption">AFFECTED AREA</div>
+                <div class="metric-number" id="detail-affected-area">14.2 km²</div>
+              </div>
+              <div class="metric-cell">
+                <div class="metric-caption">CHANGE VELOCITY</div>
+                <div class="metric-number text-orange" id="detail-change-speed">Rapid</div>
+              </div>
+              <div class="metric-cell">
+                <div class="metric-caption">SEVERITY LEVEL</div>
+                <div class="metric-number text-red" id="detail-severity">High</div>
+              </div>
+              <div class="metric-cell">
+                <div class="metric-caption">AI CONFIDENCE</div>
+                <div class="metric-number text-cyan" id="detail-confidence">94%</div>
+              </div>
+            </div>
 
-                <!-- Inspector Navigation Tabs -->
-                <div class="inspector-nav-tabs">
-                  <button class="insp-tab-btn active" data-tab="tab-metrics">📊 Metrics</button>
-                  <button class="insp-tab-btn" data-tab="tab-brief">🤖 AI Brief</button>
-                  <button class="insp-tab-btn" data-tab="tab-dispatch">🚁 Protocol</button>
-                  <button class="insp-tab-btn" data-tab="tab-spectral">🔬 Spectral</button>
+            <!-- Transparent Investigation Priority Score (Section 11) -->
+            <div class="detail-section-box">
+              <div class="section-box-title">
+                <span>INVESTIGATION PRIORITY FORMULA</span>
+                <span class="score-pill" id="detail-priority-score">94 / 100</span>
+              </div>
+              <div class="priority-rationale-text" id="detail-priority-rationale">
+                Priority: HIGH — Large affected area (14.2 km²) + rapid change speed + 1 hospital within 1.2 km + 3 schools in proximity zone.
+              </div>
+              <div class="priority-factors-breakdown" id="detail-priority-factors">
+                <div class="factor-bar-row">
+                  <span class="factor-name">Area Impact:</span>
+                  <div class="factor-bar"><div class="factor-fill" style="width: 85%;"></div></div>
+                  <span class="factor-val">25.5 / 30</span>
+                </div>
+                <div class="factor-bar-row">
+                  <span class="factor-name">Change Speed:</span>
+                  <div class="factor-bar"><div class="factor-fill" style="width: 100%;"></div></div>
+                  <span class="factor-val">20.0 / 20</span>
+                </div>
+                <div class="factor-bar-row">
+                  <span class="factor-name">Critical Infra Proximity:</span>
+                  <div class="factor-bar"><div class="factor-fill" style="width: 90%;"></div></div>
+                  <span class="factor-val">27.0 / 30</span>
                 </div>
               </div>
+            </div>
 
-              <!-- Inspector Body (Tabbed Content) -->
-              <div class="inspector-body-scroll">
+            <!-- AI Summary Narrative (Section 8) -->
+            <div class="detail-section-box">
+              <div class="section-box-title">AI SUMMARY</div>
+              <p class="ai-narrative-paragraph" id="detail-ai-summary">
+                Satellite imagery indicates catastrophic reservoir breach and rapid overland inundation across the central wadi corridor. Severe spectral water absorption detected with high sediment plume expansion into the coastal bay.
+              </p>
+            </div>
 
-                <!-- TAB 1: METRICS & SCORE GAUGE -->
-                <div class="insp-content-tab active" id="tab-metrics">
-                  
-                  <!-- Urgency Gauge Box (Novelty 1) -->
-                  <div class="widget-card">
-                    <div class="widget-title">
-                      <span>COMPOSITE URGENCY SCORE</span>
-                      <span id="insp-tier-label" style="color: var(--crimson-hazard);">Tier 1: Immediate Field Dispatch</span>
-                    </div>
-
-                    <div class="urgency-score-showcase">
-                      <div class="score-number-display" id="insp-score-val" style="color: var(--crimson-hazard);">
-                        65.9
-                      </div>
-                      <div class="score-details-col">
-                        <div class="score-bar-bg">
-                          <div class="score-bar-fill" id="insp-score-bar" style="width: 66%; background: var(--crimson-hazard);"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.65rem; font-family: var(--font-mono); color: var(--text-dim); margin-top: 4px;">
-                          <span>0 (Low)</span>
-                          <span>100 (Max Urgency)</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 2x2 Metric Grid -->
-                  <div class="metrics-2x2-grid">
-                    <div class="metric-cell">
-                      <span class="metric-cell-label">EVENT CLASSIFICATION</span>
-                      <span class="metric-cell-val" id="insp-event-type">🌲 Deforestation</span>
-                    </div>
-
-                    <div class="metric-cell">
-                      <span class="metric-cell-label">IMPACTED AREA</span>
-                      <span class="metric-cell-val" id="insp-area-val">8.1 Hectares</span>
-                    </div>
-
-                    <div class="metric-cell">
-                      <span class="metric-cell-label">CHANGE MAGNITUDE</span>
-                      <span class="metric-cell-val" id="insp-mag-val">32% Delta</span>
-                    </div>
-
-                    <div class="metric-cell">
-                      <span class="metric-cell-label">SETTLEMENT BUFFER</span>
-                      <span class="metric-cell-val" id="insp-settle-val">&lt; 1.5 km Proximity</span>
-                    </div>
-                  </div>
-
-                  <!-- Confidence Diagnostic Widget (Novelty 2) -->
-                  <div class="widget-card">
-                    <div class="widget-title">
-                      <span>CONFIDENCE &amp; UNCERTAINTY DIAGNOSTIC</span>
-                      <span id="insp-conf-pct" style="color: var(--emerald-safe);">96% RATING</span>
-                    </div>
-                    <p style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;" id="insp-conf-reason">
-                      Atmospheric clarity optimal; sharp spectral transition verified across all bands with low cloud jitter.
-                    </p>
-                  </div>
-
-                </div>
-
-                <!-- TAB 2: NATURAL-LANGUAGE AI BRIEFING (Novelty 3) -->
-                <div class="insp-content-tab" id="tab-brief">
-                  
-                  <div class="ai-briefing-styled">
-                    <div class="briefing-meta-header">
-                      <span>DECISION-READY OPERATIONAL BRIEF</span>
-                      <span id="insp-brief-window">Immediate (0-48h)</span>
-                    </div>
-
-                    <p class="briefing-paragraph" id="insp-brief-text">
-                      ZONE-01 exhibits a critical 32% spectral change signature classified as Deforestation, covering an estimated 8.1 hectares immediately adjacent to the settlement buffer. Detection confidence is rated at 96% based on radiometric heuristics.
-                    </p>
-
-                    <div class="action-guidance-pill" id="insp-action-pill">
-                      <strong>Directive:</strong> Dispatch environmental ranger enforcement unit within 48 hours to intercept active logging equipment.
-                    </div>
-                  </div>
-
-                  <!-- Audio Read-Aloud Voice Button -->
-                  <button id="btn-audio-brief" class="btn-audio-speak">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                    <span>Read Aloud (Voice Briefing)</span>
-                  </button>
-
-                  <div class="widget-card">
-                    <div class="widget-title">KEY IMPACT SIGNATURE</div>
-                    <p style="font-size: 0.75rem; color: var(--text-muted);" id="insp-signature-text">
-                      Vegetation index declined by 0.18; exposed mineral soil and clearing pattern observed.
-                    </p>
-                  </div>
-
-                </div>
-
-                <!-- TAB 3: FIELD PROTOCOL & DISPATCH -->
-                <div class="insp-content-tab" id="tab-dispatch">
-                  
-                  <div class="widget-card">
-                    <div class="widget-title">FIELD RESPONSE CHECKLIST</div>
-                    
-                    <label class="checklist-item">
-                      <input type="checkbox" id="chk-drone" checked>
-                      <span>Deploy Aerial Drone Survey (Orthomosaic Scan)</span>
-                    </label>
-
-                    <label class="checklist-item">
-                      <input type="checkbox" id="chk-civil">
-                      <span>Notify Local Municipal Defense Buffer</span>
-                    </label>
-
-                    <label class="checklist-item">
-                      <input type="checkbox" id="chk-ground">
-                      <span>Mobilize Ground Verification / Ranger Unit</span>
-                    </label>
-                  </div>
-
-                  <button id="btn-authorize-dispatch" class="btn-dispatch-execute">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                    <span>Authorize &amp; Dispatch Field Unit</span>
-                  </button>
-
-                </div>
-
-                <!-- TAB 4: SPECTRAL DIAGNOSTICS -->
-                <div class="insp-content-tab" id="tab-spectral">
-                  
-                  <div class="widget-card">
-                    <div class="widget-title">MULTISPECTRAL CHANNEL DELTAS</div>
-
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                      <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-family: var(--font-mono); margin-bottom: 2px;">
-                          <span>VEGETATION LOSS (ΔNDVI)</span>
-                          <span style="color: var(--crimson-hazard);">-0.24</span>
-                        </div>
-                        <div class="score-bar-bg">
-                          <div style="width: 72%; height: 100%; background: var(--crimson-hazard); border-radius: 4px;"></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-family: var(--font-mono); margin-bottom: 2px;">
-                          <span>WATER INDEX (ΔNDWI)</span>
-                          <span style="color: var(--cyan-primary);">+0.04</span>
-                        </div>
-                        <div class="score-bar-bg">
-                          <div style="width: 25%; height: 100%; background: var(--cyan-primary); border-radius: 4px;"></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-family: var(--font-mono); margin-bottom: 2px;">
-                          <span>SURFACE ALBEDO VARIANCE</span>
-                          <span style="color: var(--amber-warn);">+18.2</span>
-                        </div>
-                        <div class="score-bar-bg">
-                          <div style="width: 48%; height: 100%; background: var(--amber-warn); border-radius: 4px;"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
+            <!-- Potential Community Impact Inventory (Section 9) -->
+            <div class="detail-section-box">
+              <div class="section-box-title">
+                <span>POTENTIALLY AFFECTED COMMUNITY INFRASTRUCTURE</span>
               </div>
-
-              <!-- Quick Zone Carousel at Bottom of Inspector -->
-              <div class="inspector-quick-zones" id="inspector-quick-zones">
-                <!-- Zone chips injected dynamically by app.js -->
+              <div class="impact-stats-list">
+                <div class="impact-stat-item">
+                  <span class="impact-stat-icon">🏘️</span>
+                  <span class="impact-stat-label">Settlements nearby:</span>
+                  <span class="impact-stat-val" id="detail-settlements-count">6</span>
+                </div>
+                <div class="impact-stat-item">
+                  <span class="impact-stat-icon">🏫</span>
+                  <span class="impact-stat-label">Schools nearby:</span>
+                  <span class="impact-stat-val" id="detail-schools-count">3</span>
+                </div>
+                <div class="impact-stat-item">
+                  <span class="impact-stat-icon">🏥</span>
+                  <span class="impact-stat-label">Hospitals nearby:</span>
+                  <span class="impact-stat-val" id="detail-hospitals-count">1</span>
+                </div>
+                <div class="impact-stat-item">
+                  <span class="impact-stat-icon">🛣️</span>
+                  <span class="impact-stat-label">Roads potentially affected:</span>
+                  <span class="impact-stat-val" id="detail-roads-count">6</span>
+                </div>
+                <div class="impact-stat-item">
+                  <span class="impact-stat-icon">🌾</span>
+                  <span class="impact-stat-label">Agricultural land:</span>
+                  <span class="impact-stat-val" id="detail-agri-land">3.6 km²</span>
+                </div>
               </div>
-
-            </aside>
-
+              <div class="scientific-disclaimer-note">
+                * Note: Designated as <strong>potentially affected</strong> via satellite proximity analysis. Ground verification required before tactical deployment.
+              </div>
+              <button class="btn-view-impact-deep" id="btn-deep-community-impact">
+                View Community Impact Analysis →
+              </button>
+            </div>
           </div>
-        </section>
 
-        <!-- ==========================================
-             VIEW 2: FULL GEOSPATIAL MAP VIEW
-             ========================================== -->
-        <section id="view-map" class="app-view">
-          <div id="fullscreen-leaflet-map"></div>
+          <!-- TAB 2: AI INVESTIGATION ASSISTANT (Section 15) -->
+          <div class="drawer-tab-content" id="content-tab-assistant" style="display: none;">
+            <div class="assistant-chat-header">
+              <div class="assistant-avatar">🤖</div>
+              <div class="assistant-info">
+                <div class="assistant-name">EarthLens Copilot</div>
+                <div class="assistant-sub">Grounded In Verified Mission Telemetry</div>
+              </div>
+            </div>
 
-          <div class="map-floating-overlay-card">
-            <h3 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 6px;">
-              Geospatial Satellite Explorer
-            </h3>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
-              Interactive ESRI World Imagery basemap showing georeferenced anomaly contours and settlement proximity rings.
+            <!-- Grounded Prompt Pills (Section 15) -->
+            <div class="prompt-pills-row">
+              <button class="prompt-pill" data-query="What changed here?">What changed here?</button>
+              <button class="prompt-pill" data-query="Which areas require attention?">Which areas require attention?</button>
+              <button class="prompt-pill" data-query="What communities are near this change?">Communities near this change?</button>
+              <button class="prompt-pill" data-query="What happened between these dates?">What happened between these dates?</button>
+              <button class="prompt-pill" data-query="Show me high-priority changes.">High-priority changes</button>
+            </div>
+
+            <!-- Conversational Messages Scroll -->
+            <div class="assistant-chat-feed" id="assistant-chat-feed">
+              <div class="chat-msg bot-msg">
+                <div class="msg-bubble">
+                  Welcome to <strong>EarthLens AI Investigation Copilot</strong>. I analyze real-time multispectral satellite differencing and critical infrastructure telemetry. Click any quick prompt above or ask a specific question regarding this observation.
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Input Form -->
+            <form class="assistant-input-box" id="assistant-form">
+              <input type="text" id="assistant-input" placeholder="Ask about detected changes, schools, roads, dates..." autocomplete="off">
+              <button type="submit" class="btn-send-msg" id="btn-send-assistant">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </aside>
+
+      </div> <!-- /map-viewport-container -->
+
+      <!-- ==========================================================
+           6. WORKSPACE OVERLAYS (DOCK OVER MAP BY NAVIGATION MENU)
+           ========================================================== -->
+
+      <!-- A. OVERVIEW DASHBOARD PANEL (Section 3) -->
+      <section class="workspace-overlay-panel" id="panel-overview" style="display: none;">
+        <div class="panel-inner-container">
+          <div class="panel-header-block">
+            <div class="panel-title-area">
+              <h1 class="panel-h1">Earth Intelligence Overview</h1>
+              <p class="panel-p">Monitor environmental changes, emerging risks, and community impact from satellite imagery.</p>
+            </div>
+            <button class="panel-close-btn" data-close="overview">✕ Back to Map</button>
+          </div>
+
+          <!-- 5 Master KPI Cards (Section 3) -->
+          <div class="kpi-cards-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">CHANGES DETECTED</span>
+                <span class="kpi-icon icon-yellow">🔍</span>
+              </div>
+              <div class="kpi-value" id="kpi-changes-detected">18</div>
+              <div class="kpi-trend trend-up">↑ +24% vs baseline</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">HIGH PRIORITY CHANGES</span>
+                <span class="kpi-icon icon-red">🚨</span>
+              </div>
+              <div class="kpi-value text-red" id="kpi-high-priority">6</div>
+              <div class="kpi-trend trend-crit">Critical surveillance tier</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">TOTAL AFFECTED AREA</span>
+                <span class="kpi-icon icon-orange">📐</span>
+              </div>
+              <div class="kpi-value" id="kpi-total-area">38.6 km²</div>
+              <div class="kpi-trend trend-neutral">Aggregated cross-hazard footprint</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">COMMUNITIES POTENTIALLY AFFECTED</span>
+                <span class="kpi-icon icon-purple">🏘️</span>
+              </div>
+              <div class="kpi-value text-purple" id="kpi-communities-affected">14</div>
+              <div class="kpi-trend trend-warn">Within 2.5km risk perimeter</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">CRITICAL INFRASTRUCTURE AT RISK</span>
+                <span class="kpi-icon icon-cyan">🏥</span>
+              </div>
+              <div class="kpi-value text-cyan" id="kpi-infra-at-risk">9</div>
+              <div class="kpi-trend trend-warn">4 Schools · 2 Hospitals · 3 Bridges</div>
+            </div>
+          </div>
+
+          <!-- Priority Changes Table List (Section 3) -->
+          <div class="overview-table-card">
+            <div class="table-card-header">
+              <div class="table-card-title">Priority Changes Requiring Urgent Investigation</div>
+              <div class="table-card-sub">Click any row to smoothly pan and zoom the map to that region</div>
+            </div>
+            <div class="table-responsive-box">
+              <table class="earth-table" id="overview-priority-table">
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>Change Type</th>
+                    <th>Severity</th>
+                    <th>Affected Area</th>
+                    <th>AI Confidence</th>
+                    <th>Investigation Priority</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-priority-tbody">
+                  <!-- Populated dynamically via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- B. CHANGE DETECTION WORKSPACE (Section 6) -->
+      <section class="workspace-overlay-panel" id="panel-change-detection" style="display: none;">
+        <div class="panel-inner-container">
+          <div class="panel-header-block">
+            <div class="panel-title-area">
+              <h1 class="panel-h1">Satellite Change Detection</h1>
+              <p class="panel-p">Multispectral pair differencing, contour anomaly segmentation, and AI confidence quantification.</p>
+            </div>
+            <button class="panel-close-btn" data-close="change-detection">✕ Back to Map</button>
+          </div>
+
+          <!-- Before / After Satellite Cards -->
+          <div class="detection-imagery-row">
+            <div class="satellite-card">
+              <div class="sat-card-header">
+                <span class="sat-badge">BASELINE OBSERVATION</span>
+                <span class="sat-date" id="sat-date-before-label">2023-09-08</span>
+              </div>
+              <div class="sat-img-frame">
+                <img id="sat-img-before" src="/samples/derna_flooding/before.png" alt="Before Satellite Image">
+              </div>
+            </div>
+
+            <div class="detection-vs-divider">
+              <div class="vs-circle">VS</div>
+              <button class="btn-diff-action" id="btn-detect-analyze">Analyze Changes</button>
+            </div>
+
+            <div class="satellite-card">
+              <div class="sat-card-header">
+                <span class="sat-badge sat-badge-post">CURRENT OBSERVATION</span>
+                <span class="sat-date" id="sat-date-after-label">2023-09-13</span>
+              </div>
+              <div class="sat-img-frame">
+                <img id="sat-img-after" src="/samples/derna_flooding/after.png" alt="After Satellite Image">
+              </div>
+            </div>
+          </div>
+
+          <!-- Detection Summary Bar (Section 6) -->
+          <div class="detection-summary-bar">
+            <div class="summary-stat-cell">
+              <span class="sum-label">TOTAL CHANGES:</span>
+              <span class="sum-val" id="det-total-changes">3 Regions</span>
+            </div>
+            <div class="summary-stat-cell">
+              <span class="sum-label">CHANGED AREA:</span>
+              <span class="sum-val text-orange" id="det-changed-area">14.2 km²</span>
+            </div>
+            <div class="summary-stat-cell">
+              <span class="sum-label">DOMINANT TYPE:</span>
+              <span class="sum-val text-cyan" id="det-dominant-type">Flooding Inundation</span>
+            </div>
+            <div class="summary-stat-cell">
+              <span class="sum-label">AVG CONFIDENCE:</span>
+              <span class="sum-val" id="det-avg-conf">93.4%</span>
+            </div>
+            <div class="summary-stat-cell">
+              <span class="sum-label">HIGHEST PRIORITY:</span>
+              <span class="sum-val text-red" id="det-high-loc">Wadi Derna Urban Inundation</span>
+            </div>
+          </div>
+
+          <!-- Change Detection Table (Section 6) -->
+          <div class="overview-table-card">
+            <div class="table-card-header">
+              <div class="table-card-title">Detected Change Anomaly Inventory</div>
+              <div class="table-card-sub">Select any detected cluster to inspect bounding contours and community exposure</div>
+            </div>
+            <div class="table-responsive-box">
+              <table class="earth-table" id="detection-zones-table">
+                <thead>
+                  <tr>
+                    <th>Location / Zone</th>
+                    <th>Change Type</th>
+                    <th>Area (km²)</th>
+                    <th>Severity</th>
+                    <th>Confidence</th>
+                    <th>Investigation Priority</th>
+                    <th>Inspect</th>
+                  </tr>
+                </thead>
+                <tbody id="detection-zones-tbody">
+                  <!-- Populated dynamically via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- C. COMMUNITY IMPACT INTELLIGENCE PANEL (Section 9 & 10) -->
+      <section class="workspace-overlay-panel" id="panel-community-impact" style="display: none;">
+        <div class="panel-inner-container">
+          <div class="panel-header-block">
+            <div class="panel-title-area">
+              <h1 class="panel-h1">Community Impact Intelligence</h1>
+              <p class="panel-p">Answering <em>"Who and what could be affected by this environmental change?"</em> with geospatial proximity mapping.</p>
+            </div>
+            <button class="panel-close-btn" data-close="community-impact">✕ Back to Map</button>
+          </div>
+
+          <!-- Impact Summary Stats -->
+          <div class="kpi-cards-grid">
+            <div class="kpi-card">
+              <div class="kpi-header"><span class="kpi-label">SETTLEMENTS NEARBY</span><span class="kpi-icon">🏘️</span></div>
+              <div class="kpi-value text-purple" id="ci-settlements-count">6</div>
+              <div class="kpi-trend trend-neutral">Within 2.5 km perimeter</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-header"><span class="kpi-label">SCHOOLS NEARBY</span><span class="kpi-icon">🏫</span></div>
+              <div class="kpi-value text-yellow" id="ci-schools-count">3</div>
+              <div class="kpi-trend trend-warn">Potentially affected facilities</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-header"><span class="kpi-label">HOSPITALS NEARBY</span><span class="kpi-icon">🏥</span></div>
+              <div class="kpi-value text-red" id="ci-hospitals-count">1</div>
+              <div class="kpi-trend trend-crit">Emergency access compromised</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-header"><span class="kpi-label">ROADS &amp; BRIDGES</span><span class="kpi-icon">🛣️</span></div>
+              <div class="kpi-value text-orange" id="ci-roads-count">6</div>
+              <div class="kpi-trend trend-warn">Transit corridors severed</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-header"><span class="kpi-label">AGRICULTURAL LAND</span><span class="kpi-icon">🌾</span></div>
+              <div class="kpi-value text-green" id="ci-agri-land">3.6 km²</div>
+              <div class="kpi-trend trend-neutral">Crops &amp; irrigation impacted</div>
+            </div>
+          </div>
+
+          <!-- Vulnerability Layer Section (Section 10) -->
+          <div class="vulnerability-intel-box">
+            <div class="vuln-box-header">
+              <div class="vuln-title">
+                <span class="vuln-badge">VULNERABILITY INDEX</span>
+                <span class="vuln-level" id="ci-vuln-level">HIGH VULNERABILITY TERRAIN</span>
+              </div>
+              <div class="vuln-disclaimer-pill">Non-Speculative Demographic Model</div>
+            </div>
+            <p class="vuln-text" id="ci-vuln-rationale">
+              Dense municipal riverbank settlements combined with single arterial choke points creates elevated vulnerability to sudden water body surges.
             </p>
-            <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--cyan-primary);">
-              ● Click any circle to spotlight and open incident details.
-            </div>
-          </div>
-        </section>
-
-        <!-- ==========================================
-             VIEW 3: PRIORITY TRIAGE QUEUE (FULL TABLE)
-             ========================================== -->
-        <section id="view-triage" class="app-view">
-          <div class="triage-page-header">
-            <div class="page-title-box">
-              <h2>Prioritized Incident Triage Queue</h2>
-              <p>All detected anomalies ranked strictly by explainable composite Urgency Scores.</p>
-            </div>
           </div>
 
-          <div class="triage-table-card">
-            <div class="triage-table-toolbar">
-              <div class="triage-filter-group">
-                <button class="filter-btn-chip active" data-table-filter="ALL">ALL INCIDENTS</button>
-                <button class="filter-btn-chip" data-table-filter="CRITICAL" style="color: var(--crimson-hazard);">CRITICAL</button>
-                <button class="filter-btn-chip" data-table-filter="MODERATE" style="color: var(--amber-warn);">MODERATE</button>
-                <button class="filter-btn-chip" data-table-filter="LOW" style="color: var(--emerald-safe);">LOW</button>
+          <!-- Detailed Facilities List -->
+          <div class="facilities-grid">
+            <div class="facility-card-block">
+              <div class="facility-card-header">🏥 Hospitals &amp; Emergency Health Facilities</div>
+              <div class="facility-items-list" id="ci-hospitals-list">
+                <!-- Populated via JS -->
               </div>
-
-              <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim);" id="triage-table-count">
-                Showing 15 Anomaly Records
-              </span>
             </div>
 
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>RANK</th>
-                  <th>ZONE ID</th>
-                  <th>SEVERITY TIER</th>
-                  <th>URGENCY SCORE</th>
-                  <th>CLASSIFICATION</th>
-                  <th>IMPACT AREA</th>
-                  <th>COMMUNITY BUFFER</th>
-                  <th>CONFIDENCE</th>
-                  <th>ACTION</th>
-                </tr>
-              </thead>
-              <tbody id="triage-table-body">
-                <!-- Dynamically populated by app.js -->
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- ==========================================
-             VIEW 4: SPECTRAL ANALYTICS
-             ========================================== -->
-        <section id="view-analytics" class="app-view">
-          <div class="page-title-box">
-            <h2>Mission Spectral &amp; Environmental Analytics</h2>
-            <p>Comprehensive telemetry summary across multispectral channels and risk distributions.</p>
-          </div>
-
-          <div class="analytics-stats-grid">
-            <div class="analytics-card">
-              <span class="stat-title">TOTAL IMPACTED AREA</span>
-              <span class="analytics-big-number" id="an-hectares" style="color: var(--cyan-primary);">769.1 ha</span>
-              <span style="font-size: 0.7rem; color: var(--text-dim);">Estimated physical ground footprint</span>
+            <div class="facility-card-block">
+              <div class="facility-card-header">🏫 Schools &amp; Educational Centers</div>
+              <div class="facility-items-list" id="ci-schools-list">
+                <!-- Populated via JS -->
+              </div>
             </div>
 
-            <div class="analytics-card">
-              <span class="stat-title">CRITICAL TIER-1 THREATS</span>
-              <span class="analytics-big-number" id="an-critical-count" style="color: var(--crimson-hazard);">2 ZONES</span>
-              <span style="font-size: 0.7rem; color: var(--text-dim);">Immediate dispatch authorized</span>
-            </div>
-
-            <div class="analytics-card">
-              <span class="stat-title">MEAN RADIOMETRIC CONFIDENCE</span>
-              <span class="analytics-big-number" id="an-conf-pct" style="color: var(--emerald-safe);">96%</span>
-              <span style="font-size: 0.7rem; color: var(--text-dim);">Zero false-positive cloud interference</span>
-            </div>
-
-            <div class="analytics-card">
-              <span class="stat-title">CV LATENCY BENCHMARK</span>
-              <span class="analytics-big-number" style="color: var(--purple-accent);">134 ms</span>
-              <span style="font-size: 0.7rem; color: var(--text-dim);">Near-real-time edge extraction</span>
+            <div class="facility-card-block">
+              <div class="facility-card-header">🛣️ Primary &amp; Secondary Transit Corridors</div>
+              <div class="facility-items-list" id="ci-roads-list">
+                <!-- Populated via JS -->
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- ==========================================
-             VIEW 5: EXECUTIVE INCIDENT DOCKET
-             ========================================== -->
-        <section id="view-docket" class="app-view">
-          <div class="docket-printable-document" id="docket-printable-box">
-            <!-- Dynamically populated by app.js -->
+      <!-- D. HISTORICAL ANALYSIS & HOTSPOTS PANEL (Section 12 & 13) -->
+      <section class="workspace-overlay-panel" id="panel-historical-analysis" style="display: none;">
+        <div class="panel-inner-container">
+          <div class="panel-header-block">
+            <div class="panel-title-area">
+              <h1 class="panel-h1">Historical Analysis &amp; Change Hotspots</h1>
+              <p class="panel-p">Multi-year surveillance trends (2024 → 2025 → 2026), category trajectories, and persistent geographic hotspots.</p>
+            </div>
+            <button class="panel-close-btn" data-close="historical-analysis">✕ Back to Map</button>
           </div>
-        </section>
 
-      </div>
+          <!-- Timeline Scrubber Bar (Section 12) -->
+          <div class="timeline-scrubber-card">
+            <div class="timeline-title-row">
+              <span class="timeline-card-title">OBSERVATION TIMELINE SCRUBBER</span>
+              <span class="timeline-active-year" id="timeline-year-label">Selected Year: 2026</span>
+            </div>
+            <div class="timeline-slider-track">
+              <input type="range" id="timeline-slider" min="2024" max="2026" value="2026" step="1" class="timeline-range-input">
+              <div class="timeline-ticks">
+                <span class="tick-label">2024 (Baseline)</span>
+                <span class="tick-label">2025 (Mid-Term)</span>
+                <span class="tick-label active">2026 (Current)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Charts Grid (Section 12) -->
+          <div class="charts-row-grid">
+            <div class="chart-card">
+              <div class="chart-title">Affected Area Over Time (km²)</div>
+              <div class="chart-canvas-box">
+                <canvas id="chart-area-time"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-title">Changes by Category Distribution</div>
+              <div class="chart-canvas-box">
+                <canvas id="chart-categories"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-title">Priority Changes Over Time</div>
+              <div class="chart-canvas-box">
+                <canvas id="chart-priority-time"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Geographic Change Hotspots (Section 13) -->
+          <div class="hotspots-section-block">
+            <div class="hotspots-header">
+              <div class="hotspots-title">Persistent Geographic Hotspots</div>
+              <div class="hotspots-sub">Regions with multiple significant compound environmental changes</div>
+            </div>
+            <div class="hotspots-cards-grid" id="hotspots-container">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- E. ALERTS WORKSPACE (Section 14) -->
+      <section class="workspace-overlay-panel" id="panel-alerts" style="display: none;">
+        <div class="panel-inner-container">
+          <div class="panel-header-block">
+            <div class="panel-title-area">
+              <h1 class="panel-h1">Active Emergency &amp; Surveillance Alerts</h1>
+              <p class="panel-p">Real-time alerts triggered by threshold-exceeding satellite change detections.</p>
+            </div>
+            <button class="panel-close-btn" data-close="alerts">✕ Back to Map</button>
+          </div>
+
+          <!-- Alerts Filter Tabs -->
+          <div class="alerts-filter-bar">
+            <button class="alert-filter-btn active" data-filter="all">All Alerts (<span id="count-all-alerts">4</span>)</button>
+            <button class="alert-filter-btn" data-filter="CRITICAL">Critical Threats (<span id="count-crit-alerts">2</span>)</button>
+            <button class="alert-filter-btn" data-filter="MODERATE">Moderate Warnings (<span id="count-mod-alerts">2</span>)</button>
+          </div>
+
+          <!-- Alerts Queue Cards -->
+          <div class="alerts-cards-list" id="alerts-cards-container">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- F. REPORTS DOSSIER WORKSPACE (Section 17) -->
+      <section class="workspace-overlay-panel" id="panel-reports" style="display: none;">
+        <div class="panel-inner-container">
+          <div class="panel-header-block">
+            <div class="panel-title-area">
+              <h1 class="panel-h1">Executive Investigation Reports</h1>
+              <p class="panel-p">Generate, preview, and export comprehensive satellite observation dossiers.</p>
+            </div>
+            <button class="panel-close-btn" data-close="reports">✕ Back to Map</button>
+          </div>
+
+          <div class="report-dossier-card" id="report-dossier-print-area">
+            <div class="dossier-top-badge">
+              <div class="dossier-id-box">
+                <span class="dossier-tag">OFFICIAL INTELLIGENCE BRIEF</span>
+                <span class="dossier-id" id="report-dossier-id">ELENS-DOSSIER-884920</span>
+              </div>
+              <button class="btn-export-dossier" id="btn-export-report-pdf">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export Report (PDF / Print)</span>
+              </button>
+            </div>
+
+            <div class="dossier-title-section">
+              <h2 class="dossier-title" id="report-mission-title">Mediterranean Coastal Basin — Extreme Flash Inundation</h2>
+              <div class="dossier-meta-row">
+                <span>Location: <strong id="report-location">Derna Coastal District, Libya</strong></span>
+                <span>Observation Window: <strong id="report-dates">2023-09-08 → 2023-09-13</strong></span>
+                <span>Sensor: <strong id="report-sensor">Sentinel-1 SAR / Sentinel-2 MSI</strong></span>
+              </div>
+            </div>
+
+            <div class="dossier-kpis-row">
+              <div class="dossier-kpi-cell">
+                <span class="dossier-kpi-caption">CHANGE TYPE</span>
+                <span class="dossier-kpi-val" id="report-hazard-type">Flooding Inundation</span>
+              </div>
+              <div class="dossier-kpi-cell">
+                <span class="dossier-kpi-caption">AFFECTED AREA</span>
+                <span class="dossier-kpi-val text-red" id="report-affected-area">14.2 km²</span>
+              </div>
+              <div class="dossier-kpi-cell">
+                <span class="dossier-kpi-caption">INVESTIGATION PRIORITY</span>
+                <span class="dossier-kpi-val text-red" id="report-priority-tier">CRITICAL (94/100)</span>
+              </div>
+              <div class="dossier-kpi-cell">
+                <span class="dossier-kpi-caption">COMMUNITIES EXPOSED</span>
+                <span class="dossier-kpi-val text-purple" id="report-communities-exposed">6 Settlements</span>
+              </div>
+            </div>
+
+            <div class="dossier-narrative-section">
+              <div class="dossier-section-heading">AI-GENERATED EXECUTIVE SUMMARY</div>
+              <p class="dossier-narrative-text" id="report-ai-narrative">
+                Automated multispectral change detection confirms rapid land-cover transformation in Derna Coastal District, Libya between 2023-09-08 and 2023-09-13. A total of 14.2 km² has been flagged as transformed. Proximity analysis indicates 6 settlements, 3 educational facilities, and 1 emergency hospital within the potential exposure envelope. Priority classification is CRITICAL.
+              </p>
+            </div>
+
+            <div class="dossier-facilities-section">
+              <div class="dossier-section-heading">CRITICAL INFRASTRUCTURE IMPACT AUDIT</div>
+              <div class="dossier-infra-table" id="report-infra-table">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+
+            <div class="dossier-disclaimer">
+              CONFIDENTIAL &amp; PROPRIETARY — Generated autonomously by EarthLens AI. All exposed assets are designated as potentially affected based on geospatial distance metrics. Field dispatch verification recommended.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- G. DATA SOURCES REGISTRY PANEL (Section 16) -->
+      <section class="workspace-overlay-panel" id="panel-data-sources" style="display: none;">
+        <div class="panel-inner-container">
+          <div class="panel-header-block">
+            <div class="panel-title-area">
+              <h1 class="panel-h1">Earth Observation Data Sources</h1>
+              <p class="panel-p">Verified satellite constellations, sensory resolutions, and open geospatial pipelines powering EarthLens AI.</p>
+            </div>
+            <button class="panel-close-btn" data-close="data-sources">✕ Back to Map</button>
+          </div>
+
+          <div class="datasources-grid" id="datasources-container">
+            <!-- Populated dynamically via JS from /api/datasources -->
+          </div>
+        </div>
+      </section>
 
     </main>
 
-  </div>
+  </div> <!-- /app-root -->
 
-  <!-- MODAL: CUSTOM IMAGERY INGESTION -->
-  <div class="app-modal-backdrop" id="modal-upload-backdrop">
-    <div class="app-modal-window">
-      <div class="modal-header-row">
-        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Ingest Custom Satellite Image Pair</h3>
-        <button class="modal-close-icon" id="btn-close-modal-upload">&times;</button>
-      </div>
-
-      <form id="form-custom-upload">
-        <div class="upload-target-area" id="box-upload-before">
-          <p><strong>1. Select / Drop "BEFORE" Satellite Observation</strong></p>
-          <span style="font-size: 0.72rem; color: var(--text-dim);">PNG, JPG, TIFF (Max 20MB)</span>
-          <input type="file" id="input-file-before" accept="image/*" style="display: none;">
-          <div id="lbl-file-before-name" style="margin-top: 6px; font-family: var(--font-mono); color: var(--cyan-primary);"></div>
-        </div>
-
-        <div class="upload-target-area" id="box-upload-after">
-          <p><strong>2. Select / Drop "AFTER" Satellite Observation</strong></p>
-          <span style="font-size: 0.72rem; color: var(--text-dim);">PNG, JPG, TIFF (Same spatial boundary)</span>
-          <input type="file" id="input-file-after" accept="image/*" style="display: none;">
-          <div id="lbl-file-after-name" style="margin-top: 6px; font-family: var(--font-mono); color: var(--crimson-hazard);"></div>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-          <label style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-muted); display: block; margin-bottom: 4px;">
-            Target Mission Name:
-          </label>
-          <input type="text" id="input-mission-title" value="Custom AOI Incident Sweep" style="width: 100%; background: #060913; border: 1px solid var(--border-medium); color: #fff; padding: 8px 12px; border-radius: var(--radius-sm); font-family: var(--font-main);">
-        </div>
-
-        <button type="submit" class="btn-dispatch-execute" style="width: 100%; background: var(--cyan-primary); color: #000;">
-          Run EarthGuard AI Triage Pipeline
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <script type="module" src="/js/app.js"></script>
+  <!-- Modular JavaScript Architecture -->
+  <script src="/js/modules/intelligence_map.js"></script>
+  <script src="/js/modules/community_impact.js"></script>
+  <script src="/js/modules/historical_analytics.js"></script>
+  <script src="/js/modules/investigation_assistant.js"></script>
+  <script src="/js/modules/reports_generator.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>

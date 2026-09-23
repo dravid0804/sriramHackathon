@@ -281,8 +281,90 @@ def generate_wildfire_dataset():
         json.dump(metadata, f, indent=2)
     print("Created Wildfire dataset.")
 
+def generate_urban_expansion_dataset():
+    """Generates Madurai Region Urban Expansion Before/After pair."""
+    w, h = 800, 800
+    folder = os.path.join(OUTPUT_DIR, "madurai_urban")
+    os.makedirs(folder, exist_ok=True)
+    
+    noise = create_noise(w, h, scale=24, octaves=4)
+    # January 2026: Agricultural patchwork (paddy green, dry soil brown, canal)
+    land_r = (110 + noise * 30).astype(np.uint8)
+    land_g = (145 + noise * 35).astype(np.uint8)
+    land_b = (85 + noise * 25).astype(np.uint8)
+    before_img = np.stack([land_r, land_g, land_b], axis=-1)
+    
+    # Add agricultural parcel grid
+    for y in range(0, h, 60):
+        before_img[y:y+2, :] = [80, 110, 60]
+    for x in range(0, w, 70):
+        before_img[:, x:x+2] = [80, 110, 60]
+        
+    # Vaigai Canal waterway winding across
+    canal_mask = Image.new("L", (w, h), 0)
+    c_draw = ImageDraw.Draw(canal_mask)
+    canal_pts = [(0, 480), (200, 460), (420, 510), (600, 490), (800, 530)]
+    for i in range(len(canal_pts)-1):
+        c_draw.line([canal_pts[i], canal_pts[i+1]], fill=255, width=12)
+    canal_arr = np.array(canal_mask.filter(ImageFilter.GaussianBlur(1.0))) > 50
+    before_img[canal_arr] = [35, 75, 110]
+    
+    # Save Before
+    Image.fromarray(before_img).save(os.path.join(folder, "before.png"))
+    
+    # September 2026: Extensive concrete built-up expansion, high albedo rooftops, industrial parks
+    after_img = before_img.copy()
+    urban_mask = Image.new("L", (w, h), 0)
+    u_draw = ImageDraw.Draw(urban_mask)
+    
+    # Core urban expansion zones (Madurai peri-urban expansion)
+    u_draw.rectangle([140, 120, 380, 360], fill=255)
+    u_draw.polygon([(360, 220), (540, 160), (620, 340), (440, 420)], fill=240)
+    u_draw.rectangle([220, 560, 460, 720], fill=230)
+    
+    # New multi-lane highway corridor
+    u_draw.line([(0, 280), (800, 320)], fill=255, width=14)
+    u_draw.line([(320, 0), (360, 800)], fill=255, width=12)
+    
+    urban_smooth = np.array(urban_mask.filter(ImageFilter.GaussianBlur(3.5))).astype(np.float32) / 255.0
+    
+    # Urban concrete/asphalt color: high-albedo grey, bluish-white concrete, brick reddish roofs
+    built_r = (185 + noise * 45).astype(np.uint8)
+    built_g = (185 + noise * 40).astype(np.uint8)
+    built_b = (195 + noise * 45).astype(np.uint8)
+    built_img = np.stack([built_r, built_g, built_b], axis=-1)
+    
+    # Add dense building roof textures
+    for y in range(130, 350, 16):
+        for x in range(150, 370, 18):
+            if np.random.rand() > 0.2:
+                built_img[y:y+10, x:x+12] = [215, 95, 75] if np.random.rand() > 0.5 else [220, 225, 235]
+                
+    for c in range(3):
+        after_img[:, :, c] = (after_img[:, :, c] * (1.0 - urban_smooth) + built_img[:, :, c] * urban_smooth).astype(np.uint8)
+        
+    Image.fromarray(after_img).save(os.path.join(folder, "after.png"))
+    
+    metadata = {
+        "id": "madurai_urban",
+        "title": "Madurai Region — Accelerated Peri-Urban & Infrastructure Expansion",
+        "location": "Madurai District, Tamil Nadu, India",
+        "coordinates": {"lat": 9.9252, "lon": 78.1198, "zoom": 13},
+        "sensor": "Sentinel-2 MSI / Landsat-9 OLI",
+        "date_before": "2026-01-15",
+        "date_after": "2026-09-18",
+        "change_type": "Urban Expansion",
+        "settlement_center": {"x": 300, "y": 280, "name": "Madurai Peri-Urban Growth Corridor", "radius": 140},
+        "description": "Rapid conversion of agricultural wetlands and scrub vegetation into high-density commercial infrastructure, bypass expressway corridors, and residential layout tracts."
+    }
+    with open(os.path.join(folder, "metadata.json"), "w") as f:
+        json.dump(metadata, f, indent=2)
+    print("Created Madurai Urban Expansion dataset.")
+
 if __name__ == "__main__":
     generate_amazon_dataset()
     generate_flooding_dataset()
     generate_wildfire_dataset()
+    generate_urban_expansion_dataset()
     print("All sample datasets successfully generated.")
+

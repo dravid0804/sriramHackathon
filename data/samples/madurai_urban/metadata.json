@@ -1,0 +1,21 @@
+{
+  "id": "madurai_urban",
+  "title": "Madurai Region \u2014 Accelerated Peri-Urban & Infrastructure Expansion",
+  "location": "Madurai District, Tamil Nadu, India",
+  "coordinates": {
+    "lat": 9.9252,
+    "lon": 78.1198,
+    "zoom": 13
+  },
+  "sensor": "Sentinel-2 MSI / Landsat-9 OLI",
+  "date_before": "2026-01-15",
+  "date_after": "2026-09-18",
+  "change_type": "Urban Expansion",
+  "settlement_center": {
+    "x": 300,
+    "y": 280,
+    "name": "Madurai Peri-Urban Growth Corridor",
+    "radius": 140
+  },
+  "description": "Rapid conversion of agricultural wetlands and scrub vegetation into high-density commercial infrastructure, bypass expressway corridors, and residential layout tracts."
+}
