@@ -217,6 +217,7 @@
             <button class="mode-tab" data-mode="before" id="tab-mode-before">BEFORE</button>
             <button class="mode-tab" data-mode="after" id="tab-mode-after">AFTER</button>
             <button class="mode-tab active" data-mode="difference" id="tab-mode-difference">DIFFERENCE</button>
+            <button class="mode-tab" data-mode="swipe" id="tab-mode-swipe">↔ SWIPE</button>
             <button class="mode-tab" data-mode="impact" id="tab-mode-impact">IMPACT</button>
           </div>
         </div>
@@ -234,13 +235,13 @@
         <!-- Draggable Comparison Swipe Slider Container (Section 5) -->
         <div class="swipe-curtain-overlay" id="swipe-curtain-overlay" style="display: none;">
           <div class="swipe-divider-line" id="swipe-divider-handle">
-            <div class="swipe-handle-grip">
+            <div class="swipe-handle-grip" title="Drag left/right to compare baseline vs delta">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 7l-5 5 5 5V7zm8 0v10l5-5-5-5z"/>
               </svg>
             </div>
-            <div class="curtain-label label-before">BEFORE SATELLITE</div>
-            <div class="curtain-label label-after">AFTER SATELLITE</div>
+            <div class="curtain-label label-before">◄ BEFORE SATELLITE</div>
+            <div class="curtain-label label-after">AFTER + DIFFERENCE ►</div>
           </div>
         </div>
 

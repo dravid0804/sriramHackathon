@@ -263,22 +263,10 @@ class IntelligenceMapEngine {
   }
 
   setupSwipeCurtain() {
-    const btnSwipe = document.getElementById('btn-toggle-swipe');
     const curtain = document.getElementById('swipe-curtain-overlay');
     const divider = document.getElementById('swipe-divider-handle');
 
-    if (btnSwipe && curtain && divider) {
-      btnSwipe.addEventListener('click', () => {
-        this.isCurtainActive = !this.isCurtainActive;
-        curtain.style.display = this.isCurtainActive ? 'block' : 'none';
-        btnSwipe.classList.toggle('active', this.isCurtainActive);
-        if (this.isCurtainActive) {
-          this.applyCurtainClipping(50);
-        } else {
-          this.resetCurtainClipping();
-        }
-      });
-
+    if (curtain && divider) {
       let isDragging = false;
 
       // Mouse drag start
@@ -308,12 +296,11 @@ class IntelligenceMapEngine {
 
       // Drag Move handler
       const onDragMove = (clientX) => {
-        if (!isDragging || !this.isCurtainActive) return;
+        if (!isDragging || this.currentMode !== 'swipe') return;
         const rect = curtain.getBoundingClientRect();
         const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-        const pct = (x / rect.width) * 100;
+        const pct = Math.max(2, Math.min(98, (x / rect.width) * 100));
         this.curtainPosition = pct;
-        divider.style.left = `${pct}%`;
 
         // 60fps smooth animation frame
         if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
@@ -323,44 +310,95 @@ class IntelligenceMapEngine {
       };
 
       window.addEventListener('mousemove', (e) => {
-        onDragMove(e.clientX);
+        if (isDragging) onDragMove(e.clientX);
       });
 
       window.addEventListener('touchmove', (e) => {
-        if (e.touches && e.touches.length > 0) {
+        if (isDragging && e.touches && e.touches.length > 0) {
           onDragMove(e.touches[0].clientX);
         }
       }, { passive: false });
+
+      // Synchronize clipping during map pan and zoom
+      if (this.map) {
+        this.map.on('move', () => {
+          if (this.currentMode === 'swipe') {
+            this.applyCurtainClipping(this.curtainPosition || 50);
+          }
+        });
+        this.map.on('zoom', () => {
+          if (this.currentMode === 'swipe') {
+            this.applyCurtainClipping(this.curtainPosition || 50);
+          }
+        });
+      }
     }
   }
 
   applyCurtainClipping(percentage) {
-    if (this.afterOverlay && this.afterOverlay._image) {
-      this.afterOverlay._image.style.clipPath = `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`;
+    if (!this.map) return;
+    const divider = document.getElementById('swipe-divider-handle');
+    if (divider) divider.style.left = `${percentage}%`;
+
+    const mapContainer = this.map.getContainer();
+    const mapRect = mapContainer.getBoundingClientRect();
+    const dividerScreenX = mapRect.left + (percentage / 100) * mapRect.width;
+
+    const clipLayer = (overlay, isLeft) => {
+      if (!overlay || !overlay._image) return;
+      const img = overlay._image;
+      const imgRect = img.getBoundingClientRect();
+      if (imgRect.width === 0) return;
+
+      const relX = dividerScreenX - imgRect.left;
+      const imgPct = Math.max(0, Math.min(100, (relX / imgRect.width) * 100));
+
+      if (isLeft) {
+        // Left side (Before baseline): 0% to divider
+        img.style.clipPath = `polygon(0% 0%, ${imgPct}% 0%, ${imgPct}% 100%, 0% 100%)`;
+      } else {
+        // Right side (After / Difference): divider to 100%
+        img.style.clipPath = `polygon(${imgPct}% 0%, 100% 0%, 100% 100%, ${imgPct}% 100%)`;
+      }
+    };
+
+    if (this.beforeOverlay) {
+      this.beforeOverlay.setOpacity(0.76);
+      clipLayer(this.beforeOverlay, true);
     }
-    if (this.beforeOverlay && this.beforeOverlay._image) {
-      this.beforeOverlay._image.style.clipPath = `polygon(${percentage}% 0, 100% 0, 100% 100%, ${percentage}% 100%)`;
-      this.beforeOverlay._image.style.opacity = '1';
+    if (this.afterOverlay) {
+      this.afterOverlay.setOpacity(0.76);
+      clipLayer(this.afterOverlay, false);
+    }
+    if (this.heatmapOverlay) {
+      this.heatmapOverlay.setOpacity(0.85);
+      clipLayer(this.heatmapOverlay, false);
     }
   }
 
   resetCurtainClipping() {
-    if (this.afterOverlay && this.afterOverlay._image) {
-      this.afterOverlay._image.style.clipPath = 'none';
-    }
-    if (this.beforeOverlay && this.beforeOverlay._image) {
-      this.beforeOverlay._image.style.clipPath = 'none';
-    }
+    [this.beforeOverlay, this.afterOverlay, this.heatmapOverlay].forEach(overlay => {
+      if (overlay && overlay._image) {
+        overlay._image.style.clipPath = 'none';
+      }
+    });
   }
 
   setComparisonMode(mode) {
     this.currentMode = mode;
     const diffPill = document.getElementById('on-map-difference-pill');
+    const curtain = document.getElementById('swipe-curtain-overlay');
 
     if (mode === 'before') {
-      if (this.beforeOverlay) this.beforeOverlay.setOpacity(1.0);
+      this.isCurtainActive = false;
+      if (curtain) curtain.style.display = 'none';
+      this.resetCurtainClipping();
+
+      // Balanced opacity so real satellite basemap remains visible underneath
+      if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.70);
       if (this.afterOverlay) this.afterOverlay.setOpacity(0.0);
       if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.0);
+
       this.map.removeLayer(this.layers.changes);
       this.map.removeLayer(this.layers.severity);
       this.map.removeLayer(this.layers.vulnerability);
@@ -369,11 +407,20 @@ class IntelligenceMapEngine {
       this.map.removeLayer(this.layers.schools);
       this.map.removeLayer(this.layers.hospitals);
       this.map.removeLayer(this.layers.roads);
-      if (diffPill) diffPill.style.display = 'none';
+
+      if (diffPill) {
+        diffPill.style.display = 'flex';
+        this.updateModeExplanationPill('before');
+      }
     } else if (mode === 'after') {
+      this.isCurtainActive = false;
+      if (curtain) curtain.style.display = 'none';
+      this.resetCurtainClipping();
+
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
-      if (this.afterOverlay) this.afterOverlay.setOpacity(1.0);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.70);
       if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.0);
+
       this.map.removeLayer(this.layers.changes);
       this.map.removeLayer(this.layers.severity);
       this.map.removeLayer(this.layers.vulnerability);
@@ -382,11 +429,22 @@ class IntelligenceMapEngine {
       this.map.removeLayer(this.layers.schools);
       this.map.removeLayer(this.layers.hospitals);
       this.map.removeLayer(this.layers.roads);
-      if (diffPill) diffPill.style.display = 'none';
+
+      if (diffPill) {
+        diffPill.style.display = 'flex';
+        this.updateModeExplanationPill('after');
+      }
     } else if (mode === 'difference') {
+      this.isCurtainActive = false;
+      if (curtain) curtain.style.display = 'none';
+      this.resetCurtainClipping();
+
+      // Subtle after context (0.35) + luminous difference heatmap (0.85)
+      // Real satellite basemap roads & structures remain 100% visible through it!
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
-      if (this.afterOverlay) this.afterOverlay.setOpacity(0.92);
-      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.88);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.35);
+      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.85);
+
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.severity);
       // Remove all civilian pins and line clutter from difference view
@@ -396,14 +454,39 @@ class IntelligenceMapEngine {
       this.map.removeLayer(this.layers.schools);
       this.map.removeLayer(this.layers.hospitals);
       this.map.removeLayer(this.layers.roads);
+
       if (diffPill) {
         diffPill.style.display = 'flex';
         this.updateDifferenceLegendPill();
       }
+    } else if (mode === 'swipe') {
+      this.isCurtainActive = true;
+      if (curtain) curtain.style.display = 'block';
+
+      this.map.addLayer(this.layers.changes);
+      this.map.addLayer(this.layers.severity);
+      this.map.removeLayer(this.layers.vulnerability);
+      this.map.removeLayer(this.layers.impactRays);
+      this.map.removeLayer(this.layers.settlements);
+      this.map.removeLayer(this.layers.schools);
+      this.map.removeLayer(this.layers.hospitals);
+      this.map.removeLayer(this.layers.roads);
+
+      this.applyCurtainClipping(this.curtainPosition || 50);
+
+      if (diffPill) {
+        diffPill.style.display = 'flex';
+        this.updateModeExplanationPill('swipe');
+      }
     } else if (mode === 'impact') {
+      this.isCurtainActive = false;
+      if (curtain) curtain.style.display = 'none';
+      this.resetCurtainClipping();
+
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
-      if (this.afterOverlay) this.afterOverlay.setOpacity(0.70);
-      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.55);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.45);
+      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.40);
+
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.vulnerability);
       this.map.addLayer(this.layers.settlements);
@@ -411,7 +494,42 @@ class IntelligenceMapEngine {
       this.map.addLayer(this.layers.hospitals);
       this.map.addLayer(this.layers.roads);
       this.map.addLayer(this.layers.impactRays);
-      if (diffPill) diffPill.style.display = 'none';
+
+      if (diffPill) {
+        diffPill.style.display = 'flex';
+        this.updateModeExplanationPill('impact');
+      }
+    }
+  }
+
+  updateModeExplanationPill(mode) {
+    const pInd = document.getElementById('diff-pill-indicator');
+    const pTitle = document.getElementById('diff-pill-title');
+    const pDesc = document.getElementById('diff-pill-desc');
+    if (!pTitle || !pDesc) return;
+
+    const meta = this.activeDataset?.metadata || {};
+
+    if (mode === 'before') {
+      if (pInd) { pInd.style.background = '#94a3b8'; pInd.style.boxShadow = '0 0 10px #94a3b8'; }
+      pTitle.textContent = 'BASELINE OBSERVATION';
+      pTitle.style.color = '#94a3b8';
+      pDesc.textContent = `Pre-Event Satellite Baseline (${meta.date_before || 'Baseline'}) · High-Res Basemap Active`;
+    } else if (mode === 'after') {
+      if (pInd) { pInd.style.background = '#38bdf8'; pInd.style.boxShadow = '0 0 12px #38bdf8'; }
+      pTitle.textContent = 'POST-EVENT OBSERVATION';
+      pTitle.style.color = '#38bdf8';
+      pDesc.textContent = `Post-Event Multispectral Capture (${meta.date_after || 'Current'}) · High-Res Basemap Active`;
+    } else if (mode === 'swipe') {
+      if (pInd) { pInd.style.background = '#00f5ff'; pInd.style.boxShadow = '0 0 14px #00f5ff'; }
+      pTitle.textContent = 'DYNAMIC CURTAIN WIPE';
+      pTitle.style.color = '#00f5ff';
+      pDesc.textContent = 'Drag ◄ ► slider horizontally to compare Baseline vs Post-Event AI Delta';
+    } else if (mode === 'impact') {
+      if (pInd) { pInd.style.background = '#ef4444'; pInd.style.boxShadow = '0 0 14px #ef4444'; }
+      pTitle.textContent = 'COMMUNITY INFRASTRUCTURE IMPACT';
+      pTitle.style.color = '#ef4444';
+      pDesc.textContent = 'Tactical pins & proximity exposure vectors to hospitals, schools & transit routes';
     }
   }
 
@@ -497,13 +615,13 @@ class IntelligenceMapEngine {
     }
     if (analysisResult.after_image_url) {
       this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, this.currentBounds, {
-        opacity: 0.88,
+        opacity: 0.0,
         className: 'satellite-raster-overlay'
       }).addTo(this.map);
     }
     if (analysisResult.heatmap_overlay) {
       this.heatmapOverlay = L.imageOverlay(analysisResult.heatmap_overlay, this.currentBounds, {
-        opacity: this.currentMode === 'difference' ? 0.88 : 0.0,
+        opacity: 0.0,
         className: 'satellite-difference-overlay'
       }).addTo(this.map);
     }
@@ -631,43 +749,86 @@ class IntelligenceMapEngine {
   renderCommunityLayers(impact, centerCoords) {
     const facilities = impact.nearby_facilities || {};
 
-    // 1. Schools
+    // 1. Schools & Shelters (Tactical SVG Marker)
     (facilities.schools || []).forEach(sc => {
       const icon = L.divIcon({
-        className: 'custom-leaflet-marker',
-        html: `<div class="marker-school" title="${sc.name}">🏫</div>`,
-        iconSize: [28, 28]
+        className: 'tactical-marker-pin',
+        html: `
+          <div class="tactical-pin-badge school-badge" title="${sc.name}">
+            <div class="tactical-pulse-ring"></div>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+              <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
       });
       const marker = L.marker([sc.lat, sc.lon], { icon })
-        .bindTooltip(`<strong>${sc.name}</strong><br>Capacity: ${sc.students} students<br>Status: ${sc.status}`, { sticky: true });
+        .bindTooltip(`
+          <div style="padding: 2px 4px;">
+            <strong style="color: #c084fc;">🏫 ${sc.name}</strong><br>
+            Capacity: <strong>${sc.students}</strong> students<br>
+            Status: <span style="color: #10b981; font-weight:600;">${sc.status}</span>
+          </div>
+        `, { className: 'leaflet-tooltip-dark', sticky: true });
       this.layers.schools.addLayer(marker);
     });
 
-    // 2. Hospitals
+    // 2. Hospitals & Emergency Care (Tactical SVG Marker)
     (facilities.hospitals || []).forEach(h => {
+      const isCritical = (h.status || '').toLowerCase().includes('critical') || (h.status || '').toLowerCase().includes('compromised');
       const icon = L.divIcon({
-        className: 'custom-leaflet-marker',
-        html: `<div class="marker-hospital" title="${h.name}">🏥</div>`,
-        iconSize: [28, 28]
+        className: 'tactical-marker-pin',
+        html: `
+          <div class="tactical-pin-badge hospital-badge" title="${h.name}">
+            <div class="tactical-pulse-ring"></div>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
       });
       const marker = L.marker([h.lat, h.lon], { icon })
-        .bindTooltip(`<strong>${h.name}</strong><br>Beds: ${h.beds} | Emergency ICU<br>Status: ${h.status}`, { sticky: true });
+        .bindTooltip(`
+          <div style="padding: 2px 4px;">
+            <strong style="color: #ef4444;">🏥 ${h.name}</strong><br>
+            Beds: <strong>${h.beds}</strong> | Emergency ICU<br>
+            Status: <span style="color: ${isCritical ? '#ef4444' : '#10b981'}; font-weight:600;">${h.status}</span>
+          </div>
+        `, { className: 'leaflet-tooltip-dark', sticky: true });
       this.layers.hospitals.addLayer(marker);
     });
 
-    // 3. Settlements
+    // 3. Settlements & Population Clusters (Tactical SVG Marker)
     (facilities.settlements || []).forEach(s => {
       const icon = L.divIcon({
-        className: 'custom-leaflet-marker',
-        html: `<div class="marker-settlement" title="${s.name}">🏘️</div>`,
-        iconSize: [26, 26]
+        className: 'tactical-marker-pin',
+        html: `
+          <div class="tactical-pin-badge settlement-badge" title="${s.name}">
+            <div class="tactical-pulse-ring"></div>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
       });
       const marker = L.marker([s.lat, s.lon], { icon })
-        .bindTooltip(`<strong>${s.name}</strong><br>Population: ${s.population.toLocaleString()}<br>Status: ${s.status}`, { sticky: true });
+        .bindTooltip(`
+          <div style="padding: 2px 4px;">
+            <strong style="color: #22d3ee;">🏘️ ${s.name}</strong><br>
+            Population: <strong>${s.population.toLocaleString()}</strong> residents<br>
+            Status: <span style="color: #38bdf8; font-weight:600;">${s.status}</span>
+          </div>
+        `, { className: 'leaflet-tooltip-dark', sticky: true });
       this.layers.settlements.addLayer(marker);
     });
 
-    // 4. Realistic Arterial Road Network & Bridges (No artificial diagonal slash lines)
+    // 4. Realistic Arterial Road Network & Bridges
     if (facilities.roads && facilities.roads.length > 0) {
       facilities.roads.forEach((r, idx) => {
         const roadCoords = [];
@@ -691,25 +852,25 @@ class IntelligenceMapEngine {
         const isSevered = r.status && r.status.toLowerCase().includes('severed');
         const roadLine = L.polyline(roadCoords, {
           color: isSevered ? '#ef4444' : '#f59e0b',
-          weight: 3,
-          opacity: 0.85,
+          weight: 2.5,
+          opacity: 0.80,
           dashArray: isSevered ? '6, 6' : null
-        }).bindTooltip(`<strong>🛣️ ${r.name}</strong><br>${r.type} (${r.lanes} lanes)<br>Status: <span style="color:${isSevered ? '#ef4444' : '#10b981'}">${r.status}</span>`, { sticky: true });
+        }).bindTooltip(`<strong>🛣️ ${r.name}</strong><br>${r.type} (${r.lanes} lanes)<br>Status: <span style="color:${isSevered ? '#ef4444' : '#10b981'}">${r.status}</span>`, { className: 'leaflet-tooltip-dark', sticky: true });
         this.layers.roads.addLayer(roadLine);
       });
     }
 
-    // 5. Vulnerability Buffer Heatmap
+    // 5. Vulnerability Buffer (Ultra-transparent so satellite basemap is 100% visible)
     const vulnData = impact.vulnerability_layer || {};
     (vulnData.zones || []).forEach(z => {
       const circle = L.circle(z.center, {
         radius: z.radius_meters,
         color: z.color,
         fillColor: z.color,
-        fillOpacity: 0.16,
-        weight: 1.5,
-        dashArray: '6, 6'
-      }).bindTooltip(`<strong>${z.tier}</strong><br>${z.rationale}`, { sticky: true });
+        fillOpacity: 0.05, // Super transparent
+        weight: 1.2,
+        dashArray: '5, 5'
+      }).bindTooltip(`<strong>${z.tier}</strong><br>${z.rationale}`, { className: 'leaflet-tooltip-dark', sticky: true });
       this.layers.vulnerability.addLayer(circle);
     });
   }
@@ -785,23 +946,23 @@ class IntelligenceMapEngine {
       const ray = L.polyline([[centerLat, centerLon], [item.lat, item.lon]], {
         className: 'impact-connector-ray',
         color: item.color,
-        weight: 3,
-        opacity: 0.9,
-        dashArray: '6, 8'
+        weight: 2,
+        opacity: 0.85,
+        dashArray: '5, 6'
       });
-      ray.bindTooltip(`<strong>${item.icon} ${item.name}</strong><br>Distance: ${item.distMeters}m · Proximity Impact Vector`, {
+      ray.bindTooltip(`<strong>${item.name}</strong><br>Proximity Vector: <strong style="color:${item.color}">${item.distMeters}m</strong> (${(item.distMeters/1000).toFixed(2)} km)`, {
         className: 'leaflet-tooltip-dark',
         sticky: true
       });
       this.layers.impactRays.addLayer(ray);
 
-      // Pulsing halo circle marker around impacted facility
+      // Delicate halo circle marker around impacted facility
       const halo = L.circleMarker([item.lat, item.lon], {
-        radius: 14,
+        radius: 16,
         color: item.color,
         fillColor: item.color,
-        fillOpacity: 0.35,
-        weight: 2
+        fillOpacity: 0.15,
+        weight: 1.5
       });
       this.layers.impactRays.addLayer(halo);
     });

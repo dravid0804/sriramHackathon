@@ -288,17 +288,31 @@ def generate_urban_expansion_dataset():
     os.makedirs(folder, exist_ok=True)
     
     noise = create_noise(w, h, scale=24, octaves=4)
-    # January 2026: Agricultural patchwork (paddy green, dry soil brown, canal)
-    land_r = (110 + noise * 30).astype(np.uint8)
-    land_g = (145 + noise * 35).astype(np.uint8)
-    land_b = (85 + noise * 25).astype(np.uint8)
+    # January 2026: Natural agricultural mosaic (paddy green, loam soil, alluvial riverbed)
+    land_r = (110 + noise * 25).astype(np.uint8)
+    land_g = (135 + noise * 30).astype(np.uint8)
+    land_b = (80 + noise * 20).astype(np.uint8)
     before_img = np.stack([land_r, land_g, land_b], axis=-1)
     
-    # Add agricultural parcel grid
-    for y in range(0, h, 60):
-        before_img[y:y+2, :] = [80, 110, 60]
-    for x in range(0, w, 70):
-        before_img[:, x:x+2] = [80, 110, 60]
+    # Natural organic agricultural field patchwork (realistic satellite textures without artificial grid lines)
+    np.random.seed(42)
+    for py in range(0, h, 75):
+        for px in range(0, w, 85):
+            pw = np.random.randint(65, 95)
+            ph = np.random.randint(60, 85)
+            crop_rnd = np.random.rand()
+            bh_act = min(ph, h - py)
+            bw_act = min(pw, w - px)
+            if crop_rnd > 0.60:
+                # Irrigated paddy / active vegetation
+                before_img[py:py+bh_act, px:px+bw_act, 0] = np.clip(85 + noise[py:py+bh_act, px:px+bw_act] * 20, 0, 255).astype(np.uint8)
+                before_img[py:py+bh_act, px:px+bw_act, 1] = np.clip(140 + noise[py:py+bh_act, px:px+bw_act] * 30, 0, 255).astype(np.uint8)
+                before_img[py:py+bh_act, px:px+bw_act, 2] = np.clip(65 + noise[py:py+bh_act, px:px+bw_act] * 18, 0, 255).astype(np.uint8)
+            elif crop_rnd > 0.30:
+                # Alluvial soil / fallow field
+                before_img[py:py+bh_act, px:px+bw_act, 0] = np.clip(135 + noise[py:py+bh_act, px:px+bw_act] * 28, 0, 255).astype(np.uint8)
+                before_img[py:py+bh_act, px:px+bw_act, 1] = np.clip(120 + noise[py:py+bh_act, px:px+bw_act] * 22, 0, 255).astype(np.uint8)
+                before_img[py:py+bh_act, px:px+bw_act, 2] = np.clip(85 + noise[py:py+bh_act, px:px+bw_act] * 18, 0, 255).astype(np.uint8)
         
     # Vaigai Canal waterway winding across
     canal_mask = Image.new("L", (w, h), 0)
