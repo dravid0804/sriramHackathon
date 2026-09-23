@@ -983,10 +983,10 @@ class CommunityImpactModule {
     drawer.classList.add('active');
     backdrop.classList.add('active');
 
-    // Init Drawer Mini-Map
+    // Init Drawer Mini-Map after slide animation completes
     setTimeout(() => {
       this.initDrawerMiniMap(item);
-    }, 200);
+    }, 300);
   }
 
   closeFacilityDrawer() {
@@ -1010,8 +1010,8 @@ class CommunityImpactModule {
 
     this.drawerMap = L.map('fd-mini-map', {
       center: [lat, lon],
-      zoom: 14,
-      zoomControl: false,
+      zoom: 16,
+      zoomControl: true,
       attributionControl: false
     });
 
@@ -1020,7 +1020,33 @@ class CommunityImpactModule {
       attribution: 'Tiles &copy; Esri, Maxar'
     }).addTo(this.drawerMap);
 
-    L.marker([lat, lon]).addTo(this.drawerMap).bindTooltip(`<strong>${item.name}</strong>`, { permanent: true }).openTooltip();
+    // High-visibility perimeter circle
+    L.circle([lat, lon], {
+      radius: 180,
+      color: '#06B6D4',
+      fillColor: '#06B6D4',
+      fillOpacity: 0.25,
+      weight: 2
+    }).addTo(this.drawerMap);
+
+    // Glowing center marker
+    const marker = L.circleMarker([lat, lon], {
+      radius: 10,
+      color: '#06B6D4',
+      fillColor: '#EF4444',
+      fillOpacity: 0.9,
+      weight: 3
+    }).addTo(this.drawerMap);
+
+    marker.bindTooltip(`<strong>${item.icon || '📍'} ${item.name}</strong>`, { sticky: true });
+
+    // Enforce map tile resize so map is 100% visible and expanded
+    setTimeout(() => {
+      if (this.drawerMap) {
+        this.drawerMap.invalidateSize();
+        this.drawerMap.setView([lat, lon], 16);
+      }
+    }, 100);
   }
 
   // 7. "Add to Report" Quick-Stage Action (#7)
