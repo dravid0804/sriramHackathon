@@ -426,30 +426,30 @@ class IntelligenceMapEngine {
     const area = this.activeDataset?.community_impact?.community_impact_summary?.total_affected_area_km2 || '14.2';
 
     if (ctype.includes('flood') || ctype.includes('water')) {
-      if (pInd) { pInd.style.background = '#06b6d4'; pInd.style.boxShadow = '0 0 12px #06b6d4'; }
-      pTitle.textContent = 'WATER INUNDATION DELTA';
-      pTitle.style.color = '#06b6d4';
-      pDesc.textContent = `Cyan Heat: Submerged Coastal Wadi Swath (+${area} km²)`;
+      if (pInd) { pInd.style.background = '#00f5ff'; pInd.style.boxShadow = '0 0 14px #00f5ff'; }
+      pTitle.textContent = 'FLOOD INUNDATION DELTA';
+      pTitle.style.color = '#00f5ff';
+      pDesc.textContent = `Glossy Cyan: Submerged Coastal & Wadi Swath (+${area} km²)`;
     } else if (ctype.includes('fire') || ctype.includes('burn')) {
-      if (pInd) { pInd.style.background = '#ef4444'; pInd.style.boxShadow = '0 0 12px #ef4444'; }
+      if (pInd) { pInd.style.background = '#ff3b30'; pInd.style.boxShadow = '0 0 14px #ff3b30'; }
       pTitle.textContent = 'WILDFIRE BURN SCAR';
-      pTitle.style.color = '#ef4444';
-      pDesc.textContent = `Crimson Heat: Active Burn Perimeter & Ash (+${area} km²)`;
+      pTitle.style.color = '#ff3b30';
+      pDesc.textContent = `Glossy Crimson: Thermal Burn Perimeter & Ash (+${area} km²)`;
     } else if (ctype.includes('deforest') || ctype.includes('forest')) {
-      if (pInd) { pInd.style.background = '#f59e0b'; pInd.style.boxShadow = '0 0 12px #f59e0b'; }
+      if (pInd) { pInd.style.background = '#fbbf24'; pInd.style.boxShadow = '0 0 14px #fbbf24'; }
       pTitle.textContent = 'CANOPY LOSS DELTA';
-      pTitle.style.color = '#f59e0b';
-      pDesc.textContent = `Amber Heat: Clear-Cut Timber & Soil Exposure (+${area} km²)`;
+      pTitle.style.color = '#fbbf24';
+      pDesc.textContent = `Glossy Amber: Clear-Cut Timber & Soil Exposure (+${area} km²)`;
     } else if (ctype.includes('urban')) {
-      if (pInd) { pInd.style.background = '#a855f7'; pInd.style.boxShadow = '0 0 12px #a855f7'; }
-      pTitle.textContent = 'URBAN EXPANSION FOOTPRINT';
-      pTitle.style.color = '#a855f7';
-      pDesc.textContent = `Purple Heat: Newly Built Pavement & Concrete (+${area} km²)`;
+      if (pInd) { pInd.style.background = '#c084fc'; pInd.style.boxShadow = '0 0 14px #c084fc'; }
+      pTitle.textContent = 'URBAN EXPANSION DELTA';
+      pTitle.style.color = '#c084fc';
+      pDesc.textContent = `Glossy Violet: Newly Paved Roads & Concrete Footprint (+${area} km²)`;
     } else {
-      if (pInd) { pInd.style.background = '#06b6d4'; pInd.style.boxShadow = '0 0 12px #06b6d4'; }
-      pTitle.textContent = 'DETECTED SATELLITE DELTA';
-      pTitle.style.color = '#06b6d4';
-      pDesc.textContent = `Multispectral Shift Detected (+${area} km²)`;
+      if (pInd) { pInd.style.background = '#00f5ff'; pInd.style.boxShadow = '0 0 14px #00f5ff'; }
+      pTitle.textContent = 'SATELLITE DIFFERENCE DELTA';
+      pTitle.style.color = '#00f5ff';
+      pDesc.textContent = `Glossy Multispectral Shift Detected (+${area} km²)`;
     }
   }
 
@@ -458,13 +458,13 @@ class IntelligenceMapEngine {
     const meta = analysisResult.metadata || {};
     const coords = meta.coordinates || { lat: 32.7667, lon: 22.6367, zoom: 14 };
 
-    // Update Top Telemetry
+    // Update Top Telemetry (Prioritize concise location name to prevent HUD collision)
     const titleEl = document.getElementById('hud-aoi-title');
     const coordEl = document.getElementById('hud-coordinates');
     const bDateEl = document.getElementById('top-date-before');
     const aDateEl = document.getElementById('top-date-after');
 
-    if (titleEl) titleEl.textContent = meta.title || meta.location || 'Target Reconnaissance Footprint';
+    if (titleEl) titleEl.textContent = meta.location || meta.title || 'Observation Target';
     if (coordEl) coordEl.textContent = `${coords.lat.toFixed(4)}°N, ${coords.lon.toFixed(4)}°E · Z${coords.zoom || 14} LOCK`;
     if (bDateEl) bDateEl.textContent = meta.date_before || 'Baseline';
     if (aDateEl) aDateEl.textContent = meta.date_after || 'Current';
@@ -570,39 +570,43 @@ class IntelligenceMapEngine {
     const zoneType = zone.classification ? zone.classification.type : (meta.change_type || 'Detected Anomaly');
     const tier = zone.tier || 'MODERATE';
 
-    // Color theme tailored to physical hazard type
-    let strokeColor = '#f59e0b';
-    let fillColor = '#f59e0b';
-    if (zoneType.toLowerCase().includes('flood') || zoneType.toLowerCase().includes('water')) {
-      strokeColor = '#06b6d4';
+    const zt = (zoneType || '').toLowerCase();
+    let strokeColor = '#00f5ff';
+    let fillColor = '#06b6d4';
+
+    if (zt.includes('flood') || zt.includes('water') || zt.includes('inundation')) {
+      strokeColor = '#00f5ff';
       fillColor = '#06b6d4';
-    } else if (zoneType.toLowerCase().includes('fire') || zoneType.toLowerCase().includes('burn') || tier === 'CRITICAL') {
-      strokeColor = '#ef4444';
-      fillColor = '#ef4444';
-    } else if (zoneType.toLowerCase().includes('deforest') || zoneType.toLowerCase().includes('forest')) {
-      strokeColor = '#10b981';
-      fillColor = '#10b981';
-    } else if (zoneType.toLowerCase().includes('urban')) {
-      strokeColor = '#a855f7';
+    } else if (zt.includes('fire') || zt.includes('burn') || zt.includes('wildfire')) {
+      strokeColor = '#ff3b30';
+      fillColor = '#f43f5e';
+    } else if (zt.includes('deforest') || zt.includes('forest') || zt.includes('logging') || zt.includes('canopy')) {
+      strokeColor = '#fbbf24';
+      fillColor = '#f59e0b';
+    } else if (zt.includes('urban') || zt.includes('sprawl') || zt.includes('infrastructure') || zt.includes('built')) {
+      strokeColor = '#c084fc';
       fillColor = '#a855f7';
+    } else {
+      strokeColor = '#00f5ff';
+      fillColor = '#06b6d4';
     }
 
-    // High-tech Organic Hazard Polygon Boundary
+    // High-tech Glossy Translucent Hazard Polygon Boundary
     const poly = L.polygon(polyCoords, {
       color: strokeColor,
-      weight: tier === 'CRITICAL' ? 2.5 : 1.8,
+      weight: 2,
       fillColor: fillColor,
-      fillOpacity: 0.12,
-      dashArray: tier === 'CRITICAL' ? null : '4, 6',
-      className: tier === 'CRITICAL' ? 'hazard-contour-pulse' : ''
+      fillOpacity: 0.08, // Highly transparent glass
+      dashArray: null,
+      className: 'glossy-neon-contour'
     });
 
     // Polygon Hover Micro-interactions
     poly.on('mouseover', () => {
-      poly.setStyle({ weight: 3.5, fillOpacity: 0.22 });
+      poly.setStyle({ weight: 3, fillOpacity: 0.16 });
     });
     poly.on('mouseout', () => {
-      poly.setStyle({ weight: tier === 'CRITICAL' ? 2.5 : 1.8, fillOpacity: 0.12 });
+      poly.setStyle({ weight: 2, fillOpacity: 0.08 });
     });
 
     poly.on('click', () => {
@@ -622,20 +626,6 @@ class IntelligenceMapEngine {
 
     this.layers.changes.addLayer(poly);
     this.layers.severity.addLayer(poly);
-
-    // Tactical Target Reticle for Critical Anomaly (Open Ring, No Solid Fill Block)
-    if (tier === 'CRITICAL') {
-      const pulseCircle = L.circleMarker([centerLat, centerLon], {
-        radius: 8,
-        color: strokeColor,
-        fillColor: strokeColor,
-        fillOpacity: 0.15,
-        weight: 1.5,
-        dashArray: '3, 3'
-      });
-      pulseCircle.on('click', () => this.selectZone(zone));
-      this.layers.priority.addLayer(pulseCircle);
-    }
   }
 
   renderCommunityLayers(impact, centerCoords) {

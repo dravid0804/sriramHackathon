@@ -384,7 +384,7 @@ body {
 
 .search-input-wrapper {
   position: relative;
-  width: clamp(220px, 18vw, 290px);
+  width: clamp(170px, 14vw, 230px);
   flex-shrink: 0;
 }
 
@@ -429,14 +429,14 @@ body {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   border-radius: 20px;
-  padding: 5px 10px;
-  font-size: 0.74rem;
+  padding: 4px 9px;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.2s;

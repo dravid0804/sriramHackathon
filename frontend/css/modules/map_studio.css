@@ -36,15 +36,15 @@
 }
 
 .map-mode-segmented-control {
-  background: rgba(8, 14, 26, 0.94);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-medium);
+  background: rgba(8, 14, 26, 0.88);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 28px;
   padding: 3px 4px;
   display: flex;
   align-items: center;
   gap: 3px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .mode-tab {
@@ -54,7 +54,7 @@
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 5px 12px;
+  padding: 5px 13px;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -68,42 +68,11 @@
 }
 
 .mode-tab.active {
-  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
-  color: #031326;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.95), rgba(2, 132, 199, 0.95));
+  color: #ffffff;
   font-weight: 800;
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.55);
-}
-
-/* Curtain Swipe Divider & Touch Target */
-.btn-toggle-swipe {
-  background: rgba(8, 14, 26, 0.94);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-medium);
-  border-radius: 28px;
-  padding: 5px 12px;
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-  white-space: nowrap;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
-}
-
-.btn-toggle-swipe:hover, .btn-toggle-swipe.active {
-  color: #fff;
-  border-color: var(--color-water);
-  background: rgba(6, 182, 212, 0.22);
-  box-shadow: 0 0 14px rgba(6, 182, 212, 0.4);
-}
-
-.btn-toggle-swipe svg {
-  width: 13px;
-  height: 13px;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* FLOATING HUDS: PERFECTLY ALIGNED AND NON-OVERLAPPING */
@@ -116,23 +85,31 @@
   flex-direction: column;
   gap: 4px;
   pointer-events: auto;
+  max-width: clamp(170px, 18vw, 240px);
 }
 
 .floating-hud.top-left-hud .hud-pill {
-  background: rgba(8, 14, 26, 0.94);
+  background: rgba(8, 14, 26, 0.88);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(6, 182, 212, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
-  padding: 6px 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65);
+  padding: 5px 11px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .floating-hud.top-left-hud .hud-text {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
   color: #ffffff;
   letter-spacing: 0.02em;
 }
@@ -245,24 +222,29 @@
 
 .satellite-difference-overlay {
   border-radius: 8px;
-  filter: drop-shadow(0 0 14px rgba(6, 182, 212, 0.5));
+  filter: brightness(1.15) contrast(1.1) drop-shadow(0 0 16px rgba(0, 245, 255, 0.45));
   mix-blend-mode: screen;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
 }
 
-.hazard-contour-pulse {
-  animation: hazardContourGlow 2.5s ease-in-out infinite alternate;
+.glossy-neon-contour, .hazard-contour-pulse {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  animation: glossyContourGlow 3s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 8px currentColor);
+  transition: all 0.3s ease;
 }
 
-@keyframes hazardContourGlow {
+@keyframes glossyContourGlow {
   0% {
-    stroke-opacity: 0.75;
-    fill-opacity: 0.28;
+    stroke-opacity: 0.85;
+    fill-opacity: 0.06;
   }
   100% {
     stroke-opacity: 1.0;
-    fill-opacity: 0.48;
-    filter: drop-shadow(0 0 8px currentColor);
+    fill-opacity: 0.12;
+    filter: drop-shadow(0 0 16px currentColor);
   }
 }
 

@@ -60,9 +60,10 @@ def generate_heatmap_overlay(diff_gray: np.ndarray, thresh_mask: np.ndarray, cha
         rgb[:, :, 1] = np.clip(182 + norm_diff * 60, 0, 255).astype(np.uint8)
         rgb[:, :, 2] = np.clip(212 + norm_diff * 40, 0, 255).astype(np.uint8)
         
-    # Soft feathered alpha mask using Gaussian blur for natural organic blending
-    smooth_mask = cv2.GaussianBlur(thresh_mask, (11, 11), 0)
-    alpha = np.clip(smooth_mask.astype(np.float32) * 0.88, 0, 220).astype(np.uint8)
+    # Soft feathered alpha mask using wide Gaussian blur for organic, glossy blending
+    smooth_mask = cv2.GaussianBlur(thresh_mask, (17, 17), 0)
+    # Luminous translucent opacity: peak around 125 (approx 48% opacity), smoothly fading to 0
+    alpha = np.clip(smooth_mask.astype(np.float32) * 0.48, 0, 125).astype(np.uint8)
     
     rgba = np.dstack([rgb, alpha])
     
