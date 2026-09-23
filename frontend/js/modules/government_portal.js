@@ -55,10 +55,8 @@ class GovernmentPortalModule {
     });
 
     const subviews = {
-      'intel': document.getElementById('gov-subview-intel'),
       'action': document.getElementById('gov-subview-action'),
-      'cases': document.getElementById('gov-subview-cases'),
-      'profile': document.getElementById('gov-subview-profile')
+      'cases': document.getElementById('gov-subview-cases')
     };
 
     Object.keys(subviews).forEach(k => {
