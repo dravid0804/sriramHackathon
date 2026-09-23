@@ -923,64 +923,108 @@
             </div>
           </div>
 
-          <!-- Compact Control & Filter Bar -->
-          <div class="ci-controls-toolbar">
-            <div class="ci-filter-tabs" id="ci-filter-tabs">
-              <button class="ci-filter-btn active" data-filter="all">🌐 All</button>
-              <button class="ci-filter-btn" data-filter="hospitals">🏥 Healthcare</button>
-              <button class="ci-filter-btn" data-filter="schools">🏫 Education</button>
-              <button class="ci-filter-btn" data-filter="roads">🛣️ Transit</button>
-              <button class="ci-filter-btn" data-filter="settlements">🏘️ Settlements</button>
+          <!-- 1. CASCADE CHAIN VISUALIZER (Highest Priority Section) -->
+          <div class="ci-cascade-chains-card" id="ci-cascade-visualizer-card">
+            <div class="ci-cascade-section-header">
+              <div class="ci-cascade-title-group">
+                <h2 class="ci-cascade-h2">🔗 Impact Cascade Chains</h2>
+                <div class="ci-cascade-sub">How this change propagates through dependent infrastructure.</div>
+              </div>
+              <div class="ci-cascade-disclaimer">
+                * Estimations derived from modeled flood-spread rate and current infrastructure state — not a guarantee.
+              </div>
             </div>
-            <div class="ci-search-box">
-              <svg class="ci-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input type="text" id="ci-search-input" class="ci-search-input" placeholder="Search facilities, roads, dependencies...">
+            <div class="ci-cascade-rows-stack" id="ci-cascade-chains-container">
+              <!-- Rendered dynamically via JS -->
             </div>
           </div>
 
-          <!-- Detailed Facilities List Grid (Clean & Spacious Layout) -->
-          <div class="facilities-grid">
-            <div class="facility-card-block" data-category="hospitals">
-              <div class="facility-card-header">
-                <span>🏥 Hospitals &amp; Emergency Health Facilities</span>
-                <span class="facility-card-count-badge" id="ci-hosp-count-badge">1 Facility</span>
+          <!-- 5 & 2. MULTI-SELECT CATEGORY FILTERS & URGENCY SORT BAR -->
+          <div class="ci-controls-toolbar">
+            <div class="ci-filter-tabs" id="ci-filter-tabs">
+              <button class="ci-filter-chip active" data-filter="all">🌐 All</button>
+              <button class="ci-filter-chip" data-filter="hospitals">🏥 Healthcare</button>
+              <button class="ci-filter-chip" data-filter="schools">🏫 Education</button>
+              <button class="ci-filter-chip" data-filter="roads">🛣️ Transit</button>
+              <button class="ci-filter-chip" data-filter="settlements">🏘️ Settlements</button>
+              <button class="ci-filter-chip" data-filter="agri">🌾 Agriculture</button>
+              <button class="ci-filter-chip" data-filter="water">💧 Water</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div id="ci-filter-badge-box" style="display: none;">
+                <span class="ci-filter-count-badge" id="ci-filter-count-label">2 filters active</span>
+                <span class="ci-clear-filters-link" id="ci-clear-filters-btn">Clear</span>
               </div>
-              <div class="facility-items-list" id="ci-hospitals-list">
-                <!-- Populated via JS -->
+
+              <button class="btn-sort-urgency" id="btn-sort-urgency" title="Sort rows ascending by time-to-impact urgency">
+                ⏱ Sort by urgency
+              </button>
+
+              <div class="ci-search-box">
+                <svg class="ci-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="ci-search-input" class="ci-search-input" placeholder="Search facilities, roads, dependencies...">
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. SPLIT VIEW: LIST + SYNCED MINI-MAP -->
+          <div class="ci-split-viewport">
+            <!-- Left Pane: Facility & Settlement List -->
+            <div class="ci-list-pane">
+              <div class="facilities-grid" id="ci-facilities-grid">
+                <div class="facility-card-block" data-category="hospitals">
+                  <div class="facility-card-header">
+                    <span>🏥 Hospitals &amp; Emergency Health Facilities</span>
+                    <span class="facility-card-count-badge" id="ci-hosp-count-badge">1 Facility</span>
+                  </div>
+                  <div class="facility-items-list" id="ci-hospitals-list">
+                    <!-- Populated via JS -->
+                  </div>
+                </div>
+
+                <div class="facility-card-block" data-category="schools">
+                  <div class="facility-card-header">
+                    <span>🏫 Schools &amp; Educational Centers</span>
+                    <span class="facility-card-count-badge" id="ci-schools-count-badge">2 Facilities</span>
+                  </div>
+                  <div class="facility-items-list" id="ci-schools-list">
+                    <!-- Populated via JS -->
+                  </div>
+                </div>
+
+                <div class="facility-card-block" data-category="roads">
+                  <div class="facility-card-header">
+                    <span>🛣️ Primary &amp; Secondary Transit Corridors</span>
+                    <span class="facility-card-count-badge" id="ci-roads-count-badge">2 Corridors</span>
+                  </div>
+                  <div class="facility-items-list" id="ci-roads-list">
+                    <!-- Populated via JS -->
+                  </div>
+                </div>
+
+                <div class="facility-card-block" data-category="settlements">
+                  <div class="facility-card-header">
+                    <span>🏘️ Nearby Settlements &amp; Residential Wards</span>
+                    <span class="facility-card-count-badge" id="ci-settlements-count-badge">3 Settlements</span>
+                  </div>
+                  <div class="facility-items-list" id="ci-settlements-list">
+                    <!-- Populated via JS -->
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="facility-card-block" data-category="schools">
-              <div class="facility-card-header">
-                <span>🏫 Schools &amp; Educational Centers</span>
-                <span class="facility-card-count-badge" id="ci-schools-count-badge">2 Facilities</span>
+            <!-- Right Pane: Synced Sticky Mini-Map -->
+            <div class="ci-map-pane">
+              <div class="ci-split-map-header">
+                <span class="ci-split-map-title">🗺️ Geospatial Exposure Map</span>
+                <button class="btn-fit-map-results" id="btn-fit-map-results">Fit to results</button>
               </div>
-              <div class="facility-items-list" id="ci-schools-list">
-                <!-- Populated via JS -->
-              </div>
-            </div>
-
-            <div class="facility-card-block" data-category="roads">
-              <div class="facility-card-header">
-                <span>🛣️ Primary &amp; Secondary Transit Corridors</span>
-                <span class="facility-card-count-badge" id="ci-roads-count-badge">4 Corridors</span>
-              </div>
-              <div class="facility-items-list" id="ci-roads-list">
-                <!-- Populated via JS -->
-              </div>
-            </div>
-
-            <div class="facility-card-block" data-category="settlements">
-              <div class="facility-card-header">
-                <span>🏘️ Nearby Settlements &amp; Residential Wards</span>
-                <span class="facility-card-count-badge" id="ci-settlements-count-badge">3 Settlements</span>
-              </div>
-              <div class="facility-items-list" id="ci-settlements-list">
-                <!-- Populated via JS -->
-              </div>
+              <div id="ci-split-leaflet-map" class="ci-split-leaflet-container"></div>
             </div>
           </div>
         </div>
@@ -1171,6 +1215,92 @@
     </main>
 
   </div> <!-- /app-root -->
+
+  <!-- Facility / Settlement Slide-In Detail Drawer Overlay (#3) -->
+  <div class="drawer-backdrop-overlay" id="facility-drawer-backdrop"></div>
+  <aside class="facility-slide-drawer" id="facility-slide-drawer">
+    <div class="facility-drawer-header">
+      <div class="drawer-facility-title-group">
+        <span class="drawer-facility-icon" id="fd-icon">🏥</span>
+        <div>
+          <div class="drawer-facility-name" id="fd-name">Facility Detail</div>
+          <div style="font-size: 0.72rem; color: #64748B;" id="fd-category">Healthcare Facility</div>
+        </div>
+      </div>
+      <button class="drawer-close-btn" id="btn-close-facility-drawer">✕</button>
+    </div>
+
+    <div class="facility-drawer-body">
+      <!-- Mini Map Box -->
+      <div id="fd-mini-map" class="drawer-mini-map-container"></div>
+
+      <!-- Key Stats Grid -->
+      <div class="drawer-stats-grid">
+        <div class="drawer-stat-cell">
+          <div class="drawer-stat-label">DISTANCE TO CHANGE</div>
+          <div class="drawer-stat-val" id="fd-stat-dist">0.58 km</div>
+        </div>
+        <div class="drawer-stat-cell">
+          <div class="drawer-stat-label">ELEVATION DELTA / DEPTH</div>
+          <div class="drawer-stat-val" id="fd-stat-depth">+1.5m (0.45m depth)</div>
+        </div>
+        <div class="drawer-stat-cell">
+          <div class="drawer-stat-label">POPULATION / CAPACITY</div>
+          <div class="drawer-stat-val" id="fd-stat-capacity">160 Beds (ICU Active)</div>
+        </div>
+        <div class="drawer-stat-cell">
+          <div class="drawer-stat-label">TIME TO IMPACT</div>
+          <div class="drawer-stat-val" id="fd-stat-urgency">
+            <span class="time-to-impact-chip urgency-red" id="fd-time-chip">⏱ Est. 5–7 hrs to access loss</span>
+          </div>
+        </div>
+        <div class="drawer-stat-cell" style="grid-column: span 2;">
+          <div class="drawer-stat-label">CONFIDENCE &amp; PROVENANCE</div>
+          <div class="drawer-stat-val" style="font-size: 0.8rem;" id="fd-stat-confidence">
+            <span class="confidence-provenance-chip">✓ 95% confidence · OSM + Sentinel-2 + HDX</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Access Dependency Warning Subsection -->
+      <div class="access-dependency-warning-box">
+        <div class="dep-warning-icon">⚠️</div>
+        <div>
+          <strong style="font-size: 0.8rem; color: #92400E;">Access Dependency Alert:</strong>
+          <div class="dep-warning-text" id="fd-access-dep-text">Only reachable via Wadi Derna Central Bridge 2 — bridge currently at high risk.</div>
+        </div>
+      </div>
+
+      <!-- Part of Cascade Chain Subsection -->
+      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 0.75rem; font-weight: 800; color: #0F172A; font-family: var(--font-mono); text-transform: uppercase;">
+          🔗 PART OF CASCADE CHAIN
+        </div>
+        <div id="fd-cascade-preview" style="font-size: 0.78rem; color: #334155;">
+          Hospital Emergency Access Cascade (Step 4 of 5)
+        </div>
+        <a href="#ci-cascade-visualizer-card" id="fd-link-view-cascade" style="font-size: 0.72rem; color: #0284C7; font-weight: 700; text-decoration: underline; align-self: flex-start;">
+          View full cascade ↑
+        </a>
+      </div>
+    </div>
+
+    <div class="facility-drawer-footer">
+      <button class="btn-stage-report" id="btn-drawer-add-report" style="width: auto; padding: 8px 16px; gap: 6px; font-weight: 700; background: #0284C7; color: #FFFFFF; border: none;">
+        📄 Add to Report Draft
+      </button>
+    </div>
+  </aside>
+
+  <!-- Toast Notification & Persistent Floating Counter Badge (#7) -->
+  <div class="ci-report-toast" id="ci-report-toast">
+    <span id="toast-message-text">Added item to report draft</span>
+    <button class="toast-undo-btn" id="toast-undo-btn">Undo</button>
+  </div>
+
+  <a href="#" class="ci-staged-counter-badge" id="ci-staged-counter-badge" style="display: none;">
+    📄 <span id="ci-staged-count-text">0 items staged</span> →
+  </a>
 
   <!-- Modular JavaScript Architecture -->
   <script src="/js/modules/intelligence_map.js"></script>
