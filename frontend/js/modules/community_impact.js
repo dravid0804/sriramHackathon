@@ -806,9 +806,9 @@ class CommunityImpactModule {
       attributionControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      subdomains: 'abcd'
+      attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics'
     }).addTo(this.splitMap);
 
     // Draw change polygon
@@ -1015,9 +1015,9 @@ class CommunityImpactModule {
       attributionControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      subdomains: 'abcd'
+      attribution: 'Tiles &copy; Esri, Maxar'
     }).addTo(this.drawerMap);
 
     L.marker([lat, lon]).addTo(this.drawerMap).bindTooltip(`<strong>${item.name}</strong>`, { permanent: true }).openTooltip();
