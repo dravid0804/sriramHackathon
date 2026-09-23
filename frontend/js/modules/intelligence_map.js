@@ -1,7 +1,15 @@
 /**
- * EarthLens AI — Extraordinary Live Intelligence Map Engine
- * Manages Leaflet geospatial canvas, ESRI Satellite / Dark Matter basemaps,
- * 16 toggleable intelligence layers, comparison modes, and draggable swipe curtain.
+ * EarthLens AI — Feature Domain 1: Extraordinary Live Intelligence Map Engine
+ * Owned by: MEMBER 1 (Detection & Computer Vision Lead)
+ * Zero Merge Conflicts: Only Member 1 edits this file.
+ *
+ * Capabilities:
+ * - Leaflet geospatial canvas with ESRI Satellite & CartoDB Dark Matter basemaps
+ * - 16-layer toggle system & layer drawer
+ * - Comparison modes: [ BEFORE ] [ AFTER ] [ DIFFERENCE ] [ IMPACT ]
+ * - High-performance 60fps Draggable Swipe Curtain with Touch & Mouse support
+ * - Automatic Screen Resolution Adaptation (Mobile, Tablet, Desktop, 4K)
+ * - Dynamic viewport padding & auto-fit bounds
  */
 
 class IntelligenceMapEngine {
@@ -11,11 +19,11 @@ class IntelligenceMapEngine {
     this.currentBasemap = 'satellite'; // 'satellite', 'dark'
     this.activeDataset = null;
     this.activeScenarioId = 'derna_flooding';
-    this.activeLayers = {};
     this.isCurtainActive = false;
     this.curtainPosition = 50; // percentage
+    this.animFrameId = null;
     
-    // Layer Groups for all 16 layers
+    // 16 Dedicated Layer Groups
     this.layers = {
       changes: L.layerGroup(),
       severity: L.layerGroup(),
@@ -35,42 +43,42 @@ class IntelligenceMapEngine {
       vulnerability: L.layerGroup()
     };
 
-    // Basemap tile providers
+    // Basemaps
     this.basemaps = {
       satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
         maxZoom: 19
       }),
       dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+        attribution: '&copy; CARTO &copy; OpenStreetMap',
         subdomains: 'abcd',
         maxZoom: 20
       })
     };
 
-    // Image overlay handles for before/after raster overlays
     this.beforeOverlay = null;
     this.afterOverlay = null;
+    this.currentBounds = null;
   }
 
   init(containerId = 'geospatial-map') {
-    const defaultCenter = [32.7667, 22.6367]; // Derna coordinates
+    const defaultCenter = [32.7667, 22.6367];
     const defaultZoom = 14;
 
     this.map = L.map(containerId, {
       center: defaultCenter,
       zoom: defaultZoom,
-      zoomControl: false, // Custom floating controls used instead
+      zoomControl: false,
       attributionControl: false
     });
 
-    // Add initial basemap
+    // Mount satellite tiles
     this.basemaps.satellite.addTo(this.map);
 
-    // Add all layer groups to map
+    // Mount all layer groups
     Object.values(this.layers).forEach(lg => lg.addTo(this.map));
 
-    // Bind map movement to update coordinates HUD
+    // Dynamic Coordinate Telemetry
     this.map.on('mousemove', (e) => {
       const coordEl = document.getElementById('hud-coordinates');
       if (coordEl) {
@@ -78,10 +86,33 @@ class IntelligenceMapEngine {
       }
     });
 
-    // Setup map control button listeners
+    // Handle Window Resize dynamically for all screen resolutions
+    window.addEventListener('resize', () => {
+      this.handleScreenResize();
+    });
+
+    // Setup interactive controls
     this.setupControlListeners();
     this.setupSwipeCurtain();
     this.setupLayerCheckboxListeners();
+    
+    // Initial responsive check
+    this.handleScreenResize();
+  }
+
+  handleScreenResize() {
+    if (!this.map) return;
+    this.map.invalidateSize();
+
+    const isSmallScreen = window.innerWidth < 768;
+    const legendBody = document.getElementById('legend-body');
+    const legendToggle = document.getElementById('legend-toggle');
+
+    // On mobile / small screens, collapse legend by default to keep map visible
+    if (isSmallScreen && legendBody && legendBody.style.display !== 'none') {
+      legendBody.style.display = 'none';
+      if (legendToggle) legendToggle.textContent = '+';
+    }
   }
 
   setupControlListeners() {
@@ -112,13 +143,13 @@ class IntelligenceMapEngine {
       }
     });
 
-    // Measure tool (shows quick distance guide tooltip)
+    // Measure Tool
     const measure = document.getElementById('ctrl-measure');
     if (measure) measure.addEventListener('click', () => {
-      alert('EarthLens Spatial Scale: 1 Screen Grid Unit ≈ 500m at Zoom 14. Perimeter buffer measurement enabled.');
+      alert('EarthLens Spatial Scale: 1 Screen Unit ≈ 500m at Zoom 14. Perimeter buffer measurement enabled.');
     });
 
-    // Basemap toggle
+    // Basemap Toggle
     const basemapBtn = document.getElementById('btn-basemap-toggle');
     if (basemapBtn) {
       basemapBtn.addEventListener('click', () => {
@@ -136,29 +167,24 @@ class IntelligenceMapEngine {
       });
     }
 
-    // Legend Collapse Toggle
+    // Legend Toggle
     const legendToggle = document.getElementById('legend-toggle');
     const legendBody = document.getElementById('legend-body');
     if (legendToggle && legendBody) {
       legendToggle.addEventListener('click', () => {
-        if (legendBody.style.display === 'none') {
-          legendBody.style.display = 'flex';
-          legendToggle.textContent = '−';
-        } else {
-          legendBody.style.display = 'none';
-          legendToggle.textContent = '+';
-        }
+        const isHidden = legendBody.style.display === 'none';
+        legendBody.style.display = isHidden ? 'flex' : 'none';
+        legendToggle.textContent = isHidden ? '−' : '+';
       });
     }
 
-    // Comparison Mode Tabs: [ BEFORE ] [ AFTER ] [ DIFFERENCE ] [ IMPACT ]
+    // Comparison Mode Tabs
     const modeTabs = document.querySelectorAll('.mode-tab');
     modeTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         modeTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        const mode = tab.dataset.mode;
-        this.setComparisonMode(mode);
+        this.setComparisonMode(tab.dataset.mode);
       });
     });
 
@@ -212,7 +238,7 @@ class IntelligenceMapEngine {
       }
     });
 
-    // Select All / Clear All buttons
+    // Select All / Reset
     const btnSelectAll = document.getElementById('btn-select-all-layers');
     const btnClear = document.getElementById('btn-clear-layers');
     if (btnSelectAll) {
@@ -250,29 +276,63 @@ class IntelligenceMapEngine {
         }
       });
 
-      // Dragging logic
       let isDragging = false;
+
+      // Mouse drag start
       divider.addEventListener('mousedown', (e) => {
         isDragging = true;
+        divider.classList.add('dragging');
         e.preventDefault();
       });
 
-      window.addEventListener('mouseup', () => { isDragging = false; });
-      window.addEventListener('mousemove', (e) => {
+      // Touch drag start (Mobile / Tablet / Touch laptops)
+      divider.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        divider.classList.add('dragging');
+        e.preventDefault();
+      }, { passive: false });
+
+      // Drag End
+      const onDragEnd = () => {
+        if (isDragging) {
+          isDragging = false;
+          divider.classList.remove('dragging');
+        }
+      };
+      window.addEventListener('mouseup', onDragEnd);
+      window.addEventListener('touchend', onDragEnd);
+      window.addEventListener('touchcancel', onDragEnd);
+
+      // Drag Move handler
+      const onDragMove = (clientX) => {
         if (!isDragging || !this.isCurtainActive) return;
         const rect = curtain.getBoundingClientRect();
-        const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+        const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
         const pct = (x / rect.width) * 100;
         this.curtainPosition = pct;
         divider.style.left = `${pct}%`;
-        this.applyCurtainClipping(pct);
+
+        // 60fps smooth animation frame
+        if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = requestAnimationFrame(() => {
+          this.applyCurtainClipping(pct);
+        });
+      };
+
+      window.addEventListener('mousemove', (e) => {
+        onDragMove(e.clientX);
       });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          onDragMove(e.touches[0].clientX);
+        }
+      }, { passive: false });
     }
   }
 
   applyCurtainClipping(percentage) {
     if (this.afterOverlay && this.afterOverlay._image) {
-      // Clip after image to show from 0 to percentage%
       this.afterOverlay._image.style.clipPath = `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`;
     }
     if (this.beforeOverlay && this.beforeOverlay._image) {
@@ -325,10 +385,15 @@ class IntelligenceMapEngine {
     const coords = meta.coordinates || { lat: 32.7667, lon: 22.6367, zoom: 14 };
 
     // Update Top Telemetry
-    document.getElementById('hud-aoi-title').textContent = meta.title || meta.location;
-    document.getElementById('hud-coordinates').textContent = `${coords.lat.toFixed(4)}°N, ${coords.lon.toFixed(4)}°E`;
-    document.getElementById('top-date-before').textContent = meta.date_before || 'Baseline';
-    document.getElementById('top-date-after').textContent = meta.date_after || 'Current';
+    const titleEl = document.getElementById('hud-aoi-title');
+    const coordEl = document.getElementById('hud-coordinates');
+    const bDateEl = document.getElementById('top-date-before');
+    const aDateEl = document.getElementById('top-date-after');
+
+    if (titleEl) titleEl.textContent = meta.title || meta.location;
+    if (coordEl) coordEl.textContent = `${coords.lat.toFixed(4)}°N, ${coords.lon.toFixed(4)}°E`;
+    if (bDateEl) bDateEl.textContent = meta.date_before || 'Baseline';
+    if (aDateEl) aDateEl.textContent = meta.date_after || 'Current';
 
     // Fly smoothly to target AOI
     this.map.flyTo([coords.lat, coords.lon], coords.zoom || 14, {
@@ -336,36 +401,36 @@ class IntelligenceMapEngine {
       easeLinearity: 0.25
     });
 
-    // Calculate LatLng bounds corresponding to the 800x800 image footprint (~4km box)
+    // 800x800 footprint bounds
     const latSpan = 0.038;
     const lonSpan = 0.045;
-    const bounds = [
+    this.currentBounds = [
       [coords.lat - latSpan / 2, coords.lon - lonSpan / 2],
       [coords.lat + latSpan / 2, coords.lon + lonSpan / 2]
     ];
 
-    // Clear existing image overlays
+    // Clear old raster overlays
     if (this.beforeOverlay) this.map.removeLayer(this.beforeOverlay);
     if (this.afterOverlay) this.map.removeLayer(this.afterOverlay);
 
-    // Add satellite raster overlays
+    // Mount satellite raster overlays
     if (analysisResult.before_image_url) {
-      this.beforeOverlay = L.imageOverlay(analysisResult.before_image_url, bounds, { opacity: 0.0 }).addTo(this.map);
+      this.beforeOverlay = L.imageOverlay(analysisResult.before_image_url, this.currentBounds, { opacity: 0.0 }).addTo(this.map);
     }
     if (analysisResult.after_image_url) {
-      this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, bounds, { opacity: 0.85 }).addTo(this.map);
+      this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, this.currentBounds, { opacity: 0.85 }).addTo(this.map);
     }
 
-    // Clear all vector layers
+    // Clear vector layers
     Object.values(this.layers).forEach(lg => lg.clearLayers());
 
-    // 1. Render Detected Changes & Severity Polygons
+    // Render change zones
     const zones = analysisResult.ranked_zones || [];
     zones.forEach((zone) => {
-      this.renderChangeZone(zone, bounds, meta);
+      this.renderChangeZone(zone, this.currentBounds, meta);
     });
 
-    // 2. Render Community Impact Infrastructure
+    // Render community impact layers
     const impact = analysisResult.community_impact || {};
     this.renderCommunityLayers(impact, coords);
 
@@ -379,7 +444,6 @@ class IntelligenceMapEngine {
     const latSpan = bounds[1][0] - bounds[0][0];
     const lonSpan = bounds[1][1] - bounds[0][1];
 
-    // Convert pixel bbox [x, y, w, h] to geographic lat/lon polygon
     const [px, py, pw, ph] = zone.bbox || [200, 200, 150, 150];
     const geoLat1 = latMin + (1.0 - (py + ph) / 800.0) * latSpan;
     const geoLat2 = latMin + (1.0 - py / 800.0) * latSpan;
@@ -404,7 +468,7 @@ class IntelligenceMapEngine {
       fillColor = '#eab308';
     }
 
-    // Add Polygon to changes and severity layer
+    // Precision Vector Polygon
     const poly = L.polygon(polyCoords, {
       color: strokeColor,
       weight: 2.5,
@@ -413,12 +477,20 @@ class IntelligenceMapEngine {
       dashArray: tier === 'CRITICAL' ? null : '4, 4'
     });
 
-    // Click handler to open right detail drawer
+    // Polygon Hover Micro-interactions
+    poly.on('mouseover', () => {
+      poly.setStyle({ weight: 4, fillOpacity: 0.55 });
+    });
+    poly.on('mouseout', () => {
+      poly.setStyle({ weight: 2.5, fillOpacity: 0.38 });
+    });
+
     poly.on('click', () => {
       this.selectZone(zone);
     });
 
-    poly.bindTooltip(`<strong>${zone.classification ? zone.classification.type : 'Anomaly'} (Zone ${zone.zone_id})</strong><br>Area: ${zone.hectares} ha | Urgency: ${zone.urgency_score}/100`, {
+    const zoneType = zone.classification ? zone.classification.type : 'Detected Anomaly';
+    poly.bindTooltip(`<strong>${zoneType} (Zone ${zone.zone_id})</strong><br>Area: ${zone.hectares} ha | Urgency: ${zone.urgency_score}/100`, {
       className: 'leaflet-tooltip-dark',
       sticky: true
     });
@@ -426,7 +498,7 @@ class IntelligenceMapEngine {
     this.layers.changes.addLayer(poly);
     this.layers.severity.addLayer(poly);
 
-    // If critical, add pulsing marker
+    // Pulsing Marker for Critical Priority Anomaly
     if (tier === 'CRITICAL') {
       const centerLat = (geoLat1 + geoLat2) / 2;
       const centerLon = (geoLon1 + geoLon2) / 2;
@@ -445,9 +517,8 @@ class IntelligenceMapEngine {
   renderCommunityLayers(impact, centerCoords) {
     const facilities = impact.nearby_facilities || {};
 
-    // 1. Schools (Custom SVG Icon)
-    const schools = facilities.schools || [];
-    schools.forEach(sc => {
+    // 1. Schools
+    (facilities.schools || []).forEach(sc => {
       const icon = L.divIcon({
         className: 'custom-leaflet-marker',
         html: `<div class="marker-school" title="${sc.name}">🏫</div>`,
@@ -458,9 +529,8 @@ class IntelligenceMapEngine {
       this.layers.schools.addLayer(marker);
     });
 
-    // 2. Hospitals (Custom SVG Icon)
-    const hospitals = facilities.hospitals || [];
-    hospitals.forEach(h => {
+    // 2. Hospitals
+    (facilities.hospitals || []).forEach(h => {
       const icon = L.divIcon({
         className: 'custom-leaflet-marker',
         html: `<div class="marker-hospital" title="${h.name}">🏥</div>`,
@@ -472,8 +542,7 @@ class IntelligenceMapEngine {
     });
 
     // 3. Settlements
-    const settlements = facilities.settlements || [];
-    settlements.forEach(s => {
+    (facilities.settlements || []).forEach(s => {
       const icon = L.divIcon({
         className: 'custom-leaflet-marker',
         html: `<div class="marker-settlement" title="${s.name}">🏘️</div>`,
@@ -484,9 +553,8 @@ class IntelligenceMapEngine {
       this.layers.settlements.addLayer(marker);
     });
 
-    // 4. Roads (Transit vectors)
-    const roads = facilities.roads || [];
-    roads.forEach((r, idx) => {
+    // 4. Transit Roads & Bridges
+    (facilities.roads || []).forEach((r, idx) => {
       const offset = (idx - 1) * 0.005;
       const roadLine = L.polyline([
         [centerCoords.lat - 0.015, centerCoords.lon - 0.015 + offset],
@@ -500,10 +568,9 @@ class IntelligenceMapEngine {
       this.layers.roads.addLayer(roadLine);
     });
 
-    // 5. Community Vulnerability Heatmap Buffers (Section 10)
+    // 5. Vulnerability Buffer Heatmap
     const vulnData = impact.vulnerability_layer || {};
-    const zones = vulnData.zones || [];
-    zones.forEach(z => {
+    (vulnData.zones || []).forEach(z => {
       const circle = L.circle(z.center, {
         radius: z.radius_meters,
         color: z.color,
@@ -517,24 +584,32 @@ class IntelligenceMapEngine {
   }
 
   selectZone(zone) {
-    // Open right detail drawer and populate with zone telemetry
     const drawer = document.getElementById('detail-drawer');
     if (drawer) {
       drawer.classList.remove('minimized');
       
-      // Update Detail Drawer values
-      document.getElementById('detail-hazard-type').textContent = zone.classification ? zone.classification.type : 'Detected Anomaly';
-      document.getElementById('detail-priority-tag').textContent = `${zone.tier} PRIORITY`;
-      document.getElementById('detail-priority-tag').className = `priority-badge-pill ${zone.tier === 'CRITICAL' ? 'text-red' : 'text-orange'}`;
-      document.getElementById('detail-location-name').textContent = this.activeDataset.metadata.location || 'Observed AOI';
-      document.getElementById('detail-affected-area').textContent = `${zone.hectares} ha`;
-      document.getElementById('detail-severity').textContent = zone.severity_level || zone.tier;
-      document.getElementById('detail-confidence').textContent = `${zone.confidence ? zone.confidence.score_pct : 92}%`;
-      document.getElementById('detail-priority-score').textContent = `${zone.urgency_score || 94} / 100`;
+      const elType = document.getElementById('detail-hazard-type');
+      const elPrio = document.getElementById('detail-priority-tag');
+      const elLoc = document.getElementById('detail-location-name');
+      const elArea = document.getElementById('detail-affected-area');
+      const elSev = document.getElementById('detail-severity');
+      const elConf = document.getElementById('detail-confidence');
+      const elScore = document.getElementById('detail-priority-score');
+      const elAiSummary = document.getElementById('detail-ai-summary');
 
-      // AI Summary
-      if (zone.incident_brief && zone.incident_brief.brief_text) {
-        document.getElementById('detail-ai-summary').textContent = zone.incident_brief.brief_text;
+      if (elType) elType.textContent = zone.classification ? zone.classification.type : 'Detected Anomaly';
+      if (elPrio) {
+        elPrio.textContent = `${zone.tier} PRIORITY`;
+        elPrio.className = `priority-badge-pill ${zone.tier === 'CRITICAL' ? 'text-red' : 'text-orange'}`;
+      }
+      if (elLoc && this.activeDataset) elLoc.textContent = this.activeDataset.metadata.location || 'Observed AOI';
+      if (elArea) elArea.textContent = `${zone.hectares} ha`;
+      if (elSev) elSev.textContent = zone.severity_level || zone.tier;
+      if (elConf) elConf.textContent = `${zone.confidence ? zone.confidence.score_pct : 92}%`;
+      if (elScore) elScore.textContent = `${zone.urgency_score || 94} / 100`;
+
+      if (elAiSummary && zone.incident_brief && zone.incident_brief.brief_text) {
+        elAiSummary.textContent = zone.incident_brief.brief_text;
       }
     }
   }

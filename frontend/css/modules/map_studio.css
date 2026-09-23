@@ -1,47 +1,50 @@
 /* ==========================================================================
-   EarthLens AI — Feature Domain 1: Map Studio & Geospatial Canvas
+   EarthLens AI — Feature Domain 1: Map Studio & Geospatial Canvas Styles
    Owned by: MEMBER 1 (Detection & Computer Vision Lead)
    Zero Merge Conflicts: Only Member 1 edits this file.
+   Responsive Adaptation: Automatically scales across Small Screens & Big Screens.
    ========================================================================== */
 
-/* Leaflet Canvas Container */
+/* Master Geospatial Canvas Container */
 .map-viewport-container {
   flex: 1;
   position: relative;
   overflow: hidden;
   width: 100%;
   height: 100%;
+  background: #050811;
 }
 
 .geospatial-map {
   width: 100%;
   height: 100%;
-  background: #060911;
+  background: #050811;
   z-index: 1;
 }
 
 /* Comparison Mode Segmented Control Bar */
 .map-mode-bar-container {
   position: absolute;
-  top: 16px;
+  top: clamp(10px, 2vh, 18px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: clamp(6px, 1vw, 12px);
+  max-width: 95vw;
 }
 
 .map-mode-segmented-control {
-  background: rgba(11, 16, 29, 0.9);
+  background: rgba(11, 16, 29, 0.92);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-medium);
   border-radius: 30px;
   padding: 4px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  gap: 3px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
 .mode-tab {
@@ -49,27 +52,58 @@
   border: none;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 0.76rem;
+  font-size: clamp(0.68rem, 0.8vw, 0.78rem);
   font-weight: 600;
-  padding: 6px 14px;
+  padding: 6px clamp(8px, 1.2vw, 14px);
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.05em;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .mode-tab:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .mode-tab.active {
   background: var(--color-water);
   color: #031326;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+  font-weight: 700;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.45);
 }
 
-/* Curtain Swipe Divider */
+/* Curtain Swipe Divider & Touch Target */
+.btn-toggle-swipe {
+  background: rgba(11, 16, 29, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-medium);
+  border-radius: 30px;
+  padding: 6px clamp(8px, 1vw, 14px);
+  color: var(--text-muted);
+  font-size: clamp(0.68rem, 0.8vw, 0.76rem);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-toggle-swipe:hover, .btn-toggle-swipe.active {
+  color: #fff;
+  border-color: var(--color-water);
+  background: rgba(6, 182, 212, 0.18);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+.btn-toggle-swipe svg {
+  width: 14px;
+  height: 14px;
+}
+
 .swipe-curtain-overlay {
   position: absolute;
   top: 0;
@@ -87,10 +121,16 @@
   left: 50%;
   width: 3px;
   background: var(--color-water);
-  box-shadow: 0 0 10px var(--color-water);
+  box-shadow: 0 0 12px var(--color-water);
   pointer-events: auto;
   cursor: ew-resize;
   transform: translateX(-50%);
+  touch-action: none;
+}
+
+.swipe-divider-line.dragging {
+  background: #38bdf8;
+  box-shadow: 0 0 20px #38bdf8;
 }
 
 .swipe-handle-grip {
@@ -98,32 +138,230 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 38px;
-  height: 38px;
+  width: clamp(36px, 4vw, 44px);
+  height: clamp(36px, 4vw, 44px);
   border-radius: 50%;
   background: #090e1a;
   border: 2px solid var(--color-water);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.6);
   color: var(--color-water);
+  cursor: ew-resize;
+  user-select: none;
+}
+
+.swipe-divider-line.dragging .swipe-handle-grip {
+  transform: translate(-50%, -50%) scale(1.1);
+  border-color: #38bdf8;
+  color: #38bdf8;
 }
 
 /* 16-Layer Control Drawer */
 .layers-drawer-panel {
   position: absolute;
-  top: 70px;
-  right: 20px;
-  width: 320px;
+  top: clamp(65px, 9vh, 75px);
+  right: clamp(10px, 2vw, 20px);
+  width: clamp(280px, 25vw, 340px);
   max-height: calc(100vh - 120px);
-  background: rgba(11, 16, 29, 0.94);
+  background: rgba(11, 16, 29, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.65);
   z-index: 50;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: slideFadeDown 0.2s ease-out;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN ADAPTATION (Small Screens vs Big Screens)
+   ========================================================================== */
+
+/* 1. Large Displays & 4K / Ultra-wide (> 1600px) */
+@media (min-width: 1600px) {
+  .map-mode-segmented-control {
+    padding: 6px;
+    gap: 6px;
+  }
+  .mode-tab {
+    font-size: 0.82rem;
+    padding: 8px 18px;
+  }
+  .layers-drawer-panel {
+    width: 360px;
+    max-height: calc(100vh - 140px);
+  }
+}
+
+/* 2. Standard Laptops (1024px to 1440px) */
+@media (max-width: 1440px) {
+  .detail-slide-drawer {
+    width: 390px;
+  }
+}
+
+/* 3. Tablets & Compact Screens (768px to 1023px) */
+@media (max-width: 1023px) {
+  :root {
+    --sidebar-w: 220px;
+  }
+  .top-search-group {
+    max-width: 500px;
+  }
+  .search-input-wrapper {
+    width: 220px;
+  }
+  .detail-slide-drawer {
+    width: 340px;
+  }
+  .floating-hud.top-left-hud {
+    top: 12px;
+    left: 12px;
+  }
+  .floating-hud.top-right-hud {
+    top: 12px;
+    right: 12px;
+  }
+}
+
+/* 4. Mobile & Small Handheld Screens (< 768px) */
+@media (max-width: 767px) {
+  body {
+    overflow-y: auto;
+  }
+  
+  .app-root {
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Compact Horizontal Top Nav on Mobile */
+  .app-sidebar {
+    width: 100vw;
+    height: 54px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .sidebar-brand {
+    border-bottom: none;
+    padding: 0;
+  }
+
+  .sidebar-nav {
+    display: none; /* Accessible via mobile quick switcher */
+  }
+
+  .sidebar-footer {
+    border-top: none;
+    padding: 0;
+  }
+
+  .user-meta, .brand-sub {
+    display: none;
+  }
+
+  /* Top Bar on Mobile */
+  .top-intelligence-bar {
+    height: auto;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+  }
+
+  .scenario-demo-pills {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .top-temporal-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Mode Bar on Mobile */
+  .map-mode-bar-container {
+    top: 8px;
+    width: calc(100% - 16px);
+    justify-content: center;
+  }
+
+  .map-mode-segmented-control {
+    overflow-x: auto;
+  }
+
+  .mode-tab {
+    padding: 5px 9px;
+    font-size: 0.68rem;
+  }
+
+  .btn-toggle-swipe span {
+    display: none; /* Show only icon on small phones */
+  }
+
+  /* Floating HUDs on Mobile */
+  .floating-hud.top-left-hud {
+    top: 50px;
+    left: 8px;
+  }
+  .hud-pill {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
+
+  .floating-hud.top-right-hud {
+    top: 50px;
+    right: 8px;
+  }
+  .btn-hud-tool span, .basemap-toggle-btn span {
+    display: none; /* Icons only on mobile */
+  }
+
+  .bottom-left-hud {
+    bottom: 14px;
+    left: 8px;
+  }
+  .map-semantic-legend {
+    width: 180px;
+  }
+
+  .bottom-right-hud {
+    bottom: 14px;
+    right: 8px;
+  }
+
+  /* Slide Drawer becomes Bottom Sheet on Mobile */
+  .detail-slide-drawer {
+    width: 100vw;
+    height: 65vh;
+    top: auto;
+    bottom: 0;
+    border-left: none;
+    border-top: 1px solid var(--border-medium);
+    transform: translateY(100%);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.7);
+  }
+
+  .detail-slide-drawer:not(.minimized) {
+    transform: translateY(0);
+  }
+
+  .layers-drawer-panel {
+    width: calc(100vw - 20px);
+    right: 10px;
+    top: 90px;
+  }
 }
