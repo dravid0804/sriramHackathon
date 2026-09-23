@@ -520,40 +520,88 @@
               </div>
             </div>
 
-            <!-- Transparent Investigation Priority Score (Section 11) -->
-            <div class="detail-section-box">
-              <div class="section-box-title">
-                <span>INVESTIGATION PRIORITY FORMULA</span>
-                <span class="score-pill" id="detail-priority-score">94 / 100</span>
+            <!-- NOVEL FEATURE: CRITICAL INFRASTRUCTURE IMPACT CASCADE (Section 12) -->
+            <div class="impact-cascade-container" id="drawer-impact-cascade-box">
+              <div class="cascade-header">
+                <span class="cascade-title">🔗 CRITICAL IMPACT CASCADE</span>
+                <span class="cascade-status-tag" id="drawer-cascade-status-tag">POTENTIAL ACCESSIBILITY REDUCTION</span>
               </div>
-              <div class="priority-rationale-text" id="detail-priority-rationale">
-                Priority: HIGH — Large affected area (14.2 km²) + rapid change speed + 1 hospital within 1.2 km + 3 schools in proximity zone.
+              <div class="cascade-tree-flow" id="drawer-cascade-tree-flow">
+                <div class="cascade-node-step">
+                  <div class="node-icon-box">🌊</div>
+                  <div class="node-text-col">
+                    <div class="node-title">🌊 Flash Flood Zone</div>
+                    <div class="node-sub">Overflow Inundation Perimeter (4.8 km²)</div>
+                    <div class="node-status-badge" style="color: #0284c7;">DETECTED CHANGE</div>
+                  </div>
+                </div>
+                <div class="cascade-node-step">
+                  <div class="node-icon-box">🌉</div>
+                  <div class="node-text-col">
+                    <div class="node-title">🌉 Wadi Derna Central Bridge 2</div>
+                    <div class="node-sub">Critical River Crossing Choke Point</div>
+                    <div class="node-status-badge" style="color: #d97706;">POTENTIALLY AFFECTED</div>
+                  </div>
+                </div>
+                <div class="cascade-node-step">
+                  <div class="node-icon-box">🛣️</div>
+                  <div class="node-text-col">
+                    <div class="node-title">🛣️ Coastal Arterial Highway 1</div>
+                    <div class="node-sub">Primary Medical Transit Arterial</div>
+                    <div class="node-status-badge" style="color: #d97706;">POTENTIALLY CONSTRAINED</div>
+                  </div>
+                </div>
+                <div class="cascade-node-step">
+                  <div class="node-icon-box">🏥</div>
+                  <div class="node-text-col">
+                    <div class="node-title">🏥 Al-Harish Central Surgical Hospital</div>
+                    <div class="node-sub">Regional 160-Bed Surgical Unit (ICU Active)</div>
+                    <div class="node-status-badge" style="color: #dc2626;">POTENTIAL ACCESSIBILITY REDUCTION</div>
+                  </div>
+                </div>
               </div>
-              <div class="priority-factors-breakdown" id="detail-priority-factors">
-                <div class="factor-bar-row">
-                  <span class="factor-name">Area Impact:</span>
-                  <div class="factor-bar"><div class="factor-fill" style="width: 85%;"></div></div>
-                  <span class="factor-val">25.5 / 30</span>
-                </div>
-                <div class="factor-bar-row">
-                  <span class="factor-name">Change Speed:</span>
-                  <div class="factor-bar"><div class="factor-fill" style="width: 100%;"></div></div>
-                  <span class="factor-val">20.0 / 20</span>
-                </div>
-                <div class="factor-bar-row">
-                  <span class="factor-name">Critical Infra Proximity:</span>
-                  <div class="factor-bar"><div class="factor-fill" style="width: 90%;"></div></div>
-                  <span class="factor-val">27.0 / 30</span>
-                </div>
+              <div class="cascade-narrative-box" id="drawer-cascade-narrative">
+                "A modeled transport dependency connects the affected flood region to Al-Harish Central Surgical Hospital through Wadi Derna Central Bridge 2 and Coastal Arterial Highway 1."
               </div>
             </div>
 
-            <!-- AI Summary Narrative (Section 8) -->
-            <div class="detail-section-box">
-              <div class="section-box-title">AI SUMMARY</div>
-              <p class="ai-narrative-paragraph" id="detail-ai-summary">
-                Satellite imagery indicates catastrophic reservoir breach and rapid overland inundation across the central wadi corridor. Severe spectral water absorption detected with high sediment plume expansion into the coastal bay.
-              </p>
+            <!-- EXPLAINABLE INVESTIGATION PRIORITY (Section 15) -->
+            <div class="explainable-priority-box" id="drawer-explainable-priority-box">
+              <div class="explainable-header">
+                <span class="explainable-title">🎯 EXPLAINABLE INVESTIGATION PRIORITY</span>
+                <span class="ci-priority-chip priority-high" id="drawer-explainable-tier">HIGH (95.4/100)</span>
+              </div>
+              <div class="explainable-bullets-list" id="drawer-explainable-bullets">
+                <div class="explainable-bullet-item">✓ High environmental hazard severity (Flooding surge)</div>
+                <div class="explainable-bullet-item">✓ Large affected footprint (4.8 km²)</div>
+                <div class="explainable-bullet-item">✓ Critical infrastructure exposure (1 Hospital, 2 Schools)</div>
+                <div class="explainable-bullet-item">✓ Transport dependency detected (Bridge 2 → Highway 1 → Hospital)</div>
+                <div class="explainable-bullet-item">✓ Emergency hospital accessibility potentially constrained</div>
+                <div class="explainable-bullet-item">✓ High detection confidence (93.4%)</div>
+              </div>
+              <button class="btn-toggle-factors" id="btn-toggle-scoring-factors">[ View scoring factors ]</button>
+              <div class="factors-expandable-drawer" id="factors-expandable-drawer" style="display: none;">
+                <div class="factor-bar-row">
+                  <span>Environmental Severity:</span>
+                  <div class="factor-bar-track"><div class="factor-bar-fill" style="width: 100%;"></div></div>
+                  <span>20.0 / 20</span>
+                </div>
+                <div class="factor-bar-row">
+                  <span>Affected Area Impact:</span>
+                  <div class="factor-bar-track"><div class="factor-bar-fill" style="width: 80%;"></div></div>
+                  <span>24.0 / 30</span>
+                </div>
+                <div class="factor-bar-row">
+                  <span>Critical Infra Exposure:</span>
+                  <div class="factor-bar-track"><div class="factor-bar-fill" style="width: 73%;"></div></div>
+                  <span>22.0 / 30</span>
+                </div>
+                <div class="factor-bar-row">
+                  <span>Dependency Cascade Strength:</span>
+                  <div class="factor-bar-track"><div class="factor-bar-fill" style="width: 92%;"></div></div>
+                  <span>18.5 / 20</span>
+                </div>
+              </div>
             </div>
 
             <!-- Potential Community Impact Inventory (Section 9) -->
@@ -565,12 +613,12 @@
                 <div class="impact-stat-item">
                   <span class="impact-stat-icon">🏘️</span>
                   <span class="impact-stat-label">Settlements nearby:</span>
-                  <span class="impact-stat-val" id="detail-settlements-count">6</span>
+                  <span class="impact-stat-val" id="detail-settlements-count">3</span>
                 </div>
                 <div class="impact-stat-item">
                   <span class="impact-stat-icon">🏫</span>
                   <span class="impact-stat-label">Schools nearby:</span>
-                  <span class="impact-stat-val" id="detail-schools-count">3</span>
+                  <span class="impact-stat-val" id="detail-schools-count">2</span>
                 </div>
                 <div class="impact-stat-item">
                   <span class="impact-stat-icon">🏥</span>
@@ -579,8 +627,8 @@
                 </div>
                 <div class="impact-stat-item">
                   <span class="impact-stat-icon">🛣️</span>
-                  <span class="impact-stat-label">Roads potentially affected:</span>
-                  <span class="impact-stat-val" id="detail-roads-count">6</span>
+                  <span class="impact-stat-label">Roads &amp; Bridges:</span>
+                  <span class="impact-stat-val" id="detail-roads-count">5</span>
                 </div>
                 <div class="impact-stat-item">
                   <span class="impact-stat-icon">🌾</span>
@@ -592,7 +640,7 @@
                 * Note: Designated as <strong>potentially affected</strong> via satellite proximity analysis. Ground verification required before tactical deployment.
               </div>
               <button class="btn-view-impact-deep" id="btn-deep-community-impact">
-                View Community Impact Analysis →
+                View Community Impact Workspace →
               </button>
             </div>
           </div>
@@ -828,73 +876,60 @@
           <div class="panel-header-block">
             <div class="panel-title-area">
               <h1 class="panel-h1">Community Impact Intelligence</h1>
-              <p class="panel-p">Answering <em>"Who and what could be affected by this environmental change?"</em> with geospatial proximity mapping.</p>
+              <p class="panel-p">Answering <em>"Who and what could be affected by this environmental change?"</em> with infrastructure dependency modeling.</p>
             </div>
             <button class="panel-close-btn" data-close="community-impact">✕ Back to Map</button>
           </div>
 
-          <!-- Impact Summary Stats -->
-          <div class="kpi-cards-grid">
-            <div class="kpi-card">
-              <div class="kpi-header"><span class="kpi-label">SETTLEMENTS NEARBY</span><span class="kpi-icon">🏘️</span></div>
-              <div class="kpi-value text-purple" id="ci-settlements-count">6</div>
-              <div class="kpi-trend trend-neutral">Within 2.5 km perimeter</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-header"><span class="kpi-label">SCHOOLS NEARBY</span><span class="kpi-icon">🏫</span></div>
-              <div class="kpi-value text-yellow" id="ci-schools-count">3</div>
-              <div class="kpi-trend trend-warn">Potentially affected facilities</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-header"><span class="kpi-label">HOSPITALS NEARBY</span><span class="kpi-icon">🏥</span></div>
-              <div class="kpi-value text-red" id="ci-hospitals-count">1</div>
-              <div class="kpi-trend trend-crit">Emergency access compromised</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-header"><span class="kpi-label">ROADS &amp; BRIDGES</span><span class="kpi-icon">🛣️</span></div>
-              <div class="kpi-value text-orange" id="ci-roads-count">6</div>
-              <div class="kpi-trend trend-warn">Transit corridors severed</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-header"><span class="kpi-label">AGRICULTURAL LAND</span><span class="kpi-icon">🌾</span></div>
-              <div class="kpi-value text-green" id="ci-agri-land">3.6 km²</div>
-              <div class="kpi-trend trend-neutral">Crops &amp; irrigation impacted</div>
-            </div>
-          </div>
-
-          <!-- Vulnerability Layer Section (Section 10) -->
-          <div class="vulnerability-intel-box">
-            <div class="vuln-box-header">
-              <div class="vuln-title">
-                <span class="vuln-badge">VULNERABILITY INDEX</span>
-                <span class="vuln-level" id="ci-vuln-level">HIGH VULNERABILITY TERRAIN</span>
-              </div>
-              <div class="vuln-disclaimer-pill">Non-Speculative Demographic Model</div>
-            </div>
-            <p class="vuln-text" id="ci-vuln-rationale">
-              Dense municipal riverbank settlements combined with single arterial choke points creates elevated vulnerability to sudden water body surges.
-            </p>
-          </div>
-
-          <!-- Emergency Access & Dispatch Alert Banner -->
-          <div class="ci-emergency-alert-banner">
-            <div class="ci-alert-left">
-              <div class="ci-alert-icon-ring">🚨</div>
+          <!-- Compact Top Summary Bar -->
+          <div class="ci-top-summary-bar">
+            <div class="ci-summary-meta-item">
+              <div class="ci-summary-icon">🌊</div>
               <div>
-                <div class="ci-alert-title" id="ci-alert-title">Critical Emergency Access Corridor Warning</div>
-                <div class="ci-alert-sub" id="ci-alert-sub">Primary hospital access route & secondary bridge choke points require immediate triage protocol.</div>
+                <div class="ci-summary-label">Selected Change</div>
+                <div class="ci-summary-val" id="ci-sum-hazard">FLOOD INUNDATION</div>
               </div>
             </div>
-            <div class="ci-alert-badge" id="ci-alert-badge">STATUS: POTENTIALLY CUT</div>
+
+            <div class="ci-summary-meta-item">
+              <div class="ci-summary-icon">📐</div>
+              <div>
+                <div class="ci-summary-label">Affected Area</div>
+                <div class="ci-summary-val" id="ci-sum-area">4.8 km²</div>
+              </div>
+            </div>
+
+            <div class="ci-summary-meta-item">
+              <div class="ci-summary-icon">🏥</div>
+              <div>
+                <div class="ci-summary-label">Exposed Facilities</div>
+                <div class="ci-summary-val" id="ci-sum-facilities">8 Facilities</div>
+              </div>
+            </div>
+
+            <div class="ci-summary-meta-item">
+              <div class="ci-summary-icon">🔗</div>
+              <div>
+                <div class="ci-summary-label">Modeled Dependencies</div>
+                <div class="ci-summary-val" id="ci-sum-dependencies">3 Cascade Chains</div>
+              </div>
+            </div>
+
+            <div class="ci-summary-meta-item">
+              <div>
+                <div class="ci-summary-label">Investigation Priority</div>
+                <span class="ci-priority-chip priority-high" id="ci-sum-priority">HIGH PRIORITY</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Interactive Category Filter & Live Search Toolbar -->
+          <!-- Compact Control & Filter Bar -->
           <div class="ci-controls-toolbar">
             <div class="ci-filter-tabs" id="ci-filter-tabs">
-              <button class="ci-filter-btn active" data-filter="all">🌐 All Facilities</button>
+              <button class="ci-filter-btn active" data-filter="all">🌐 All</button>
               <button class="ci-filter-btn" data-filter="hospitals">🏥 Healthcare</button>
               <button class="ci-filter-btn" data-filter="schools">🏫 Education</button>
-              <button class="ci-filter-btn" data-filter="roads">🛣️ Transit Links</button>
+              <button class="ci-filter-btn" data-filter="roads">🛣️ Transit</button>
               <button class="ci-filter-btn" data-filter="settlements">🏘️ Settlements</button>
             </div>
             <div class="ci-search-box">
@@ -902,11 +937,11 @@
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              <input type="text" id="ci-search-input" class="ci-search-input" placeholder="Search facilities, status, roads...">
+              <input type="text" id="ci-search-input" class="ci-search-input" placeholder="Search facilities, roads, dependencies...">
             </div>
           </div>
 
-          <!-- Detailed Facilities List Grid (Clinical & Spacious 2-Column Grid) -->
+          <!-- Detailed Facilities List Grid (Clean & Spacious Layout) -->
           <div class="facilities-grid">
             <div class="facility-card-block" data-category="hospitals">
               <div class="facility-card-header">
@@ -921,7 +956,7 @@
             <div class="facility-card-block" data-category="schools">
               <div class="facility-card-header">
                 <span>🏫 Schools &amp; Educational Centers</span>
-                <span class="facility-card-count-badge" id="ci-schools-count-badge">3 Facilities</span>
+                <span class="facility-card-count-badge" id="ci-schools-count-badge">2 Facilities</span>
               </div>
               <div class="facility-items-list" id="ci-schools-list">
                 <!-- Populated via JS -->
@@ -931,7 +966,7 @@
             <div class="facility-card-block" data-category="roads">
               <div class="facility-card-header">
                 <span>🛣️ Primary &amp; Secondary Transit Corridors</span>
-                <span class="facility-card-count-badge" id="ci-roads-count-badge">6 Corridors</span>
+                <span class="facility-card-count-badge" id="ci-roads-count-badge">4 Corridors</span>
               </div>
               <div class="facility-items-list" id="ci-roads-list">
                 <!-- Populated via JS -->
@@ -941,7 +976,7 @@
             <div class="facility-card-block" data-category="settlements">
               <div class="facility-card-header">
                 <span>🏘️ Nearby Settlements &amp; Residential Wards</span>
-                <span class="facility-card-count-badge" id="ci-settlements-count-badge">6 Settlements</span>
+                <span class="facility-card-count-badge" id="ci-settlements-count-badge">3 Settlements</span>
               </div>
               <div class="facility-items-list" id="ci-settlements-list">
                 <!-- Populated via JS -->
