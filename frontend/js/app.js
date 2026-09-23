@@ -278,26 +278,238 @@ class EarthLensApp {
 
   setupGlobalSearch() {
     const searchInput = document.getElementById('global-location-search');
-    if (searchInput) {
-      searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const query = searchInput.value.toLowerCase().trim();
-          if (query.includes('derna') || query.includes('flood') || query.includes('libya')) {
-            this.triggerScenario('derna_flooding');
-          } else if (query.includes('amazon') || query.includes('forest') || query.includes('brazil')) {
-            this.triggerScenario('amazon_deforestation');
-          } else if (query.includes('madurai') || query.includes('urban') || query.includes('india')) {
-            this.triggerScenario('madurai_urban');
-          } else if (query.includes('fire') || query.includes('wildfire') || query.includes('california')) {
-            this.triggerScenario('california_wildfire');
-          } else {
-            alert(`Searching global registry for '${query}'... Centering reconnaissance radar on nearest satellite footprint.`);
-            this.triggerScenario('madurai_urban');
-          }
-          searchInput.value = '';
-        }
+    const dropdown = document.getElementById('search-dropdown');
+    const inputWrapper = document.querySelector('.search-input-wrapper');
+    if (!searchInput || !dropdown) return;
+
+    let searchDebounceTimer = null;
+    let selectedSuggestionIndex = -1;
+    let currentSuggestions = [];
+
+    const presets = [
+      {
+        id: 'derna_flooding',
+        name: 'Derna Flooding, Libya',
+        sub: 'Dam Collapse & Wadi Inundation · 32.7667°N, 22.6367°E',
+        icon: '🌊',
+        badge: 'CRITICAL',
+        type: 'preset',
+        lat: 32.7667,
+        lon: 22.6367,
+        keywords: ['derna', 'libya', 'flood', 'flooding', 'water', 'dam', 'wadi', 'mediterranean']
+      },
+      {
+        id: 'amazon_deforestation',
+        name: 'Amazon Rainforest, Pará, Brazil',
+        sub: 'Clear-Cut Logging & Canopy Loss · 3.4653°S, 62.2159°W',
+        icon: '🌳',
+        badge: 'HIGH RISK',
+        type: 'preset',
+        lat: -3.4653,
+        lon: -62.2159,
+        keywords: ['amazon', 'brazil', 'forest', 'deforestation', 'logging', 'canopy', 'rainforest']
+      },
+      {
+        id: 'madurai_urban',
+        name: 'Madurai Urban Sprawl, Tamil Nadu, India',
+        sub: 'Peri-Urban Infrastructure Expansion · 9.9252°N, 78.1198°E',
+        icon: '🏙️',
+        badge: 'MODERATE',
+        type: 'preset',
+        lat: 9.9252,
+        lon: 78.1198,
+        keywords: ['madurai', 'india', 'tamil nadu', 'urban', 'expansion', 'infrastructure', 'sprawl']
+      },
+      {
+        id: 'california_wildfire',
+        name: 'California Wildfire, Butte County, USA',
+        sub: 'Camp Fire Burn Scar & Perimeter · 39.7596°N, 121.6219°W',
+        icon: '🔥',
+        badge: 'CRITICAL',
+        type: 'preset',
+        lat: 39.7596,
+        lon: -121.6219,
+        keywords: ['california', 'usa', 'wildfire', 'fire', 'burn', 'scar', 'butte', 'forest fire']
+      }
+    ];
+
+    const renderDropdown = (items) => {
+      currentSuggestions = items;
+      selectedSuggestionIndex = -1;
+      if (!items || items.length === 0) {
+        dropdown.style.display = 'none';
+        dropdown.innerHTML = '';
+        return;
+      }
+
+      dropdown.innerHTML = items.map((item, idx) => `
+        <div class="search-suggestion-item" data-index="${idx}">
+          <div class="suggestion-main-text">
+            <span>${item.icon}</span>
+            <div>
+              <div>${item.name}</div>
+              <div class="suggestion-sub-text">${item.sub}</div>
+            </div>
+          </div>
+          <span class="search-suggestion-badge">${item.badge}</span>
+        </div>
+      `).join('');
+
+      dropdown.style.display = 'flex';
+
+      // Click handlers
+      dropdown.querySelectorAll('.search-suggestion-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const idx = parseInt(el.dataset.index, 10);
+          selectSuggestion(currentSuggestions[idx]);
+        });
       });
-    }
+    };
+
+    const selectSuggestion = (item) => {
+      if (!item) return;
+
+      dropdown.style.display = 'none';
+      searchInput.value = item.name;
+
+      // Always switch to live map workspace for visual flight
+      this.switchWorkspace('live-map');
+
+      if (item.type === 'preset') {
+        this.triggerScenario(item.id);
+      } else if (item.type === 'coords' || item.type === 'external') {
+        if (window.earthMap) {
+          window.earthMap.zoomToCoordinates(item.lat, item.lon, 14);
+          window.earthMap.dropSearchBeacon(item.lat, item.lon, item.name);
+        }
+        const hudTitle = document.getElementById('hud-aoi-title');
+        const hudCoords = document.getElementById('hud-coordinates');
+        if (hudTitle) hudTitle.textContent = item.name;
+        if (hudCoords) hudCoords.textContent = `${item.lat.toFixed(4)}°N, ${item.lon.toFixed(4)}°E`;
+      }
+    };
+
+    const updateSearch = () => {
+      const query = searchInput.value.trim().toLowerCase();
+
+      // 1. If empty, show all presets
+      if (!query) {
+        renderDropdown(presets);
+        return;
+      }
+
+      // 2. Check for Coordinate entry: e.g. "13.0827, 80.2707"
+      const coordMatch = query.match(/^([-+]?\d+(\.\d+)?)[,\s]+([-+]?\d+(\.\d+)?)$/);
+      if (coordMatch) {
+        const lat = parseFloat(coordMatch[1]);
+        const lon = parseFloat(coordMatch[3]);
+        if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+          renderDropdown([
+            {
+              id: 'coords',
+              name: `Target Coordinates: ${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+              sub: 'Direct Geodetic Reconnaissance Vector',
+              icon: '🎯',
+              badge: 'COORDINATES',
+              type: 'coords',
+              lat: lat,
+              lon: lon
+            }
+          ]);
+          return;
+        }
+      }
+
+      // 3. Match presets first
+      const matchedPresets = presets.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        p.sub.toLowerCase().includes(query) ||
+        p.keywords.some(k => k.includes(query))
+      );
+
+      if (matchedPresets.length > 0) {
+        renderDropdown(matchedPresets);
+      } else {
+        renderDropdown([
+          {
+            id: 'searching',
+            name: `Scanning satellite registry for "${searchInput.value.trim()}"...`,
+            sub: 'Querying OpenStreetMap Global Geocoding Registry',
+            icon: '🛰️',
+            badge: 'QUERYING',
+            type: 'none'
+          }
+        ]);
+      }
+
+      // 4. Debounced Global Nominatim Geocoding
+      if (query.length >= 2) {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(async () => {
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=4&q=${encodeURIComponent(query)}`);
+            if (!res.ok) return;
+            const geoResults = await res.json();
+            if (geoResults && geoResults.length > 0) {
+              const externalItems = geoResults.map(g => ({
+                id: `geo_${g.place_id}`,
+                name: g.display_name.split(',')[0],
+                sub: g.display_name,
+                icon: '📍',
+                badge: 'GLOBAL AOI',
+                type: 'external',
+                lat: parseFloat(g.lat),
+                lon: parseFloat(g.lon)
+              }));
+
+              // Combine matched presets with external results
+              const combined = [...matchedPresets, ...externalItems];
+              renderDropdown(combined);
+            }
+          } catch (e) {
+            console.warn('Geocoding query error:', e);
+          }
+        }, 350);
+      }
+    };
+
+    // Input events
+    searchInput.addEventListener('input', updateSearch);
+    searchInput.addEventListener('focus', updateSearch);
+
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', (e) => {
+      const items = dropdown.querySelectorAll('.search-suggestion-item');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (currentSuggestions.length > 0) {
+          selectedSuggestionIndex = (selectedSuggestionIndex + 1) % currentSuggestions.length;
+          items.forEach((el, i) => el.classList.toggle('active', i === selectedSuggestionIndex));
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (currentSuggestions.length > 0) {
+          selectedSuggestionIndex = (selectedSuggestionIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+          items.forEach((el, i) => el.classList.toggle('active', i === selectedSuggestionIndex));
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0 && currentSuggestions[selectedSuggestionIndex]) {
+          selectSuggestion(currentSuggestions[selectedSuggestionIndex]);
+        } else if (currentSuggestions.length > 0 && currentSuggestions[0].type !== 'none') {
+          selectSuggestion(currentSuggestions[0]);
+        }
+      } else if (e.key === 'Escape') {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      if (inputWrapper && !inputWrapper.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
   }
 
   triggerScenario(scenarioId) {

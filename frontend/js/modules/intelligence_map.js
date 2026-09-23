@@ -40,7 +40,8 @@ class IntelligenceMapEngine {
       hospitals: L.layerGroup(),
       roads: L.layerGroup(),
       buildings: L.layerGroup(),
-      vulnerability: L.layerGroup()
+      vulnerability: L.layerGroup(),
+      impactRays: L.layerGroup()
     };
 
     // Basemaps
@@ -457,6 +458,11 @@ class IntelligenceMapEngine {
       [geoLat2, geoLon1]
     ];
 
+    const centerLat = (geoLat1 + geoLat2) / 2;
+    const centerLon = (geoLon1 + geoLon2) / 2;
+    zone.center = [centerLat, centerLon];
+    zone.polyCoords = polyCoords;
+
     const tier = zone.tier || 'MODERATE';
     let strokeColor = '#f97316';
     let fillColor = '#f97316';
@@ -500,8 +506,6 @@ class IntelligenceMapEngine {
 
     // Pulsing Marker for Critical Priority Anomaly
     if (tier === 'CRITICAL') {
-      const centerLat = (geoLat1 + geoLat2) / 2;
-      const centerLon = (geoLon1 + geoLon2) / 2;
       const pulseCircle = L.circleMarker([centerLat, centerLon], {
         radius: 12,
         color: '#ef4444',
@@ -583,7 +587,165 @@ class IntelligenceMapEngine {
     });
   }
 
+  /**
+   * Select a zone: Automatically navigates the map to the location,
+   * draws pulsing proximity connector rays to nearby facilities,
+   * opens a rich satellite intelligence card directly on the map canvas,
+   * and synchronizes the detail drawer.
+   */
   selectZone(zone) {
+    if (!zone) return;
+
+    // 1. Determine zone centroid
+    let centerLat = zone.center ? zone.center[0] : null;
+    let centerLon = zone.center ? zone.center[1] : null;
+
+    if ((!centerLat || !centerLon) && zone.bbox && this.currentBounds) {
+      const latMin = this.currentBounds[0][0];
+      const lonMin = this.currentBounds[0][1];
+      const latSpan = this.currentBounds[1][0] - this.currentBounds[0][0];
+      const lonSpan = this.currentBounds[1][1] - this.currentBounds[0][1];
+      const [px, py, pw, ph] = zone.bbox;
+      centerLat = latMin + (1.0 - (py + ph / 2) / 800.0) * latSpan;
+      centerLon = lonMin + ((px + pw / 2) / 800.0) * lonSpan;
+      zone.center = [centerLat, centerLon];
+    }
+
+    if (!centerLat || !centerLon) {
+      centerLat = this.map.getCenter().lat;
+      centerLon = this.map.getCenter().lng;
+    }
+
+    // 2. Automatically navigate map directly to the selected location
+    this.map.flyTo([centerLat, centerLon], 15, {
+      animate: true,
+      duration: 1.0,
+      easeLinearity: 0.25
+    });
+
+    // 3. Clear and draw dynamic animated proximity connector rays
+    this.layers.impactRays.clearLayers();
+
+    const facilities = (this.activeDataset && this.activeDataset.community_impact && this.activeDataset.community_impact.nearby_facilities) || {};
+    const schools = facilities.schools || [];
+    const hospitals = facilities.hospitals || [];
+    const settlements = facilities.settlements || [];
+
+    // Helper: Haversine distance in meters
+    const calcDistance = (lat1, lon1, lat2, lon2) => {
+      const R = 6371e3;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return Math.round(R * c);
+    };
+
+    const nearbyItems = [
+      ...hospitals.map(h => ({ ...h, type: 'Hospital', icon: '🏥', color: '#ef4444' })),
+      ...schools.map(s => ({ ...s, type: 'School', icon: '🏫', color: '#a855f7' })),
+      ...settlements.map(set => ({ ...set, type: 'Settlement', icon: '🏘️', color: '#06b6d4' }))
+    ].map(item => ({
+      ...item,
+      distMeters: calcDistance(centerLat, centerLon, item.lat, item.lon)
+    })).sort((a, b) => a.distMeters - b.distMeters);
+
+    // Draw connector rays and pulsing targets directly on the map
+    nearbyItems.slice(0, 4).forEach(item => {
+      // Dashed animated ray line
+      const ray = L.polyline([[centerLat, centerLon], [item.lat, item.lon]], {
+        className: 'impact-connector-ray',
+        color: item.color,
+        weight: 3,
+        opacity: 0.9,
+        dashArray: '6, 8'
+      });
+      ray.bindTooltip(`<strong>${item.icon} ${item.name}</strong><br>Distance: ${item.distMeters}m · Proximity Impact Vector`, {
+        className: 'leaflet-tooltip-dark',
+        sticky: true
+      });
+      this.layers.impactRays.addLayer(ray);
+
+      // Pulsing halo circle marker around impacted facility
+      const halo = L.circleMarker([item.lat, item.lon], {
+        radius: 14,
+        color: item.color,
+        fillColor: item.color,
+        fillOpacity: 0.35,
+        weight: 2
+      });
+      this.layers.impactRays.addLayer(halo);
+    });
+
+    // 4. Show changes & impact directly in a rich Leaflet popup on the map
+    const zoneType = zone.classification ? zone.classification.type : 'Detected Anomaly';
+    const tier = zone.tier || 'MODERATE';
+    const tierClass = tier === 'CRITICAL' ? 'text-red' : 'text-orange';
+    const urgency = zone.urgency_score || 94;
+    const conf = zone.confidence ? zone.confidence.score_pct : 92;
+    const areaHa = zone.hectares || 120;
+    const areaKm2 = (areaHa / 100).toFixed(2);
+
+    let impactListHtml = '';
+    if (nearbyItems.length > 0) {
+      impactListHtml = nearbyItems.slice(0, 3).map(item => `
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.74rem; padding: 2px 0;">
+          <span>${item.icon} <strong>${item.name}</strong></span>
+          <span style="color: ${item.color}; font-family: var(--font-mono); font-weight: 600;">${item.distMeters}m</span>
+        </div>
+      `).join('');
+    } else {
+      impactListHtml = '<div style="font-size: 0.72rem; color: var(--text-dim);">No civilian infrastructure in immediate radius.</div>';
+    }
+
+    const popupHtml = `
+      <div class="map-popup-intel-card">
+        <div class="map-popup-header">
+          <div>
+            <div class="map-popup-title">${zoneType}</div>
+            <div style="font-size: 0.68rem; color: #94a3b8;">Zone Sector ${zone.zone_id} · ${this.activeDataset?.metadata?.location || 'Target AOI'}</div>
+          </div>
+          <span class="priority-badge-pill ${tierClass}" style="font-size: 0.65rem;">${tier}</span>
+        </div>
+        <div class="map-popup-kpis">
+          <div class="map-popup-kpi-item">
+            <span class="map-popup-kpi-label">AFFECTED AREA</span>
+            <span class="map-popup-kpi-val">${areaHa} ha <small style="font-size:0.65rem; color:#94a3b8;">(${areaKm2}km²)</small></span>
+          </div>
+          <div class="map-popup-kpi-item">
+            <span class="map-popup-kpi-label">URGENCY SCORE</span>
+            <span class="map-popup-kpi-val" style="color: ${tier === 'CRITICAL' ? '#ef4444' : '#f97316'};">${urgency} / 100</span>
+          </div>
+          <div class="map-popup-kpi-item">
+            <span class="map-popup-kpi-label">CONFIDENCE</span>
+            <span class="map-popup-kpi-val">${conf}%</span>
+          </div>
+          <div class="map-popup-kpi-item">
+            <span class="map-popup-kpi-label">SEVERITY</span>
+            <span class="map-popup-kpi-val">${zone.severity_level || tier}</span>
+          </div>
+        </div>
+        <div class="map-popup-impact-summary">
+          <div class="map-popup-impact-title">DIRECT COMMUNITY IMPACT IN PROXIMITY</div>
+          ${impactListHtml}
+        </div>
+        <button class="map-popup-btn-inspect" onclick="if(window.earthLensApp) window.earthLensApp.switchWorkspace('community-impact')">
+          View Community Impact Matrix →
+        </button>
+      </div>
+    `;
+
+    L.popup({
+      offset: [0, -10],
+      className: 'leaflet-popup-dark'
+    })
+      .setLatLng([centerLat, centerLon])
+      .setContent(popupHtml)
+      .openOn(this.map);
+
+    // 5. Also synchronize with bottom detail drawer
     const drawer = document.getElementById('detail-drawer');
     if (drawer) {
       drawer.classList.remove('minimized');
@@ -597,16 +759,16 @@ class IntelligenceMapEngine {
       const elScore = document.getElementById('detail-priority-score');
       const elAiSummary = document.getElementById('detail-ai-summary');
 
-      if (elType) elType.textContent = zone.classification ? zone.classification.type : 'Detected Anomaly';
+      if (elType) elType.textContent = zoneType;
       if (elPrio) {
         elPrio.textContent = `${zone.tier} PRIORITY`;
-        elPrio.className = `priority-badge-pill ${zone.tier === 'CRITICAL' ? 'text-red' : 'text-orange'}`;
+        elPrio.className = `priority-badge-pill ${tierClass}`;
       }
       if (elLoc && this.activeDataset) elLoc.textContent = this.activeDataset.metadata.location || 'Observed AOI';
-      if (elArea) elArea.textContent = `${zone.hectares} ha`;
+      if (elArea) elArea.textContent = `${zone.hectares} ha (${areaKm2} km²)`;
       if (elSev) elSev.textContent = zone.severity_level || zone.tier;
-      if (elConf) elConf.textContent = `${zone.confidence ? zone.confidence.score_pct : 92}%`;
-      if (elScore) elScore.textContent = `${zone.urgency_score || 94} / 100`;
+      if (elConf) elConf.textContent = `${conf}%`;
+      if (elScore) elScore.textContent = `${urgency} / 100`;
 
       if (elAiSummary && zone.incident_brief && zone.incident_brief.brief_text) {
         elAiSummary.textContent = zone.incident_brief.brief_text;
@@ -624,6 +786,42 @@ class IntelligenceMapEngine {
 
   zoomToCoordinates(lat, lon, zoom = 14) {
     this.map.flyTo([lat, lon], zoom, { duration: 1.2 });
+  }
+
+  dropSearchBeacon(lat, lon, label = 'Searched Target') {
+    if (this.searchMarker) {
+      this.map.removeLayer(this.searchMarker);
+      this.searchMarker = null;
+    }
+
+    const beaconIcon = L.divIcon({
+      className: 'search-beacon-marker',
+      html: `
+        <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #06b6d4; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; opacity: 0.85;"></div>
+          <div style="position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #06b6d4; box-shadow: 0 0 14px #06b6d4;"></div>
+          <div style="position: absolute; color: #fff; font-size: 11px; font-weight: bold; line-height: 1;">⊕</div>
+        </div>
+      `,
+      iconSize: [34, 34],
+      iconAnchor: [17, 17]
+    });
+
+    this.searchMarker = L.marker([lat, lon], { icon: beaconIcon }).addTo(this.map);
+    this.searchMarker.bindPopup(`
+      <div style="padding: 10px 12px; min-width: 220px; background: rgba(9, 14, 26, 0.96); border-radius: 8px; color: #fff;">
+        <div style="font-weight: 800; font-size: 0.88rem; color: #06b6d4; display: flex; align-items: center; gap: 6px;">
+          <span>🎯</span> RECONNAISSANCE TARGET
+        </div>
+        <div style="font-size: 0.82rem; margin-top: 6px; font-weight: 600; color: #f8fafc;">${label}</div>
+        <div style="font-size: 0.72rem; font-family: monospace; color: #94a3b8; margin-top: 4px;">
+          ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E
+        </div>
+        <div style="margin-top: 8px; font-size: 0.7rem; color: #38bdf8;">
+          ✓ Orbital radar telemetry synchronized
+        </div>
+      </div>
+    `, { className: 'leaflet-popup-dark' }).openPopup();
   }
 }
 
