@@ -361,7 +361,7 @@ class CommunityImpactModule {
   }
 
   initEventListeners() {
-    document.addEventListener('DOMContentLoaded', () => {
+    const bindEvents = () => {
       // 5. Multi-Select Category Filters
       const filterTabs = document.getElementById('ci-filter-tabs');
       if (filterTabs) {
@@ -449,12 +449,19 @@ class CommunityImpactModule {
       if (counterBadge) {
         counterBadge.addEventListener('click', (e) => {
           e.preventDefault();
-          if (window.earthApp) {
-            window.earthApp.switchWorkspace('reports');
+          const app = window.earthLensApp || window.earthApp;
+          if (app) {
+            app.switchWorkspace('reports');
           }
         });
       }
-    });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindEvents);
+    } else {
+      bindEvents();
+    }
   }
 
   updateFilterUI() {
@@ -794,69 +801,90 @@ class CommunityImpactModule {
     if (!container || typeof L === 'undefined') return;
 
     if (this.splitMap) {
-      this.splitMap.remove();
+      try {
+        this.splitMap.remove();
+      } catch (e) {}
       this.splitMap = null;
     }
+    if (container._leaflet_id) {
+      container._leaflet_id = null;
+    }
 
-    const coords = metadata.coordinates || { lat: 32.7667, lon: 22.6367 };
-    this.splitMap = L.map('ci-split-leaflet-map', {
-      center: [coords.lat, coords.lon],
-      zoom: 13,
-      zoomControl: true,
-      attributionControl: false
-    });
+    try {
+      const coords = (metadata && metadata.coordinates) ? metadata.coordinates : { lat: 32.7667, lon: 22.6367 };
+      this.splitMap = L.map('ci-split-leaflet-map', {
+        center: [coords.lat, coords.lon],
+        zoom: 13,
+        zoomControl: true,
+        attributionControl: false
+      });
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics'
-    }).addTo(this.splitMap);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics'
+      }).addTo(this.splitMap);
 
-    // Draw change polygon
-    L.circle([coords.lat, coords.lon], {
-      radius: 1200,
-      color: '#06B6D4',
-      fillColor: '#06B6D4',
-      fillOpacity: 0.2,
-      weight: 2
-    }).addTo(this.splitMap).bindTooltip(`<strong>${metadata.change_type || 'Change Area'}</strong>`, { sticky: true });
+      // Draw change polygon
+      L.circle([coords.lat, coords.lon], {
+        radius: 1200,
+        color: '#06B6D4',
+        fillColor: '#06B6D4',
+        fillOpacity: 0.2,
+        weight: 2
+      }).addTo(this.splitMap).bindTooltip(`<strong>${(metadata && metadata.change_type) || 'Change Area'}</strong>`, { sticky: true });
 
-    // Populate Markers
-    this.splitMarkers = {};
-    this.allFacilitiesList.forEach(item => {
-      if (item.lat && item.lon) {
-        const marker = L.circleMarker([item.lat, item.lon], {
-          radius: 8,
-          color: '#06B6D4',
-          fillColor: '#070A12',
-          fillOpacity: 1.0,
-          weight: 2.5
-        }).addTo(this.splitMap);
+      // Populate Markers
+      this.splitMarkers = {};
+      this.allFacilitiesList.forEach(item => {
+        if (item.lat && item.lon) {
+          const marker = L.circleMarker([item.lat, item.lon], {
+            radius: 8,
+            color: '#06B6D4',
+            fillColor: '#070A12',
+            fillOpacity: 1.0,
+            weight: 2.5
+          }).addTo(this.splitMap);
 
-        marker.bindTooltip(`<strong>${item.icon} ${item.name}</strong><br>${item.status}`, { sticky: true });
+          marker.bindTooltip(`<strong>${item.icon} ${item.name}</strong><br>${item.status}`, { sticky: true });
 
-        marker.on('mouseover', () => {
-          this.highlightListRow(item.id);
-        });
-        marker.on('mouseout', () => {
-          this.unhighlightListRow(item.id);
-        });
-        marker.on('click', () => {
-          this.openFacilityDrawer(item);
-        });
+          marker.on('mouseover', () => {
+            this.highlightListRow(item.id);
+          });
+          marker.on('mouseout', () => {
+            this.unhighlightListRow(item.id);
+          });
+          marker.on('click', () => {
+            this.openFacilityDrawer(item);
+          });
 
-        this.splitMarkers[item.id] = marker;
+          this.splitMarkers[item.id] = marker;
+        }
+      });
+
+      const size = this.splitMap.getSize();
+      if (size && size.x > 0 && size.y > 0) {
+        this.fitSplitMapToVisibleMarkers();
       }
-    });
-
-    this.fitSplitMapToVisibleMarkers();
+    } catch (err) {
+      console.warn('initSplitMap initial render deferred:', err);
+    }
   }
 
   onPanelShow() {
+    const container = document.getElementById('ci-split-leaflet-map');
+    if (!this.splitMap || (container && !container._leaflet_id)) {
+      this.initSplitMap(this.currentMetadata || { coordinates: { lat: 32.7667, lon: 22.6367 }, change_type: 'Flood Inundation' });
+    }
+
     if (this.splitMap) {
-      setTimeout(() => {
-        this.splitMap.invalidateSize();
-        this.fitSplitMapToVisibleMarkers();
-      }, 100);
+      [50, 150, 300, 500].forEach(delay => {
+        setTimeout(() => {
+          if (this.splitMap) {
+            this.splitMap.invalidateSize();
+            this.fitSplitMapToVisibleMarkers();
+          }
+        }, delay);
+      });
     }
   }
 
@@ -880,17 +908,25 @@ class CommunityImpactModule {
 
   fitSplitMapToVisibleMarkers() {
     if (!this.splitMap || !this.splitMarkers) return;
-    const visibleCoords = [];
+    try {
+      const size = this.splitMap.getSize();
+      if (!size || size.x <= 0 || size.y <= 0) return;
 
-    Object.entries(this.splitMarkers).forEach(([id, marker]) => {
-      if (this.splitMap.hasLayer(marker)) {
-        visibleCoords.push(marker.getLatLng());
+      const visibleCoords = [];
+      Object.entries(this.splitMarkers).forEach(([id, marker]) => {
+        if (this.splitMap.hasLayer(marker)) {
+          visibleCoords.push(marker.getLatLng());
+        }
+      });
+
+      if (visibleCoords.length > 0) {
+        const bounds = L.latLngBounds(visibleCoords);
+        if (bounds.isValid()) {
+          this.splitMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+        }
       }
-    });
-
-    if (visibleCoords.length > 0) {
-      const bounds = L.latLngBounds(visibleCoords);
-      this.splitMap.fitBounds(bounds, { padding: [30, 30] });
+    } catch (e) {
+      console.warn('fitSplitMapToVisibleMarkers skipped:', e);
     }
   }
 
@@ -1005,24 +1041,30 @@ class CommunityImpactModule {
     if (!container || typeof L === 'undefined') return;
 
     if (this.drawerMap) {
-      this.drawerMap.remove();
+      try {
+        this.drawerMap.remove();
+      } catch (e) {}
       this.drawerMap = null;
     }
+    if (container._leaflet_id) {
+      container._leaflet_id = null;
+    }
 
-    const lat = item.lat || 32.7667;
-    const lon = item.lon || 22.6367;
+    try {
+      const lat = item.lat || 32.7667;
+      const lon = item.lon || 22.6367;
 
-    this.drawerMap = L.map('fd-mini-map', {
-      center: [lat, lon],
-      zoom: 16,
-      zoomControl: true,
-      attributionControl: false
-    });
+      this.drawerMap = L.map('fd-mini-map', {
+        center: [lat, lon],
+        zoom: 16,
+        zoomControl: true,
+        attributionControl: false
+      });
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: 'Tiles &copy; Esri, Maxar'
-    }).addTo(this.drawerMap);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri, Maxar'
+      }).addTo(this.drawerMap);
 
     // High-visibility perimeter circle
     L.circle([lat, lon], {
@@ -1052,6 +1094,9 @@ class CommunityImpactModule {
         }
       }, delay);
     });
+    } catch (err) {
+      console.warn('initDrawerMiniMap error:', err);
+    }
   }
 
   // 7. "Add to Report" Quick-Stage Action (#7)

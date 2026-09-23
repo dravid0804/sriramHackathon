@@ -143,8 +143,13 @@ class EarthLensApp {
             impactTab.classList.add('active');
           }
         }
-        if (window.communityImpactModule && window.communityImpactModule.onPanelShow) {
-          window.communityImpactModule.onPanelShow();
+        if (window.communityImpactModule) {
+          if (this.currentAnalysis && this.currentAnalysis.community_impact) {
+            window.communityImpactModule.updateImpact(this.currentAnalysis.community_impact, this.currentAnalysis.metadata);
+          }
+          if (window.communityImpactModule.onPanelShow) {
+            window.communityImpactModule.onPanelShow();
+          }
         }
       }
 
@@ -855,7 +860,16 @@ class EarthLensApp {
 }
 
 // Instantiate and initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+const startEarthLensApp = () => {
+  if (window.earthLensApp) return;
   window.earthLensApp = new EarthLensApp();
+  window.earthApp = window.earthLensApp; // Backward compatibility alias
   window.earthLensApp.init();
-});
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startEarthLensApp);
+} else {
+  startEarthLensApp();
+}
+
