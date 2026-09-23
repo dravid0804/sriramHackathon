@@ -77,6 +77,12 @@ class IntelligenceMapEngine {
     // Mount satellite tiles
     this.basemaps.satellite.addTo(this.map);
 
+    // Create dedicated Leaflet panes for Before and After/Difference curtain swipe clipping
+    this.map.createPane('beforePane');
+    this.map.getPane('beforePane').style.zIndex = '401';
+    this.map.createPane('afterPane');
+    this.map.getPane('afterPane').style.zIndex = '402';
+
     // Mount only core difference layers by default to keep map uncluttered
     this.map.addLayer(this.layers.changes);
     this.map.addLayer(this.layers.severity);
@@ -267,42 +273,59 @@ class IntelligenceMapEngine {
     const divider = document.getElementById('swipe-divider-handle');
 
     if (curtain && divider) {
+      // Prevent Leaflet from intercepting drag & clicks
+      L.DomEvent.disableClickPropagation(curtain);
+      L.DomEvent.disableScrollPropagation(curtain);
+
       let isDragging = false;
 
-      // Mouse drag start
-      divider.addEventListener('mousedown', (e) => {
+      const startDrag = (e) => {
         isDragging = true;
+        if (this.map && this.map.dragging) {
+          this.map.dragging.disable();
+        }
         divider.classList.add('dragging');
-        e.preventDefault();
-      });
+        if (e && e.cancelable) e.preventDefault();
+      };
 
-      // Touch drag start (Mobile / Tablet / Touch laptops)
-      divider.addEventListener('touchstart', (e) => {
-        isDragging = true;
-        divider.classList.add('dragging');
-        e.preventDefault();
+      divider.addEventListener('mousedown', startDrag);
+      divider.addEventListener('touchstart', startDrag, { passive: false });
+
+      // Direct click on curtain moves slider to that position
+      curtain.addEventListener('mousedown', (e) => {
+        if (this.currentMode !== 'swipe') return;
+        startDrag(e);
+        onDragMove(e.clientX);
+      });
+      curtain.addEventListener('touchstart', (e) => {
+        if (this.currentMode !== 'swipe') return;
+        if (e.touches && e.touches.length > 0) {
+          startDrag(e);
+          onDragMove(e.touches[0].clientX);
+        }
       }, { passive: false });
 
-      // Drag End
       const onDragEnd = () => {
         if (isDragging) {
           isDragging = false;
+          if (this.map && this.map.dragging) {
+            this.map.dragging.enable();
+          }
           divider.classList.remove('dragging');
         }
       };
+
       window.addEventListener('mouseup', onDragEnd);
       window.addEventListener('touchend', onDragEnd);
       window.addEventListener('touchcancel', onDragEnd);
 
-      // Drag Move handler
       const onDragMove = (clientX) => {
         if (!isDragging || this.currentMode !== 'swipe') return;
         const rect = curtain.getBoundingClientRect();
+        if (!rect.width) return;
         const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-        const pct = Math.max(2, Math.min(98, (x / rect.width) * 100));
-        this.curtainPosition = pct;
+        const pct = Math.max(1, Math.min(99, (x / rect.width) * 100));
 
-        // 60fps smooth animation frame
         if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
         this.animFrameId = requestAnimationFrame(() => {
           this.applyCurtainClipping(pct);
@@ -337,65 +360,105 @@ class IntelligenceMapEngine {
 
   applyCurtainClipping(percentage) {
     if (!this.map) return;
+    this.curtainPosition = percentage;
     const divider = document.getElementById('swipe-divider-handle');
     if (divider) divider.style.left = `${percentage}%`;
 
-    const mapContainer = this.map.getContainer();
-    const mapRect = mapContainer.getBoundingClientRect();
-    const dividerScreenX = mapRect.left + (percentage / 100) * mapRect.width;
+    // 1. Pane-level clipping on Leaflet map panes
+    const bPane = this.map.getPane('beforePane');
+    const aPane = this.map.getPane('afterPane');
+    if (bPane) {
+      bPane.style.clipPath = `inset(0 calc(100% - ${percentage}%) 0 0)`;
+      bPane.style.webkitClipPath = `inset(0 calc(100% - ${percentage}%) 0 0)`;
+    }
+    if (aPane) {
+      aPane.style.clipPath = `inset(0 0 0 ${percentage}%)`;
+      aPane.style.webkitClipPath = `inset(0 0 0 ${percentage}%)`;
+    }
 
-    const clipLayer = (overlay, isLeft) => {
-      if (!overlay || !overlay._image) return;
-      const img = overlay._image;
-      const imgRect = img.getBoundingClientRect();
-      if (imgRect.width === 0) return;
+    // 2. Element-level raster clipping on satellite overlays for razor-sharp visual precision
+    const container = this.map.getContainer();
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const dividerX = containerRect.left + (percentage / 100) * containerRect.width;
 
-      const relX = dividerScreenX - imgRect.left;
-      const imgPct = Math.max(0, Math.min(100, (relX / imgRect.width) * 100));
+    const clipOverlay = (overlay, isBefore) => {
+      if (!overlay) return;
+      const el = overlay.getElement ? overlay.getElement() : null;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
 
-      if (isLeft) {
-        // Left side (Before baseline): 0% to divider
-        img.style.clipPath = `polygon(0% 0%, ${imgPct}% 0%, ${imgPct}% 100%, 0% 100%)`;
+      const cutX = Math.round(dividerX - rect.left);
+      if (isBefore) {
+        // Show left side of divider
+        if (cutX <= 0) {
+          el.style.clipPath = 'polygon(0 0, 0 0, 0 100%, 0 100%)';
+          el.style.webkitClipPath = 'polygon(0 0, 0 0, 0 100%, 0 100%)';
+        } else if (cutX >= rect.width) {
+          el.style.clipPath = 'none';
+          el.style.webkitClipPath = 'none';
+        } else {
+          el.style.clipPath = `polygon(0 0, ${cutX}px 0, ${cutX}px 100%, 0 100%)`;
+          el.style.webkitClipPath = `polygon(0 0, ${cutX}px 0, ${cutX}px 100%, 0 100%)`;
+        }
       } else {
-        // Right side (After / Difference): divider to 100%
-        img.style.clipPath = `polygon(${imgPct}% 0%, 100% 0%, 100% 100%, ${imgPct}% 100%)`;
+        // Show right side of divider
+        if (cutX <= 0) {
+          el.style.clipPath = 'none';
+          el.style.webkitClipPath = 'none';
+        } else if (cutX >= rect.width) {
+          el.style.clipPath = 'polygon(0 0, 0 0, 0 100%, 0 100%)';
+          el.style.webkitClipPath = 'polygon(0 0, 0 0, 0 100%, 0 100%)';
+        } else {
+          el.style.clipPath = `polygon(${cutX}px 0, 100% 0, 100% 100%, ${cutX}px 100%)`;
+          el.style.webkitClipPath = `polygon(${cutX}px 0, 100% 0, 100% 100%, ${cutX}px 100%)`;
+        }
       }
     };
 
-    if (this.beforeOverlay) {
-      this.beforeOverlay.setOpacity(0.76);
-      clipLayer(this.beforeOverlay, true);
-    }
-    if (this.afterOverlay) {
-      this.afterOverlay.setOpacity(0.76);
-      clipLayer(this.afterOverlay, false);
-    }
-    if (this.heatmapOverlay) {
-      this.heatmapOverlay.setOpacity(0.85);
-      clipLayer(this.heatmapOverlay, false);
-    }
+    clipOverlay(this.beforeOverlay, true);
+    clipOverlay(this.afterOverlay, false);
+    clipOverlay(this.heatmapOverlay, false);
   }
 
   resetCurtainClipping() {
-    [this.beforeOverlay, this.afterOverlay, this.heatmapOverlay].forEach(overlay => {
-      if (overlay && overlay._image) {
-        overlay._image.style.clipPath = 'none';
+    const bPane = this.map ? this.map.getPane('beforePane') : null;
+    const aPane = this.map ? this.map.getPane('afterPane') : null;
+    if (bPane) {
+      bPane.style.clipPath = 'none';
+      bPane.style.webkitClipPath = 'none';
+    }
+    if (aPane) {
+      aPane.style.clipPath = 'none';
+      aPane.style.webkitClipPath = 'none';
+    }
+
+    const resetEl = (overlay) => {
+      if (!overlay) return;
+      const el = overlay.getElement ? overlay.getElement() : null;
+      if (el) {
+        el.style.clipPath = 'none';
+        el.style.webkitClipPath = 'none';
       }
-    });
+    };
+    resetEl(this.beforeOverlay);
+    resetEl(this.afterOverlay);
+    resetEl(this.heatmapOverlay);
   }
 
   setComparisonMode(mode) {
     this.currentMode = mode;
-    const diffPill = document.getElementById('on-map-difference-pill');
     const curtain = document.getElementById('swipe-curtain-overlay');
+    const container = this.map ? this.map.getContainer() : null;
 
     if (mode === 'before') {
       this.isCurtainActive = false;
       if (curtain) curtain.style.display = 'none';
+      if (container) container.classList.remove('is-swipe-active');
       this.resetCurtainClipping();
 
-      // Balanced opacity so real satellite basemap remains visible underneath
-      if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.70);
+      if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.85);
       if (this.afterOverlay) this.afterOverlay.setOpacity(0.0);
       if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.0);
 
@@ -407,18 +470,14 @@ class IntelligenceMapEngine {
       this.map.removeLayer(this.layers.schools);
       this.map.removeLayer(this.layers.hospitals);
       this.map.removeLayer(this.layers.roads);
-
-      if (diffPill) {
-        diffPill.style.display = 'flex';
-        this.updateModeExplanationPill('before');
-      }
     } else if (mode === 'after') {
       this.isCurtainActive = false;
       if (curtain) curtain.style.display = 'none';
+      if (container) container.classList.remove('is-swipe-active');
       this.resetCurtainClipping();
 
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
-      if (this.afterOverlay) this.afterOverlay.setOpacity(0.70);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.85);
       if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.0);
 
       this.map.removeLayer(this.layers.changes);
@@ -429,14 +488,10 @@ class IntelligenceMapEngine {
       this.map.removeLayer(this.layers.schools);
       this.map.removeLayer(this.layers.hospitals);
       this.map.removeLayer(this.layers.roads);
-
-      if (diffPill) {
-        diffPill.style.display = 'flex';
-        this.updateModeExplanationPill('after');
-      }
     } else if (mode === 'difference') {
       this.isCurtainActive = false;
       if (curtain) curtain.style.display = 'none';
+      if (container) container.classList.remove('is-swipe-active');
       this.resetCurtainClipping();
 
       // Subtle after context (0.35) + luminous difference heatmap (0.85)
@@ -447,21 +502,16 @@ class IntelligenceMapEngine {
 
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.severity);
-      // Remove all civilian pins and line clutter from difference view
       this.map.removeLayer(this.layers.vulnerability);
       this.map.removeLayer(this.layers.impactRays);
       this.map.removeLayer(this.layers.settlements);
       this.map.removeLayer(this.layers.schools);
       this.map.removeLayer(this.layers.hospitals);
       this.map.removeLayer(this.layers.roads);
-
-      if (diffPill) {
-        diffPill.style.display = 'flex';
-        this.updateDifferenceLegendPill();
-      }
     } else if (mode === 'swipe') {
       this.isCurtainActive = true;
       if (curtain) curtain.style.display = 'block';
+      if (container) container.classList.add('is-swipe-active');
 
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.severity);
@@ -472,15 +522,17 @@ class IntelligenceMapEngine {
       this.map.removeLayer(this.layers.hospitals);
       this.map.removeLayer(this.layers.roads);
 
-      this.applyCurtainClipping(this.curtainPosition || 50);
+      // Left: Before image (opacity 0.95)
+      // Right: After image (opacity 0.95) + Heatmap difference (opacity 0.85)
+      if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.95);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.95);
+      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.85);
 
-      if (diffPill) {
-        diffPill.style.display = 'flex';
-        this.updateModeExplanationPill('swipe');
-      }
+      this.applyCurtainClipping(this.curtainPosition || 50);
     } else if (mode === 'impact') {
       this.isCurtainActive = false;
       if (curtain) curtain.style.display = 'none';
+      if (container) container.classList.remove('is-swipe-active');
       this.resetCurtainClipping();
 
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
@@ -494,80 +546,6 @@ class IntelligenceMapEngine {
       this.map.addLayer(this.layers.hospitals);
       this.map.addLayer(this.layers.roads);
       this.map.addLayer(this.layers.impactRays);
-
-      if (diffPill) {
-        diffPill.style.display = 'flex';
-        this.updateModeExplanationPill('impact');
-      }
-    }
-  }
-
-  updateModeExplanationPill(mode) {
-    const pInd = document.getElementById('diff-pill-indicator');
-    const pTitle = document.getElementById('diff-pill-title');
-    const pDesc = document.getElementById('diff-pill-desc');
-    if (!pTitle || !pDesc) return;
-
-    const meta = this.activeDataset?.metadata || {};
-
-    if (mode === 'before') {
-      if (pInd) { pInd.style.background = '#94a3b8'; pInd.style.boxShadow = '0 0 10px #94a3b8'; }
-      pTitle.textContent = 'BASELINE OBSERVATION';
-      pTitle.style.color = '#94a3b8';
-      pDesc.textContent = `Pre-Event Satellite Baseline (${meta.date_before || 'Baseline'}) · High-Res Basemap Active`;
-    } else if (mode === 'after') {
-      if (pInd) { pInd.style.background = '#38bdf8'; pInd.style.boxShadow = '0 0 12px #38bdf8'; }
-      pTitle.textContent = 'POST-EVENT OBSERVATION';
-      pTitle.style.color = '#38bdf8';
-      pDesc.textContent = `Post-Event Multispectral Capture (${meta.date_after || 'Current'}) · High-Res Basemap Active`;
-    } else if (mode === 'swipe') {
-      if (pInd) { pInd.style.background = '#00f5ff'; pInd.style.boxShadow = '0 0 14px #00f5ff'; }
-      pTitle.textContent = 'DYNAMIC CURTAIN WIPE';
-      pTitle.style.color = '#00f5ff';
-      pDesc.textContent = 'Drag ◄ ► slider horizontally to compare Baseline vs Post-Event AI Delta';
-    } else if (mode === 'impact') {
-      if (pInd) { pInd.style.background = '#ef4444'; pInd.style.boxShadow = '0 0 14px #ef4444'; }
-      pTitle.textContent = 'COMMUNITY INFRASTRUCTURE IMPACT';
-      pTitle.style.color = '#ef4444';
-      pDesc.textContent = 'Tactical pins & proximity exposure vectors to hospitals, schools & transit routes';
-    }
-  }
-
-  updateDifferenceLegendPill() {
-    const pInd = document.getElementById('diff-pill-indicator');
-    const pTitle = document.getElementById('diff-pill-title');
-    const pDesc = document.getElementById('diff-pill-desc');
-    if (!pTitle || !pDesc) return;
-
-    const meta = this.activeDataset?.metadata || {};
-    const ctype = (meta.change_type || '').toLowerCase();
-    const area = this.activeDataset?.community_impact?.community_impact_summary?.total_affected_area_km2 || '14.2';
-
-    if (ctype.includes('flood') || ctype.includes('water')) {
-      if (pInd) { pInd.style.background = '#00f5ff'; pInd.style.boxShadow = '0 0 14px #00f5ff'; }
-      pTitle.textContent = 'FLOOD INUNDATION DELTA';
-      pTitle.style.color = '#00f5ff';
-      pDesc.textContent = `Glossy Cyan: Submerged Coastal & Wadi Swath (+${area} km²)`;
-    } else if (ctype.includes('fire') || ctype.includes('burn')) {
-      if (pInd) { pInd.style.background = '#ff3b30'; pInd.style.boxShadow = '0 0 14px #ff3b30'; }
-      pTitle.textContent = 'WILDFIRE BURN SCAR';
-      pTitle.style.color = '#ff3b30';
-      pDesc.textContent = `Glossy Crimson: Thermal Burn Perimeter & Ash (+${area} km²)`;
-    } else if (ctype.includes('deforest') || ctype.includes('forest')) {
-      if (pInd) { pInd.style.background = '#fbbf24'; pInd.style.boxShadow = '0 0 14px #fbbf24'; }
-      pTitle.textContent = 'CANOPY LOSS DELTA';
-      pTitle.style.color = '#fbbf24';
-      pDesc.textContent = `Glossy Amber: Clear-Cut Timber & Soil Exposure (+${area} km²)`;
-    } else if (ctype.includes('urban')) {
-      if (pInd) { pInd.style.background = '#c084fc'; pInd.style.boxShadow = '0 0 14px #c084fc'; }
-      pTitle.textContent = 'URBAN EXPANSION DELTA';
-      pTitle.style.color = '#c084fc';
-      pDesc.textContent = `Glossy Violet: Newly Paved Roads & Concrete Footprint (+${area} km²)`;
-    } else {
-      if (pInd) { pInd.style.background = '#00f5ff'; pInd.style.boxShadow = '0 0 14px #00f5ff'; }
-      pTitle.textContent = 'SATELLITE DIFFERENCE DELTA';
-      pTitle.style.color = '#00f5ff';
-      pDesc.textContent = `Glossy Multispectral Shift Detected (+${area} km²)`;
     }
   }
 
@@ -609,18 +587,21 @@ class IntelligenceMapEngine {
     // Mount satellite raster overlays with smooth feathered blending
     if (analysisResult.before_image_url) {
       this.beforeOverlay = L.imageOverlay(analysisResult.before_image_url, this.currentBounds, {
+        pane: 'beforePane',
         opacity: 0.0,
         className: 'satellite-raster-overlay'
       }).addTo(this.map);
     }
     if (analysisResult.after_image_url) {
       this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, this.currentBounds, {
+        pane: 'afterPane',
         opacity: 0.0,
         className: 'satellite-raster-overlay'
       }).addTo(this.map);
     }
     if (analysisResult.heatmap_overlay) {
       this.heatmapOverlay = L.imageOverlay(analysisResult.heatmap_overlay, this.currentBounds, {
+        pane: 'afterPane',
         opacity: 0.0,
         className: 'satellite-difference-overlay'
       }).addTo(this.map);
