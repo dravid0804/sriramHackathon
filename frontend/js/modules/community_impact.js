@@ -983,10 +983,14 @@ class CommunityImpactModule {
     drawer.classList.add('active');
     backdrop.classList.add('active');
 
-    // Init Drawer Mini-Map after slide animation completes
+    // Init Drawer Mini-Map immediately and post-animation
+    this.initDrawerMiniMap(item);
     setTimeout(() => {
-      this.initDrawerMiniMap(item);
-    }, 300);
+      if (this.drawerMap) {
+        this.drawerMap.invalidateSize();
+        this.drawerMap.setView([item.lat || 32.7667, item.lon || 22.6367], 16);
+      }
+    }, 250);
   }
 
   closeFacilityDrawer() {
@@ -1040,13 +1044,14 @@ class CommunityImpactModule {
 
     marker.bindTooltip(`<strong>${item.icon || '📍'} ${item.name}</strong>`, { sticky: true });
 
-    // Enforce map tile resize so map is 100% visible and expanded
-    setTimeout(() => {
-      if (this.drawerMap) {
-        this.drawerMap.invalidateSize();
-        this.drawerMap.setView([lat, lon], 16);
-      }
-    }, 100);
+    // Enforce map tile resize so map fills entire 320px container
+    [50, 150, 300].forEach(delay => {
+      setTimeout(() => {
+        if (this.drawerMap) {
+          this.drawerMap.invalidateSize();
+        }
+      }, delay);
+    });
   }
 
   // 7. "Add to Report" Quick-Stage Action (#7)
