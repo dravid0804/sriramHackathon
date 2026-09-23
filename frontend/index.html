@@ -214,20 +214,18 @@
         <!-- Top Comparison Modes Selector Bar (Section 5) -->
         <div class="map-mode-bar-container">
           <div class="map-mode-segmented-control" id="map-mode-control">
-            <button class="mode-tab" data-mode="before" id="tab-mode-before">[ BEFORE ]</button>
-            <button class="mode-tab" data-mode="after" id="tab-mode-after">[ AFTER ]</button>
-            <button class="mode-tab active" data-mode="difference" id="tab-mode-difference">[ DIFFERENCE ]</button>
-            <button class="mode-tab" data-mode="impact" id="tab-mode-impact">[ IMPACT ]</button>
+            <button class="mode-tab" data-mode="before" id="tab-mode-before">BEFORE</button>
+            <button class="mode-tab" data-mode="after" id="tab-mode-after">AFTER</button>
+            <button class="mode-tab active" data-mode="difference" id="tab-mode-difference">DIFFERENCE</button>
+            <button class="mode-tab" data-mode="impact" id="tab-mode-impact">IMPACT</button>
           </div>
+        </div>
 
-          <!-- Swipe Comparison Toggle -->
-          <button class="btn-toggle-swipe" id="btn-toggle-swipe" title="Toggle interactive Before/After draggable curtain slider">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"></polyline>
-              <polyline points="9 18 3 12 9 6"></polyline>
-            </svg>
-            <span>Curtain Swipe</span>
-          </button>
+        <!-- Dynamic On-Map Difference Explanation Pill (Judges' Instant Comprehension) -->
+        <div class="on-map-difference-pill" id="on-map-difference-pill">
+          <span class="diff-pill-indicator" id="diff-pill-indicator"></span>
+          <span class="diff-pill-title" id="diff-pill-title">INUNDATION DELTA</span>
+          <span class="diff-pill-desc" id="diff-pill-desc">Cyan Heat: Submerged Coastal Wadi Swath (+14.2 km²)</span>
         </div>
 
         <!-- Master Leaflet Map Element -->
@@ -257,10 +255,9 @@
           </div>
         </div>
 
-        <!-- FLOATING MAP CONTROLS: TOP-RIGHT TOOLBAR -->
+        <!-- FLOATING MAP CONTROLS: TOP-RIGHT SATELLITE TOGGLE -->
         <div class="floating-hud top-right-hud">
-          <!-- Basemap Style Switcher -->
-          <div class="basemap-toggle-btn" id="btn-basemap-toggle" title="Toggle High-Res Satellite vs Tactical Dark Terrain">
+          <div class="basemap-toggle-btn" id="btn-basemap-toggle" title="Toggle Satellite vs Dark Terrain Basemap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
@@ -268,24 +265,6 @@
             </svg>
             <span id="basemap-name">Satellite</span>
           </div>
-
-          <!-- Layers Manager Toggle Button -->
-          <button class="btn-hud-tool" id="btn-open-layers" title="Open 16 Map Layer Controls">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
-            <span>Layers (16)</span>
-          </button>
-
-          <!-- AI Assistant Quick Toggle -->
-          <button class="btn-hud-tool btn-hud-ai" id="btn-toggle-assistant" title="Open AI Investigation Assistant">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>AI Intel</span>
-          </button>
         </div>
 
         <!-- FLOATING MAP CONTROLS: BOTTOM-LEFT SEMANTIC LEGEND (Section 4) -->

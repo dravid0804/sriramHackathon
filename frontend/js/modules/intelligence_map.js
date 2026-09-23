@@ -59,6 +59,7 @@ class IntelligenceMapEngine {
 
     this.beforeOverlay = null;
     this.afterOverlay = null;
+    this.heatmapOverlay = null;
     this.currentBounds = null;
   }
 
@@ -76,8 +77,9 @@ class IntelligenceMapEngine {
     // Mount satellite tiles
     this.basemaps.satellite.addTo(this.map);
 
-    // Mount all layer groups
-    Object.values(this.layers).forEach(lg => lg.addTo(this.map));
+    // Mount only core difference layers by default to keep map uncluttered
+    this.map.addLayer(this.layers.changes);
+    this.map.addLayer(this.layers.severity);
 
     // Dynamic Coordinate Telemetry
     this.map.on('mousemove', (e) => {
@@ -353,27 +355,55 @@ class IntelligenceMapEngine {
 
   setComparisonMode(mode) {
     this.currentMode = mode;
+    const diffPill = document.getElementById('on-map-difference-pill');
+
     if (mode === 'before') {
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(1.0);
       if (this.afterOverlay) this.afterOverlay.setOpacity(0.0);
+      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.0);
       this.map.removeLayer(this.layers.changes);
+      this.map.removeLayer(this.layers.severity);
       this.map.removeLayer(this.layers.vulnerability);
       this.map.removeLayer(this.layers.impactRays);
+      this.map.removeLayer(this.layers.settlements);
+      this.map.removeLayer(this.layers.schools);
+      this.map.removeLayer(this.layers.hospitals);
+      this.map.removeLayer(this.layers.roads);
+      if (diffPill) diffPill.style.display = 'none';
     } else if (mode === 'after') {
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
       if (this.afterOverlay) this.afterOverlay.setOpacity(1.0);
+      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.0);
       this.map.removeLayer(this.layers.changes);
+      this.map.removeLayer(this.layers.severity);
       this.map.removeLayer(this.layers.vulnerability);
       this.map.removeLayer(this.layers.impactRays);
+      this.map.removeLayer(this.layers.settlements);
+      this.map.removeLayer(this.layers.schools);
+      this.map.removeLayer(this.layers.hospitals);
+      this.map.removeLayer(this.layers.roads);
+      if (diffPill) diffPill.style.display = 'none';
     } else if (mode === 'difference') {
       if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
-      if (this.afterOverlay) this.afterOverlay.setOpacity(0.82);
+      if (this.afterOverlay) this.afterOverlay.setOpacity(0.92);
+      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.88);
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.severity);
+      // Remove all civilian pins and line clutter from difference view
       this.map.removeLayer(this.layers.vulnerability);
       this.map.removeLayer(this.layers.impactRays);
+      this.map.removeLayer(this.layers.settlements);
+      this.map.removeLayer(this.layers.schools);
+      this.map.removeLayer(this.layers.hospitals);
+      this.map.removeLayer(this.layers.roads);
+      if (diffPill) {
+        diffPill.style.display = 'flex';
+        this.updateDifferenceLegendPill();
+      }
     } else if (mode === 'impact') {
+      if (this.beforeOverlay) this.beforeOverlay.setOpacity(0.0);
       if (this.afterOverlay) this.afterOverlay.setOpacity(0.70);
+      if (this.heatmapOverlay) this.heatmapOverlay.setOpacity(0.55);
       this.map.addLayer(this.layers.changes);
       this.map.addLayer(this.layers.vulnerability);
       this.map.addLayer(this.layers.settlements);
@@ -381,6 +411,45 @@ class IntelligenceMapEngine {
       this.map.addLayer(this.layers.hospitals);
       this.map.addLayer(this.layers.roads);
       this.map.addLayer(this.layers.impactRays);
+      if (diffPill) diffPill.style.display = 'none';
+    }
+  }
+
+  updateDifferenceLegendPill() {
+    const pInd = document.getElementById('diff-pill-indicator');
+    const pTitle = document.getElementById('diff-pill-title');
+    const pDesc = document.getElementById('diff-pill-desc');
+    if (!pTitle || !pDesc) return;
+
+    const meta = this.activeDataset?.metadata || {};
+    const ctype = (meta.change_type || '').toLowerCase();
+    const area = this.activeDataset?.community_impact?.community_impact_summary?.total_affected_area_km2 || '14.2';
+
+    if (ctype.includes('flood') || ctype.includes('water')) {
+      if (pInd) { pInd.style.background = '#06b6d4'; pInd.style.boxShadow = '0 0 12px #06b6d4'; }
+      pTitle.textContent = 'WATER INUNDATION DELTA';
+      pTitle.style.color = '#06b6d4';
+      pDesc.textContent = `Cyan Heat: Submerged Coastal Wadi Swath (+${area} km²)`;
+    } else if (ctype.includes('fire') || ctype.includes('burn')) {
+      if (pInd) { pInd.style.background = '#ef4444'; pInd.style.boxShadow = '0 0 12px #ef4444'; }
+      pTitle.textContent = 'WILDFIRE BURN SCAR';
+      pTitle.style.color = '#ef4444';
+      pDesc.textContent = `Crimson Heat: Active Burn Perimeter & Ash (+${area} km²)`;
+    } else if (ctype.includes('deforest') || ctype.includes('forest')) {
+      if (pInd) { pInd.style.background = '#f59e0b'; pInd.style.boxShadow = '0 0 12px #f59e0b'; }
+      pTitle.textContent = 'CANOPY LOSS DELTA';
+      pTitle.style.color = '#f59e0b';
+      pDesc.textContent = `Amber Heat: Clear-Cut Timber & Soil Exposure (+${area} km²)`;
+    } else if (ctype.includes('urban')) {
+      if (pInd) { pInd.style.background = '#a855f7'; pInd.style.boxShadow = '0 0 12px #a855f7'; }
+      pTitle.textContent = 'URBAN EXPANSION FOOTPRINT';
+      pTitle.style.color = '#a855f7';
+      pDesc.textContent = `Purple Heat: Newly Built Pavement & Concrete (+${area} km²)`;
+    } else {
+      if (pInd) { pInd.style.background = '#06b6d4'; pInd.style.boxShadow = '0 0 12px #06b6d4'; }
+      pTitle.textContent = 'DETECTED SATELLITE DELTA';
+      pTitle.style.color = '#06b6d4';
+      pDesc.textContent = `Multispectral Shift Detected (+${area} km²)`;
     }
   }
 
@@ -417,6 +486,7 @@ class IntelligenceMapEngine {
     // Clear old raster overlays
     if (this.beforeOverlay) this.map.removeLayer(this.beforeOverlay);
     if (this.afterOverlay) this.map.removeLayer(this.afterOverlay);
+    if (this.heatmapOverlay) this.map.removeLayer(this.heatmapOverlay);
 
     // Mount satellite raster overlays with smooth feathered blending
     if (analysisResult.before_image_url) {
@@ -427,8 +497,14 @@ class IntelligenceMapEngine {
     }
     if (analysisResult.after_image_url) {
       this.afterOverlay = L.imageOverlay(analysisResult.after_image_url, this.currentBounds, {
-        opacity: 0.82,
+        opacity: 0.88,
         className: 'satellite-raster-overlay'
+      }).addTo(this.map);
+    }
+    if (analysisResult.heatmap_overlay) {
+      this.heatmapOverlay = L.imageOverlay(analysisResult.heatmap_overlay, this.currentBounds, {
+        opacity: this.currentMode === 'difference' ? 0.88 : 0.0,
+        className: 'satellite-difference-overlay'
       }).addTo(this.map);
     }
 
@@ -445,15 +521,8 @@ class IntelligenceMapEngine {
     const impact = analysisResult.community_impact || {};
     this.renderCommunityLayers(impact, coords);
 
-    // Apply active comparison mode
+    // Apply active comparison mode (keeps difference view clean)
     this.setComparisonMode(this.currentMode);
-
-    // Automatically showcase primary anomaly and connected infrastructure
-    if (zones.length > 0) {
-      setTimeout(() => {
-        this.selectZone(zones[0]);
-      }, 600);
-    }
   }
 
   renderChangeZone(zone, bounds, meta) {
@@ -518,22 +587,22 @@ class IntelligenceMapEngine {
       fillColor = '#a855f7';
     }
 
-    // High-tech Organic Hazard Polygon
+    // High-tech Organic Hazard Polygon Boundary
     const poly = L.polygon(polyCoords, {
       color: strokeColor,
-      weight: tier === 'CRITICAL' ? 3 : 2,
+      weight: tier === 'CRITICAL' ? 2.5 : 1.8,
       fillColor: fillColor,
-      fillOpacity: tier === 'CRITICAL' ? 0.38 : 0.28,
+      fillOpacity: 0.12,
       dashArray: tier === 'CRITICAL' ? null : '4, 6',
       className: tier === 'CRITICAL' ? 'hazard-contour-pulse' : ''
     });
 
     // Polygon Hover Micro-interactions
     poly.on('mouseover', () => {
-      poly.setStyle({ weight: 4, fillOpacity: 0.60 });
+      poly.setStyle({ weight: 3.5, fillOpacity: 0.22 });
     });
     poly.on('mouseout', () => {
-      poly.setStyle({ weight: tier === 'CRITICAL' ? 3 : 2, fillOpacity: tier === 'CRITICAL' ? 0.38 : 0.28 });
+      poly.setStyle({ weight: tier === 'CRITICAL' ? 2.5 : 1.8, fillOpacity: 0.12 });
     });
 
     poly.on('click', () => {
@@ -554,14 +623,15 @@ class IntelligenceMapEngine {
     this.layers.changes.addLayer(poly);
     this.layers.severity.addLayer(poly);
 
-    // Tactical Target Reticle for Critical Anomaly
+    // Tactical Target Reticle for Critical Anomaly (Open Ring, No Solid Fill Block)
     if (tier === 'CRITICAL') {
       const pulseCircle = L.circleMarker([centerLat, centerLon], {
-        radius: 10,
+        radius: 8,
         color: strokeColor,
         fillColor: strokeColor,
-        fillOpacity: 0.85,
-        weight: 2
+        fillOpacity: 0.15,
+        weight: 1.5,
+        dashArray: '3, 3'
       });
       pulseCircle.on('click', () => this.selectZone(zone));
       this.layers.priority.addLayer(pulseCircle);

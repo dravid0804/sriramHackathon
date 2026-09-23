@@ -25,7 +25,8 @@ def process_satellite_pair(before_rgb: np.ndarray,
     h, w, _ = before_rgb.shape
     
     # 🟢 FEATURE 1 (Member 1): Change Detection & Contour Extraction
-    raw_zones, heatmap_uri, telemetry_base = extract_anomaly_contours(before_rgb, after_rgb)
+    change_type = metadata.get("change_type", "general")
+    raw_zones, heatmap_uri, telemetry_base = extract_anomaly_contours(before_rgb, after_rgb, change_type)
     
     # 🟣 FEATURE 3 (Member 3): Confidence & Uncertainty Modeling
     for zone in raw_zones:

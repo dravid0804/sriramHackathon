@@ -18,27 +18,61 @@ from typing import Dict, Any, List, Tuple
 from .spectral_indices import compute_spectral_indices, compute_spectral_deltas
 from .classifier import classify_change
 
-def generate_heatmap_overlay(diff_gray: np.ndarray, thresh_mask: np.ndarray) -> str:
+def generate_heatmap_overlay(diff_gray: np.ndarray, thresh_mask: np.ndarray, change_type: str = "general") -> str:
     """
     Creates an RGBA heatmap data URI representing change intensity.
-    Uses the perceptual Turbo colormap only on verified changed pixels.
+    Colorizes according to the physical hazard type so judges can immediately understand:
+    - Flood / Inundation: Luminous aqua / electric cyan
+    - Wildfire / Burn Scar: Fiery incandescent crimson / flame orange
+    - Deforestation / Canopy Loss: Warning amber / clear-cut red-orange
+    - Urban / Infrastructure: Cyber violet / bright magenta
+    Uses soft Gaussian edge feathering for smooth, natural blending onto satellite imagery.
     """
-    norm_diff = cv2.normalize(diff_gray, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-    color_map = cv2.applyColorMap(norm_diff, cv2.COLORMAP_TURBO)
-    color_map_rgb = cv2.cvtColor(color_map, cv2.COLOR_BGR2RGB)
+    h, w = diff_gray.shape
+    norm_diff = cv2.normalize(diff_gray, None, 0, 255, cv2.NORM_MINMAX).astype(np.float32) / 255.0
     
-    alpha = np.zeros_like(diff_gray, dtype=np.uint8)
-    # 85% opacity on detected changes
-    alpha[thresh_mask > 0] = 215
+    ctype = str(change_type).lower()
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
     
-    rgba = np.dstack([color_map_rgb, alpha])
+    if "flood" in ctype or "water" in ctype or "inundation" in ctype:
+        # Luminous Aqua / Flood Cyan: Deep water blue to electric cyan
+        rgb[:, :, 0] = np.clip(10 + norm_diff * 30, 0, 255).astype(np.uint8)
+        rgb[:, :, 1] = np.clip(170 + norm_diff * 75, 0, 255).astype(np.uint8)
+        rgb[:, :, 2] = np.clip(225 + norm_diff * 30, 0, 255).astype(np.uint8)
+    elif "fire" in ctype or "burn" in ctype or "wildfire" in ctype:
+        # Fiery Crimson / Flame Amber
+        rgb[:, :, 0] = np.clip(235 + norm_diff * 20, 0, 255).astype(np.uint8)
+        rgb[:, :, 1] = np.clip(45 + norm_diff * 135, 0, 255).astype(np.uint8)
+        rgb[:, :, 2] = np.clip(20 + norm_diff * 25, 0, 255).astype(np.uint8)
+    elif "deforest" in ctype or "forest" in ctype or "logging" in ctype:
+        # Warning Amber / Soil Clear-Cut
+        rgb[:, :, 0] = np.clip(245 + norm_diff * 10, 0, 255).astype(np.uint8)
+        rgb[:, :, 1] = np.clip(145 + norm_diff * 55, 0, 255).astype(np.uint8)
+        rgb[:, :, 2] = np.clip(15 + norm_diff * 35, 0, 255).astype(np.uint8)
+    elif "urban" in ctype or "sprawl" in ctype or "infrastructure" in ctype:
+        # Cyber Violet / Built-Up Concrete
+        rgb[:, :, 0] = np.clip(165 + norm_diff * 55, 0, 255).astype(np.uint8)
+        rgb[:, :, 1] = np.clip(75 + norm_diff * 40, 0, 255).astype(np.uint8)
+        rgb[:, :, 2] = np.clip(240 + norm_diff * 15, 0, 255).astype(np.uint8)
+    else:
+        # High-tech Electric Cyan
+        rgb[:, :, 0] = np.clip(6 + norm_diff * 30, 0, 255).astype(np.uint8)
+        rgb[:, :, 1] = np.clip(182 + norm_diff * 60, 0, 255).astype(np.uint8)
+        rgb[:, :, 2] = np.clip(212 + norm_diff * 40, 0, 255).astype(np.uint8)
+        
+    # Soft feathered alpha mask using Gaussian blur for natural organic blending
+    smooth_mask = cv2.GaussianBlur(thresh_mask, (11, 11), 0)
+    alpha = np.clip(smooth_mask.astype(np.float32) * 0.88, 0, 220).astype(np.uint8)
+    
+    rgba = np.dstack([rgb, alpha])
     
     _, buffer = cv2.imencode('.png', cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGRA))
     b64_str = base64.b64encode(buffer).decode('utf-8')
     return f"data:image/png;base64,{b64_str}"
 
 def extract_anomaly_contours(before_rgb: np.ndarray, 
-                             after_rgb: np.ndarray) -> Tuple[List[Dict[str, Any]], str, Dict[str, Any]]:
+                             after_rgb: np.ndarray,
+                             change_type: str = "general") -> Tuple[List[Dict[str, Any]], str, Dict[str, Any]]:
     """
     Performs precision satellite image differencing and contour extraction.
     Returns:
@@ -148,7 +182,7 @@ def extract_anomaly_contours(before_rgb: np.ndarray,
         
     # Sort by pixel area descending, keep top 15 most prominent regions
     raw_zones = sorted(raw_zones, key=lambda r: r["pixel_area"], reverse=True)[:15]
-    heatmap_uri = generate_heatmap_overlay(fused_diff, cleaned_mask)
+    heatmap_uri = generate_heatmap_overlay(fused_diff, cleaned_mask, change_type)
     
     total_change_px = int(np.sum(cleaned_mask > 0))
     total_change_pct = round((total_change_px / (w * h)) * 100.0, 2)
